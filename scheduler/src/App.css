@@ -1,0 +1,26 @@
+* {
+    box-sizing: border-box;
+}
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+.grid-container {
+    display: grid;
+    grid-template: 'chat calendar';
+    grid-template-columns: 1fr 1fr;
+    height: 100vh;
+}
+.chat {
+    grid-area: chat;
+}
+.calendar-container {
+    grid-area: calendar;
+    display: grid;
+    height: 100%;
+    width: 100%;
+    justify-items: center;
+    align-items: center;
+}
