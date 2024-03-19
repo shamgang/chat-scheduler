@@ -13,7 +13,7 @@ class TimeRange:
         self.end_time = end_time
 
     def __str__(self):
-        return f"{self.start_time.strftime('%H')}-{self.end_time.strftime('%H')}"
+        return f"{self.start_time.strftime('%H%M')}-{self.end_time.strftime('%H%M')}"
 
     def __repr__(self):
         return self.__str__()
@@ -25,7 +25,7 @@ class HourStatementType(str, Enum):
 
 
 def from_time_string(time_str):
-    return datetime.strptime(time_str, '%I%p').time()
+    return datetime.strptime(time_str, '%I%M%p').time()
 
 
 day_inds = { calendar.day_name[i]: i for i in range(7) }

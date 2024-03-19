@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { Calendar, Views, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css'
@@ -15,10 +15,13 @@ function eventsFromTimeRanges(timeRanges, fromDate, toDate) {
     const ranges = timeRanges[dayOfWeek];
     for (const range of ranges) {
       const eventStart = new Date(currentDate);
-      eventStart.setHours(range.from);
+      eventStart.setHours(range.from.hour);
+      eventStart.setMinutes(range.from.minute);
       const eventEnd = new Date(currentDate);
-      eventEnd.setHours(range.to);
-      if (range.to == 0) {
+      eventEnd.setHours(range.to.hour);
+      eventEnd.setMinutes(range.to.minute);
+      if (range.to.hour == 0 && range.to.minute == 0) {
+        // Midnight should roll back to 11:59 for calendar formatting
         eventEnd.setHours(23);
         eventEnd.setMinutes(59);
       }
@@ -48,6 +51,10 @@ function Scheduler({ dateRange, timeRanges }) {
     return dateRange[0];
   }, [dateRange]);
 
+  const onSelectSlot = useCallback(({ start, end }) => {
+    console.log(start, end);
+  }, []);
+
   return (
     <div>
       <Calendar
@@ -59,6 +66,8 @@ function Scheduler({ dateRange, timeRanges }) {
         defaultView={defaultView}
         views={views}
         defaultDate={defaultDate}
+        selectable
+        onSelectSlot={onSelectSlot}
       />
     </div>
   );

@@ -1,12 +1,10 @@
 from uuid import uuid4
 import chainlit as cl
-from langchain_community.chat_message_histories import ChatMessageHistory
 from .logger import logger
 from .hour_translation import WeeklyTimeGrid
 
 class SessionState:
     def __init__(self):
-        self.chat_history = ChatMessageHistory()
         self.chosen_dates = None # TODO: validation / type hint
         self.time_grid = WeeklyTimeGrid()
 

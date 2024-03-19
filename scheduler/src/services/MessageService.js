@@ -46,7 +46,8 @@ function parseRange(rangeStr) {
 }
 
 /* Parse a string containing comma-separated time ranges on a line per day of the week
-    Result will be 2D array with each range being {from, to}.
+    Result will be 2D array with each range an object like:
+    { from: {hour, minute}, to: {hour, minute} }.
 */
 function parseTimeRanges(rangesStr) {
   const dayLines = rangesStr.split('\n');
@@ -56,7 +57,12 @@ function parseTimeRanges(rangesStr) {
     if (line != '') {
       const timeRangeStrs = line.split(',');
       for (const rangeStr of timeRangeStrs) {
-        const [from, to] = rangeStr.split('-').map((hourStr) => parseInt(hourStr, 10));
+        const [from, to] = rangeStr.split('-').map((timeStr) => {
+          return {
+            hour: parseInt(timeStr.substring(0, 2), 10),
+            minute: parseInt(timeStr.substring(2, 4), 10)
+          }
+        });
         timeRanges.push({from, to});
       }
     }

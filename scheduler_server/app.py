@@ -30,8 +30,8 @@ async def on_chat_start():
 
 @cl.on_message
 async def on_message(message: cl.Message):
+    logger.debug(f'Received message: {message.content}')
     msg = parse_message(message)
-    logger.debug(f'Received message: {msg.text}')
     session_state = get_session()
     if msg.type == ClientMessageType.DATES:
         # User is defining a date range

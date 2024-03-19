@@ -108,12 +108,15 @@ For each phrase the person says about being available, free, busy, booked, etc, 
 or
 2. CLOSE:<day_of_week>:<time_range>
 Where <day_of_week> is the day of week mentioned by the person and <time_range> is the range of time on that day mentioned by the person.
-<time_range> should be of the format <start>-<end>, where <start> is the start hour of the time range with AM or PM and <end> is the end hour of the time range with AM or PM. 
+<time_range> should be of the format <start>-<end>, where <start> is the start time of the time range with AM or PM and <end> is the end time of the time range with AM or PM. 
 If the person mentions multiple days or a range of days in one phrase, create a statement for each day.
 If any time does not have AM or PM, Assistant will make an educated guess and add either AM or PM based on what people usually mean.
-For any ranges that use the word "after" or don't have an end time, use 12AM as the end time.
-For any ranges that use the word "before" or don't have a start time, use 12AM as the start time.
-Make sure all hours are two digits, padding with a leading zero if necessary. Do not include minutes.
+All times will be four digits in the format HHMM followed immediately by AM or PM with no spaces.
+Single-digit hours will be padded with a leading zero.
+Single-digit minutes will be padded with a leading zero.
+For any ranges that use the word "after" or don't have an end time, use 1200AM as the end time.
+For any ranges that use the word "before" or don't have a start time, use 1200AM as the start time.
+Do not use a colon between the hours and minutes.
 Remove any spaces between the number and the corresponding AM or PM.
 Respond by listing all of the statements.
 If the person does anything other than give you their availability, Assistant tells them it can't help with that.
