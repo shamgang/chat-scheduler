@@ -10,7 +10,8 @@ html, body {
 .grid-container {
     display: grid;
     grid-template: 'chat calendar';
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 50% 50%;
+    grid-template-rows: 100%;
     height: 100vh;
 }
 .chat {
@@ -23,4 +24,14 @@ html, body {
     width: 100%;
     justify-items: center;
     align-items: center;
+}
+@media (max-aspect-ratio: 1/1) {
+    .grid-container {
+        grid-template:
+            'chat'
+            'calendar';
+        grid-template-columns: 100%;
+        grid-template-rows: 50% 50%;
+        height: 100vh;
+    }
 }

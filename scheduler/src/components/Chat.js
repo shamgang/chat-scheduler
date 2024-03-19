@@ -14,9 +14,8 @@ function Chat({onSendMessage, messages}) {
 
   return (
     <MinChatUiProvider theme="#6ea9d7">
-      <MainContainer style={{ height: '100vh' }}>
+      <MainContainer className='chat-container'>
         <MessageContainer>
-          <MessageHeader />
           <MessageList
             currentUserId={Authors.USER.toLowerCase()}
             messages={displayMessages}
