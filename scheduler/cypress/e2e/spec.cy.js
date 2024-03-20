@@ -14,5 +14,9 @@ describe('default spec', () => {
     cy.wait(5000);
     msgInput.type('also free all day weds and thurs from 9:30am to 10:30 am');
     msgForm.submit();
+    cy.wait(5000);
+    cy.get('#scheduler-submit').click();
+    msgInput.type('free all day monday');
+    msgForm.submit();
   });
 });

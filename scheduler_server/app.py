@@ -1,9 +1,10 @@
 import chainlit as cl
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
-from lib.date_translation import DateTranslator, TranslationFailedError
-from lib.hour_translation import HourTranslator
-from lib.session_state import create_session, get_session
+from lib.date_translation import DateTranslator
+from lib.hour_translation import HourTranslator, WeeklyTimeGrid
+from lib.errors import TranslationFailedError
+from lib.session_state import create_session, get_session, GENERAL_TIME_GRID_KEY
 from lib.logger import logger
 from lib.client_message import (
     ClientMessage,
@@ -64,9 +65,15 @@ async def on_message(message: cl.Message):
         session_state.chosen_dates = [msg.from_date, msg.to_date]
     elif msg.type == ClientMessageType.TIMES:
         # User is defining time slots
-        actions = hour_translator.translate_to_calendar_actions(msg.text)
-        session_state.time_grid.process_calendar_actions(actions)
-        time_ranges = session_state.time_grid.get_time_ranges()
+        actions = hour_translator.translate_to_calendar_actions(msg.times_prompt)
+        if msg.week not in session_state.time_grids:
+            # Creating specific availability, copy general availability and edit
+            session_state.time_grids[msg.week] = WeeklyTimeGrid.clone(
+                session_state.time_grids[GENERAL_TIME_GRID_KEY]
+            )
+        grid = session_state.time_grids[msg.week]
+        grid.process_calendar_actions(actions)
+        time_ranges = grid.get_time_ranges()
         response = ClientMessage(
             ClientMessageType.TIME_RANGES,
             Author.SCHEDULER,
@@ -75,3 +82,10 @@ async def on_message(message: cl.Message):
         cl_message = response.format_message()
         logger.debug(f'Model response: {cl_message.content}')
         await cl_message.send()
+    elif msg.type == ClientMessageType.CONFIRM:
+        # User has confirmed general avail
+        # TODO: this is not necessary - hack for front end
+        # because front end is currently stateless with messages
+        # and relies on chainlit for message storage
+        # Instead, can sync messages with a queue on the front end
+        pass

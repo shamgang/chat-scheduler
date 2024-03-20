@@ -3,8 +3,7 @@ import {
   MainContainer,
   MessageInput,
   MessageContainer,
-  MessageList,
-  MessageHeader
+  MessageList
 } from "@minchat/react-chat-ui";
 import { generateDisplayMessages } from "../helpers/DisplayMessages";
 import { Authors } from "../services/MessageService";

@@ -1,0 +1,2 @@
+class TranslationFailedError(RuntimeError):
+    pass

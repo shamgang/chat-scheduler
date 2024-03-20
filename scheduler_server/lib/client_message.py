@@ -8,6 +8,7 @@ class ClientMessageType(str, Enum):
     RANGE = 'RANGE'
     TIMES = 'TIMES'
     TIME_RANGES = 'TIME_RANGES' # TODO: refactor all of these to be clearer
+    CONFIRM = 'CONFIRM'
     ERROR = 'ERROR'
 
 
@@ -39,25 +40,32 @@ def to_time_ranges_str(time_ranges):
 
 
 def parse_message(msg, author=Author.USER):
-    '''Convert from chainlit message format to internal format'''
+    '''Convert from chainlit incoming message format to internal format'''
     type = get_message_type(msg.content)
     text = remove_message_type(msg.content)
     if type == ClientMessageType.RANGE:
         from_date, to_date = from_range_str(text)
     else:
         from_date, to_date = (None, None)
+    if type == ClientMessageType.TIMES:
+        week = text[0:text.index(':')]
+        times_prompt = text[text.index(':')+1:]
+    else:
+        week, times_prompt = (None, None)
     return ClientMessage(
         type,
         author,
         text,
-        from_date or None,
-        to_date or None
+        from_date=from_date,
+        to_date=to_date,
+        week=week,
+        times_prompt=times_prompt
     )
 
 
 class ClientMessage:
-    '''Messages going to the client, internal format'''
-    def __init__(self, type, author, text=None, from_date=None, to_date=None, time_ranges=None):
+    '''Messages going to or from the client, internal format'''
+    def __init__(self, type, author, text=None, from_date=None, to_date=None, time_ranges=None, week=None, times_prompt=None):
         self.type = type
         self.author = author
         self.text = text
@@ -68,8 +76,12 @@ class ClientMessage:
         elif self.type == ClientMessageType.TIME_RANGES:
             self.time_ranges = time_ranges
             self.text = to_time_ranges_str(time_ranges)
+        elif self.type == ClientMessageType.TIMES:
+            self.week = week
+            self.times_prompt = times_prompt
+            self.text = week + ':' + times_prompt
         if self.text is None:
-            raise ValueError('text must not be None if type is not RANGE or TIME_RANGES')
+            raise ValueError('text must not be None')
             
             
     def format_message(self):

@@ -3,10 +3,16 @@ import chainlit as cl
 from .logger import logger
 from .hour_translation import WeeklyTimeGrid
 
+
+GENERAL_TIME_GRID_KEY = 'GENERAL'
+
+
 class SessionState:
     def __init__(self):
         self.chosen_dates = None # TODO: validation / type hint
-        self.time_grid = WeeklyTimeGrid()
+        self.time_grids = { 
+            GENERAL_TIME_GRID_KEY: WeeklyTimeGrid()
+        }
 
 
 # TODO: real persistence method

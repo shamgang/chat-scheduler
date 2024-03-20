@@ -14,10 +14,7 @@ from .system_prompts import (
 )
 from .model_tools import all_tools, from_iso_no_hyphens
 from .config import config
-
-
-class TranslationFailedError(RuntimeError):
-    pass
+from .errors import TranslationFailedError
 
 
 generic_date_parse_failure_message = "Sorry, I had trouble understanding that as a date range. Can you try using more specific language?"

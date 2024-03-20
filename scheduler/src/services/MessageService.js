@@ -19,8 +19,11 @@ const MessageTypes = {
   DATES: "DATES",
   TIMES: "TIMES",
   TIME_RANGES: "TIME_RANGES",
+  CONFIRM: "CONFIRM",
   ERROR: "ERROR"
 };
+
+const GENERAL_AVAIL_KEY = "GENERAL"
 
 function getMessageType(str) {
   return str.substring(0, str.indexOf(':'));
@@ -54,7 +57,7 @@ function parseTimeRanges(rangesStr) {
   let allTimeRanges = [];
   for (const line of dayLines) {
     let timeRanges = [];
-    if (line != '') {
+    if (line !== '') {
       const timeRangeStrs = line.split(',');
       for (const rangeStr of timeRangeStrs) {
         const [from, to] = rangeStr.split('-').map((timeStr) => {
@@ -84,6 +87,7 @@ function formatTimeRanges(timeRanges) {
     Frontend format is { type, author, text, ... }
       RANGE messages have fromDate, toDate
       TIME_RANGES messages have timeRanges
+      TIME messages have week, timesPrompt
 */
 function parseMessage(msg) {
   let parsedMessage = {
@@ -98,6 +102,10 @@ function parseMessage(msg) {
   } else if (parsedMessage.type === MessageTypes.TIME_RANGES) {
     const timeRanges = parseTimeRanges(parsedMessage.text);
     parsedMessage.timeRanges = timeRanges;
+  } else if (parsedMessage.type === MessageTypes.TIMES) {
+    const [week, timesPrompt] = parsedMessage.text.split(':');
+    parsedMessage.week = week;
+    parsedMessage.timesPrompt = timesPrompt;
   }
   return parsedMessage;
 }
@@ -118,9 +126,21 @@ function addMessageType(str, type) {
     See definitions above
 */
 function formatMessage(msg) {
-  let content = msg.text;
+  let content;
   if (msg.type === MessageTypes.RANGE) {
     content = formatRange(msg.fromDate, msg.toDate);
+  } else if (msg.type === MessageTypes.TIMES) {
+    let week;
+    if (msg.week) {
+      week = toIsoNoHyphens(msg.week);
+    } else {
+      week = GENERAL_AVAIL_KEY
+    }
+    content = week + ':' + msg.text;
+  } else if (msg.type === MessageTypes.CONFIRM) {
+    content = '';
+  } else {
+    content = msg.text;
   }
   content = addMessageType(content, msg.type);
   return {
@@ -184,4 +204,12 @@ function useMessageService() {
   return { messages, sendMessage };
 }
 
-export { useMessageService, MessageTypes, Authors, formatTimeRanges };
+export {
+  useMessageService,
+  MessageTypes,
+  Authors,
+  formatTimeRanges,
+  GENERAL_AVAIL_KEY,
+  toIsoNoHyphens,
+  fromIsoNoHyphens
+};

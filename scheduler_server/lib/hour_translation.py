@@ -1,10 +1,19 @@
 from enum import Enum
 from datetime import datetime, time
 import calendar
+from copy import deepcopy
 import numpy as np
 from .system_prompts import hours_system_prompt
 from .model_tools import _day_of_week_from_str
 from .chain_helpers import create_chain, invoke_chain
+from .errors import TranslationFailedError
+from .logger import logger
+
+
+generic_time_parse_failure_message = """
+Sorry, I had trouble understanding that as availability.
+Can you try using more specific language?
+"""
 
 
 class TimeRange:
@@ -39,7 +48,11 @@ MINUTES_PER_SLOT = 60 / SLOTS_PER_HOUR
 class CalendarAction:
     '''An OPEN or CLOSE action on a day and time range'''
     def __init__(self, statement_str):
-        self.type = HourStatementType[statement_str.split(':')[0]]
+        try:
+            self.type = HourStatementType[statement_str.split(':')[0]]
+        except KeyError:
+            logger.info(f'String {statement_str} could not be parsed as an availability statement.')
+            raise TranslationFailedError(generic_time_parse_failure_message)
         self.day = _day_of_week_from_str(statement_str.split(':')[1])
         tr_str = statement_str.split(':')[2]
         self.time_range = TimeRange(
@@ -59,7 +72,7 @@ class HourTranslator:
         self.model = model
     
     def translate_to_calendar_actions(self, input):
-        '''Given an description of availability, convert to a series of CalendarActions'''
+        '''Given a description of availability, convert to a series of CalendarActions'''
         hours_chain = create_chain(self.model, hours_system_prompt)
         statements = invoke_chain(hours_chain, input)
         statement_lines = statements.splitlines()
@@ -71,6 +84,12 @@ class WeeklyTimeGrid:
     def __init__(self):
         # Half-hour granularity
         self.grid = np.zeros((SLOTS_PER_DAY, 7))
+
+    @classmethod
+    def clone(cls, other):
+        new_inst = cls()
+        new_inst.grid = deepcopy(other.grid)
+        return new_inst
 
     def _get_num_slots(self, time):
         last_hour_slots = round(time.minute / MINUTES_PER_SLOT)

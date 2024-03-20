@@ -10,11 +10,22 @@ I just updated the calendar.
 If I made a mistake, please try to use more specific language and I can try again!
 You can also edit manually.
 When the range is good, click the OK button.`;
+export const DATE_ENTERED_MESSAGE_SHORT = 'Updated! OK to confirm.';
 export const USER_CONFIRMED_RANGE_MESSAGE = 'OK';
 export const TIMES_MESSAGE = `
-Got it! Now tell me about your availability.
+Got it! Now tell me about your availability in an average week.
 `;
-export const TIME_RANGES_MESSAGE = `
-I just updated the calendar with your availability.
-If I made a mistake, please try to use more specific language.
+export const GENERAL_TIME_RANGES_MESSAGE = `
+Updated! If you're done with general availability, click OK.
 `;
+export const GENERAL_TIME_RANGES_MESSAGE_SHORT = 'Updated! OK to confirm.';
+export const SPECIFIC_AVAIL_MESSAGE = `
+OK! Let's now dial in your specific availability.
+Describe your availability and I'll update only the week
+we're looking at. You can also click time slots to remove availability
+or click and drag to create availability.
+`;
+export const SPECIFIC_TIME_RANGES_MESSAGE = `
+Updated the calendar for just the selected week.
+`;
+export const SPECIFIC_TIME_RANGES_MESSAGE_SHORT = 'Updated!';
