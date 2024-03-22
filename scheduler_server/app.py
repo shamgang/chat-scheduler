@@ -1,6 +1,7 @@
 import chainlit as cl
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
+from datetime import timedelta
 from lib.date_translation import DateTranslator
 from lib.hour_translation import HourTranslator, WeeklyTimeGrid
 from lib.errors import TranslationFailedError
@@ -12,6 +13,7 @@ from lib.client_message import (
     ClientMessageType,
     Author
 )
+from lib.model_tools import to_iso_no_hyphens
 
 # Expect the following keys to exist in .env:
 # LANGCHAIN_TRACING_V2
@@ -66,12 +68,7 @@ async def on_message(message: cl.Message):
     elif msg.type == ClientMessageType.TIMES:
         # User is defining time slots
         actions = hour_translator.translate_to_calendar_actions(msg.times_prompt)
-        if msg.week not in session_state.time_grids:
-            # Creating specific availability, copy general availability and edit
-            session_state.time_grids[msg.week] = WeeklyTimeGrid.clone(
-                session_state.time_grids[GENERAL_TIME_GRID_KEY]
-            )
-        grid = session_state.time_grids[msg.week]
+        grid = session_state.get_time_grid(msg.week)
         grid.process_calendar_actions(actions)
         time_ranges = grid.get_time_ranges()
         response = ClientMessage(
@@ -89,3 +86,23 @@ async def on_message(message: cl.Message):
         # and relies on chainlit for message storage
         # Instead, can sync messages with a queue on the front end
         pass
+    elif msg.type == ClientMessageType.OPEN or msg.type == ClientMessageType.CLOSE:
+        # Find the right grid or create it
+        # TODO: can our date grid be more general-
+        # an array of dates instead of an array of weeks
+        # with days of the week?
+        slot_date = msg.from_date.date()
+        monday = to_iso_no_hyphens(slot_date - timedelta(slot_date.weekday()))
+        print(monday)
+        time_grid = session_state.get_time_grid(monday)
+        print(time_grid.grid)
+        time_grid.process_message(msg)
+        print(time_grid.grid)
+        response = ClientMessage(
+            ClientMessageType.TIME_RANGES,
+            Author.SCHEDULER,
+            time_ranges=time_grid.get_time_ranges()
+        )
+        cl_message = response.format_message()
+        logger.debug(f'Model response: {cl_message.content}')
+        await cl_message.send()

@@ -5,6 +5,11 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { GENERAL_AVAIL_KEY, fromIsoNoHyphens, toIsoNoHyphens } from '../services/MessageService';
 import { getDatesBetweenDates, getDayOfWeek, lastMonday, nextSunday } from '../helpers/Dates';
 
+moment.locale('en-us', {
+  week: {
+    dow: 1 // Monday as first day of week
+  }
+});
 const localizer = momentLocalizer(moment)
 
 /* Convert a time range from: {hour, minute}, to: {hour, minute} on a date to an event */
@@ -72,7 +77,14 @@ function eventsFromTimeRanges(timeRanges, fromDate, toDate) {
   return events;
 }
 
-function Scheduler({ dateRange, timeRanges, onConfirm, setCurrentWeek }) {
+function Scheduler({
+  dateRange,
+  timeRanges, 
+  onConfirm,
+  setCurrentWeek,
+  onSelectEvent,
+  onSelectSlot
+}) {
   const [focusedDate, setFocusedDate] = useState(dateRange[0]);
 
   const { style, defaultView, views } = useMemo(() => ({
@@ -89,14 +101,6 @@ function Scheduler({ dateRange, timeRanges, onConfirm, setCurrentWeek }) {
   const defaultDate = useMemo(() => {
     return dateRange[0];
   }, [dateRange]);
-
-  const onSelectSlot = useCallback(({ start, end }) => {
-    console.log(start, end);
-  }, []);
-
-  const onSelectEvent = useCallback((event) => {
-    console.log(event);
-  }, []);
 
   const onNavigate = useCallback((date) => {
     const monday = lastMonday(date);
@@ -123,19 +127,23 @@ function Scheduler({ dateRange, timeRanges, onConfirm, setCurrentWeek }) {
     return <div style={style}>{children}</div>;
   };
 
+  const onSelectSlotHelper = useCallback(({action, start, end}) => {
+    if (action === 'select') {
+      onSelectSlot({start, end});
+    }
+  }, [onSelectSlot]);
+
   return (
     <div>
       <Calendar
         localizer={localizer}
         events={events}
-        startAccessor="start"
-        endAccessor="end"
         style={style}
         defaultView={defaultView}
         views={views}
         defaultDate={defaultDate}
-        selectable
-        onSelectSlot={onSelectSlot}
+        selectable={'ignoreEvents'}
+        onSelectSlot={onSelectSlotHelper}
         onSelectEvent={onSelectEvent}
         date={focusedDate}
         onNavigate={onNavigate}

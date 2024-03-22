@@ -8,6 +8,7 @@ from .model_tools import _day_of_week_from_str
 from .chain_helpers import create_chain, invoke_chain
 from .errors import TranslationFailedError
 from .logger import logger
+from .client_message import ClientMessageType
 
 
 generic_time_parse_failure_message = """
@@ -111,6 +112,16 @@ class WeeklyTimeGrid:
     def process_calendar_actions(self, actions):
         for action in actions:
             self.process_calendar_action(action)
+
+    def process_message(self, msg):
+        '''Process an OPEN or CLOSE message directly'''
+        if msg.type not in [ClientMessageType.OPEN, ClientMessageType.CLOSE]:
+            raise ValueError('Message type must be OPEN or CLOSE')
+        self._set(
+            msg.from_date.weekday(),
+            TimeRange(msg.from_date, msg.to_date),
+            1 if msg.type == ClientMessageType.OPEN else 0
+        )
 
     def _get_time_from_slot(self, slot_num):
         return time(

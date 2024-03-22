@@ -14,6 +14,14 @@ class SessionState:
             GENERAL_TIME_GRID_KEY: WeeklyTimeGrid()
         }
 
+    def get_time_grid(self, week):
+        if week not in self.time_grids:
+            # Creating specific availability, copy general availability and edit
+            self.time_grids[week] = WeeklyTimeGrid.clone(
+                self.time_grids[GENERAL_TIME_GRID_KEY]
+            )
+        return self.time_grids[week]
+
 
 # TODO: real persistence method
 sessions = {}

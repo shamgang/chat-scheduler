@@ -1,6 +1,7 @@
 from enum import Enum
 import chainlit as cl
-from lib.model_tools import to_range_str, from_range_str
+from datetime import datetime, time
+from lib.model_tools import to_range_str, from_range_str, from_iso_no_hyphens
 
 
 class ClientMessageType(str, Enum):
@@ -9,6 +10,8 @@ class ClientMessageType(str, Enum):
     TIMES = 'TIMES'
     TIME_RANGES = 'TIME_RANGES' # TODO: refactor all of these to be clearer
     CONFIRM = 'CONFIRM'
+    OPEN = 'OPEN'
+    CLOSE = 'CLOSE'
     ERROR = 'ERROR'
 
 
@@ -43,15 +46,21 @@ def parse_message(msg, author=Author.USER):
     '''Convert from chainlit incoming message format to internal format'''
     type = get_message_type(msg.content)
     text = remove_message_type(msg.content)
+    from_date, to_date, week, times_prompt = (None, None, None, None)
     if type == ClientMessageType.RANGE:
         from_date, to_date = from_range_str(text)
-    else:
-        from_date, to_date = (None, None)
     if type == ClientMessageType.TIMES:
-        week = text[0:text.index(':')]
+        week = text[:text.index(':')]
         times_prompt = text[text.index(':')+1:]
-    else:
-        week, times_prompt = (None, None)
+    if type == ClientMessageType.OPEN or type == ClientMessageType.CLOSE:
+        date_str = text[:text.index(':')]
+        time_range = text[text.index(':')+1:]
+        from_time = time_range[:time_range.index('-')]
+        to_time = time_range[time_range.index('-')+1:]
+        from_date = from_iso_no_hyphens(date_str)
+        from_date = datetime.combine(from_date , time(int(from_time[:2]), int(from_time[2:])))
+        to_date = from_iso_no_hyphens(date_str)
+        to_date = datetime.combine(to_date , time(int(to_time[:2]), int(to_time[2:])))
     return ClientMessage(
         type,
         author,
@@ -80,6 +89,9 @@ class ClientMessage:
             self.week = week
             self.times_prompt = times_prompt
             self.text = week + ':' + times_prompt
+        elif self.type == ClientMessageType.OPEN or self.type == ClientMessageType.CLOSE:
+            self.from_date = from_date
+            self.to_date = to_date
         if self.text is None:
             raise ValueError('text must not be None')
             

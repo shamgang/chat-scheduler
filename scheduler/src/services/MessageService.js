@@ -3,6 +3,7 @@ import { useEffect, useMemo, useCallback } from 'react';
 import { ChainlitAPI, sessionState, useChatSession, useChatMessages, useChatInteract } from '@chainlit/react-client';
 import { useRecoilValue } from 'recoil';
 import moment from 'moment';
+import { formatDay } from "../helpers/Dates";
 
 const CHAINLIT_SERVER_URL = 'http://localhost:8000';
 
@@ -20,6 +21,8 @@ const MessageTypes = {
   TIMES: "TIMES",
   TIME_RANGES: "TIME_RANGES",
   CONFIRM: "CONFIRM",
+  CLOSE: "CLOSE",
+  OPEN: "OPEN",
   ERROR: "ERROR"
 };
 
@@ -48,6 +51,24 @@ function parseRange(rangeStr) {
   return { fromDate, toDate };
 }
 
+function parseTimeString(timeStr) {
+  const hour = parseInt(timeStr.substring(0, 2), 10);
+  const minute = parseInt(timeStr.substring(2, 4), 10);
+  return {hour, minute};
+}
+
+function pad2(int) {
+  if (int < 10 && int > -10) {
+    return '0' + int.toString();
+  } else {
+    return int.toString();
+  }
+}
+
+function formatTimeRange({from, to}) {
+  return pad2(from.hour) + pad2(from.minute) + '-' + pad2(to.hour) + pad2(to.minute);
+}
+
 /* Parse a string containing comma-separated time ranges on a line per day of the week
     Result will be 2D array with each range an object like:
     { from: {hour, minute}, to: {hour, minute} }.
@@ -60,12 +81,7 @@ function parseTimeRanges(rangesStr) {
     if (line !== '') {
       const timeRangeStrs = line.split(',');
       for (const rangeStr of timeRangeStrs) {
-        const [from, to] = rangeStr.split('-').map((timeStr) => {
-          return {
-            hour: parseInt(timeStr.substring(0, 2), 10),
-            minute: parseInt(timeStr.substring(2, 4), 10)
-          }
-        });
+        const [from, to] = rangeStr.split('-').map(parseTimeString);
         timeRanges.push({from, to});
       }
     }
@@ -88,6 +104,7 @@ function formatTimeRanges(timeRanges) {
       RANGE messages have fromDate, toDate
       TIME_RANGES messages have timeRanges
       TIME messages have week, timesPrompt
+      OPEN and CLOSE messages have from, to
 */
 function parseMessage(msg) {
   let parsedMessage = {
@@ -139,6 +156,12 @@ function formatMessage(msg) {
     content = week + ':' + msg.text;
   } else if (msg.type === MessageTypes.CONFIRM) {
     content = '';
+  } else if (msg.type === MessageTypes.OPEN || msg.type === MessageTypes.CLOSE) {
+    const timeRange = {
+      from: { hour: msg.from.getHours(), minute: msg.from.getMinutes() },
+      to: { hour: msg.to.getHours(), minute: msg.to.getMinutes() },
+    }
+    content = toIsoNoHyphens(msg.from) + ':' + formatTimeRange(timeRange);
   } else {
     content = msg.text;
   }

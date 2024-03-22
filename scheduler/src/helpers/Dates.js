@@ -27,3 +27,7 @@ export function nextSunday(date = new Date()) {
   let monday = lastMonday(date);
   return monday.setDate(monday.getDate() + 6);
 }
+
+export function formatDay(date) {
+  return date.toLocaleDateString('en-US', { weekday: 'long' });
+}

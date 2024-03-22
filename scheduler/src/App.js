@@ -105,6 +105,24 @@ function App() {
     }
   }, [flowState, setFlowState, sendMessage]);
 
+  const onSelectSlot = useCallback(({start, end}) => {
+    sendMessage({
+      author: Authors.USER,
+      type: MessageTypes.OPEN,
+      from: start,
+      to: end
+    });
+  }, [sendMessage]);
+
+  const onSelectEvent = useCallback(({ start, end }) => {
+    sendMessage({
+      author: Authors.USER,
+      type: MessageTypes.CLOSE,
+      from: start,
+      to: end
+    });
+  }, [sendMessage]);
+
   return (
     <div className='grid-container'>
       <div className='chat'>
@@ -127,6 +145,8 @@ function App() {
               timeRanges={timeRanges}
               onConfirm={onConfirm}
               setCurrentWeek={setCurrentWeek}
+              onSelectEvent={onSelectEvent}
+              onSelectSlot={onSelectSlot}
             />
           }
         </div>

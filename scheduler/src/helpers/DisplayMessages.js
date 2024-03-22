@@ -78,7 +78,13 @@ function generateDisplayMessages(messages) {
       displayMessage.text = displayMessage.text.substring(displayMessage.text.indexOf(':') + 1);
     }
     // Push the current message, except in certain cases where we hide it.
-    if (displayMessage.type !== MessageTypes.CONFIRM) {
+    if (
+      ![
+        MessageTypes.CONFIRM,
+        MessageTypes.CLOSE,
+        MessageTypes.OPEN
+      ].includes(displayMessage.type)
+    ) {
       displayMessages.push(displayMessage);
     }
     // If a user RANGE message has already been sent, the chat
