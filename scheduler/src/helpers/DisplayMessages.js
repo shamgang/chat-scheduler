@@ -16,11 +16,11 @@ import { StateMachine } from './StateMachine';
 
 /* Yet another message format - display messages conform to
     Chat library interface, from internal frontend format */
-function toDisplayFormat(msg) {
+function displayMessage(text, author) {
     return {
-      text: msg.text,
+      text: text,
       user: {
-        id: msg.author.toLowerCase() // Minchat assumes lowercase ID in their comparison logic
+        id: author.toLowerCase() // Minchat assumes lowercase ID in their comparison logic
       }
     }
 }
@@ -28,88 +28,68 @@ function toDisplayFormat(msg) {
 // Convert the client-server message history into display messages
 // Note - neither of these are the prompt message history.
 function generateDisplayMessages(messages) {
+  // temporarily store in [text, author] format for brevity
   let displayMessages = [];
 
   // Welcome message, display only
-  displayMessages.push({
-    text: WELCOME_MESSAGE,
-    type: MessageTypes.TEXT,
-    author: Authors.SCHEDULER
-  });
+  displayMessages.push([WELCOME_MESSAGE, Authors.SCHEDULER]);
 
   let state = StateMachine.SELECT_DATES; // track message-to-message state
   let explainedDates = false;
   let explainedGeneralAvail = false;
   let explainedSpecificAvail = false;
   for (const msg of messages) {
-    let displayMessage = {...msg};
-    // Replace prefixed messages with a readable message
-    if (displayMessage.type === MessageTypes.RANGE) {
-      if (displayMessage.author === Authors.SCHEDULER) {
+    let text;
+    if ([MessageTypes.DATES, MessageTypes.TIMES].includes(msg.type)) {
+      text = msg.prompt;
+    } else if (msg.type === MessageTypes.RANGE) {
+      if (msg.author === Authors.SCHEDULER) {
         if (!explainedDates) {
-          displayMessage.text = DATE_ENTERED_MESSAGE;
+          text = DATE_ENTERED_MESSAGE;
           explainedDates = true;
         } else {
-          displayMessage.text = DATE_ENTERED_MESSAGE_SHORT;
+          text = DATE_ENTERED_MESSAGE_SHORT;
         }
-      } else if (displayMessage.author === Authors.USER) {
-        displayMessage.text = USER_CONFIRMED_RANGE_MESSAGE;
+      } else if (msg.author === Authors.USER) {
+        text = USER_CONFIRMED_RANGE_MESSAGE;
         state = StateMachine.GENERAL_AVAIL;
       }
-    }
-    if (displayMessage.type === MessageTypes.TIME_RANGES) {
+    } else if (msg.type === MessageTypes.TIME_RANGES) {
       if (state === StateMachine.GENERAL_AVAIL) {
         if (!explainedGeneralAvail) {
-          displayMessage.text = GENERAL_TIME_RANGES_MESSAGE;
+          text = GENERAL_TIME_RANGES_MESSAGE;
           explainedGeneralAvail = true;
         } else {
-          displayMessage.text = GENERAL_TIME_RANGES_MESSAGE_SHORT;
+          text = GENERAL_TIME_RANGES_MESSAGE_SHORT;
         }
       } else if (state === StateMachine.SPECIFIC_AVAIL) {
         if (!explainedSpecificAvail) {
-          displayMessage.text = SPECIFIC_TIME_RANGES_MESSAGE;
+          text = SPECIFIC_TIME_RANGES_MESSAGE;
           explainedSpecificAvail = true;
         } else {
-          displayMessage.text = SPECIFIC_TIME_RANGES_MESSAGE_SHORT;
+          text = SPECIFIC_TIME_RANGES_MESSAGE_SHORT;
         }
       }
     }
-    if (displayMessage.type === MessageTypes.TIMES) {
-      displayMessage.text = displayMessage.text.substring(displayMessage.text.indexOf(':') + 1);
-    }
     // Push the current message, except in certain cases where we hide it.
-    if (
-      ![
-        MessageTypes.CONFIRM,
-        MessageTypes.CLOSE,
-        MessageTypes.OPEN
-      ].includes(displayMessage.type)
-    ) {
-      displayMessages.push(displayMessage);
+    if (text) {
+      displayMessages.push([text, msg.author]);
     }
     // If a user RANGE message has already been sent, the chat
     // will prompt for times now.
     if (
-      displayMessage.author === Authors.USER &&
-      displayMessage.type === MessageTypes.RANGE
+      msg.author === Authors.USER &&
+      msg.type === MessageTypes.RANGE
     ) {
-      displayMessages.push({
-        text: TIMES_MESSAGE,
-        type: MessageTypes.TEXT,
-        author: Authors.SCHEDULER
-      });
+      displayMessages.push([TIMES_MESSAGE, Authors.SCHEDULER]);
     }
     // If a user CONFIRM message has already been sent,
     // the chat will prompt for specific avail now
     if (
-      displayMessage.author === Authors.USER &&
-      displayMessage.type === MessageTypes.CONFIRM
+      msg.author === Authors.USER &&
+      msg.type === MessageTypes.CONFIRM
     ) {
-      displayMessages.push({
-        text: SPECIFIC_AVAIL_MESSAGE,
-        type: MessageTypes.TEXT,
-        author: Authors.SCHEDULER
-      });
+      displayMessages.push([SPECIFIC_AVAIL_MESSAGE, Authors.SCHEDULER]);
       state = StateMachine.SPECIFIC_AVAIL;
     }
   }
@@ -117,17 +97,13 @@ function generateDisplayMessages(messages) {
   // If the last message sent was from the user, add a temporary loading message
   if (
     displayMessages.length > 0 &&
-    displayMessages.slice(-1)[0].author === Authors.USER
+    displayMessages.slice(-1)[0][1] === Authors.USER
   ) {
-    displayMessages.push({
-      text: LOADING_MESSAGE,
-      type: MessageTypes.TEXT,
-      author: Authors.SCHEDULER
-    });
+    displayMessages.push([LOADING_MESSAGE, Authors.SCHEDULER]);
   }
 
   // Convert all messages to display format
-  return displayMessages.map(toDisplayFormat);
+  return displayMessages.map(arr => displayMessage(arr[0], arr[1]));
 }
 
 export { generateDisplayMessages }

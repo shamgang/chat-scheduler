@@ -1,0 +1,187 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "week": {
+      "anyOf": [
+        {
+          "type": "string",
+          "$comment": "Must be a Monday (not validated). YYYYMMDDHHmm format."
+        },
+        {
+          "const": "GENERAL"
+        }
+      ]
+    },
+    "sharedProperties": {
+      "$comment": "Shared properties across all messages",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "author"
+      ],
+      "additionalProperties": true
+    },
+    "datesMessage": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "DATES"
+        },
+        "prompt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "prompt"
+      ]
+    },
+    "rangeMessage": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "RANGE"
+        },
+        "fromDate": {
+          "type": "string",
+          "$comment": "YYYYMMDD format"
+        },
+        "toDate": {
+          "type": "string",
+          "$comment": "YYYYMMDD format"
+        }
+      },
+      "required": [
+        "type",
+        "fromDate",
+        "toDate"
+      ]
+    },
+    "timesMessage": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "TIMES"
+        },
+        "week": { "$ref": "#/definitions/week" },
+        "prompt": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "week",
+        "prompt"
+      ]
+    },
+    "timeRangesMessage": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "TIME_RANGES"
+        },
+        "week": { "$ref": "#/definitions/week" },
+        "timeRanges": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "$comment": "HHmm format"
+                },
+                "to": {
+                  "type": "string",
+                  "$comment": "HHmm format"
+                }
+              },
+              "required": [
+                "from",
+                "to"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "type",
+        "week",
+        "timeRanges"
+      ]
+    },
+    "confirmMessage": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "CONFIRM"
+        }
+      },
+      "required": [
+        "type"
+      ]
+    },
+    "openOrCloseMessage": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": ["OPEN", "CLOSE"]
+        },
+        "from": {
+          "type": "string",
+          "$comment": "YYYYMMDDHHmm format"
+        },
+        "to": {
+          "type": "string",
+          "$comment": "YYYYMMDDHHmm format"
+        }
+      },
+      "required": [
+        "type",
+        "from",
+        "to"
+      ]
+    },
+    "errorMessage": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "ERROR"
+        },
+        "errorMessage": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "errorMessage"
+      ]
+    }
+  },
+  "type": "object",
+  "allOf": [
+    { "$ref": "#/definitions/sharedProperties" },
+    {
+      "oneOf": [
+        { "$ref": "#/definitions/datesMessage" },
+        { "$ref": "#/definitions/rangeMessage" },
+        { "$ref": "#/definitions/timesMessage" },
+        { "$ref": "#/definitions/timeRangesMessage" },
+        { "$ref": "#/definitions/confirmMessage" },
+        { "$ref": "#/definitions/openOrCloseMessage" },
+        { "$ref": "#/definitions/errorMessage" }
+      ]
+    }
+  ]
+}

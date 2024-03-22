@@ -110,7 +110,7 @@ function Scheduler({
       setFocusedDate(monday);
       setCurrentWeek(monday);  
     }
-  }, [dateRange]);
+  }, [dateRange, setFocusedDate, setCurrentWeek]);
 
   const dateCellWrapper = ({value, children, resource}) => {
     const isOut = (

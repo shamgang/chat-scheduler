@@ -3,11 +3,16 @@ import { useEffect, useMemo, useCallback } from 'react';
 import { ChainlitAPI, sessionState, useChatSession, useChatMessages, useChatInteract } from '@chainlit/react-client';
 import { useRecoilValue } from 'recoil';
 import moment from 'moment';
-import { formatDay } from "../helpers/Dates";
+import schema from '../assets/message_schema.json';
+import Ajv from 'ajv';
 
 const CHAINLIT_SERVER_URL = 'http://localhost:8000';
 
 const apiClient = new ChainlitAPI(CHAINLIT_SERVER_URL);
+
+const ajv = new Ajv({verbose: true});
+
+const validate = ajv.compile(schema);
 
 const Authors = {
   USER: "USER",
@@ -15,7 +20,6 @@ const Authors = {
 }
 
 const MessageTypes = {
-  TEXT: "TEXT",
   RANGE: "RANGE",
   DATES: "DATES",
   TIMES: "TIMES",
@@ -28,33 +32,32 @@ const MessageTypes = {
 
 const GENERAL_AVAIL_KEY = "GENERAL"
 
-function getMessageType(str) {
-  return str.substring(0, str.indexOf(':'));
-}
-
-function removeMessageType(str) {
-  return str.substring(str.indexOf(':') + 1);
-}
-
 function fromIsoNoHyphens(dateStr) {
   return new Date(
-    parseInt(dateStr.substring(0, 4)),
-    parseInt(dateStr.substring(4, 6)) - 1,
-    parseInt(dateStr.substring(6, 8))
+    parseInt(dateStr.substring(0, 4), 10),
+    parseInt(dateStr.substring(4, 6), 10) - 1,
+    parseInt(dateStr.substring(6, 8), 10)
   );
 }
 
-/* Parse a string in the format YYYYMMDD-YYYYMMDD to two dates */
-function parseRange(rangeStr) {
-  const fromDate = fromIsoNoHyphens(rangeStr.split('-')[0]);
-  const toDate = fromIsoNoHyphens(rangeStr.split('-')[1]);
-  return { fromDate, toDate };
+function dateTimeFromIsoNoHyphens(dateTimeStr) {
+  return new Date(
+    parseInt(dateTimeStr.substring(0, 4), 10),
+    parseInt(dateTimeStr.substring(4, 6), 10) - 1,
+    parseInt(dateTimeStr.substring(6, 8), 10),
+    parseInt(dateTimeStr.substring(8, 10), 10),
+    parseInt(dateTimeStr.substring(10, 12), 10)
+  );
 }
 
 function parseTimeString(timeStr) {
   const hour = parseInt(timeStr.substring(0, 2), 10);
   const minute = parseInt(timeStr.substring(2, 4), 10);
   return {hour, minute};
+}
+
+function formatTimeString(time) {
+  return pad2(time.getHours()) + pad2(time.getMinutes())
 }
 
 function pad2(int) {
@@ -65,31 +68,6 @@ function pad2(int) {
   }
 }
 
-function formatTimeRange({from, to}) {
-  return pad2(from.hour) + pad2(from.minute) + '-' + pad2(to.hour) + pad2(to.minute);
-}
-
-/* Parse a string containing comma-separated time ranges on a line per day of the week
-    Result will be 2D array with each range an object like:
-    { from: {hour, minute}, to: {hour, minute} }.
-*/
-function parseTimeRanges(rangesStr) {
-  const dayLines = rangesStr.split('\n');
-  let allTimeRanges = [];
-  for (const line of dayLines) {
-    let timeRanges = [];
-    if (line !== '') {
-      const timeRangeStrs = line.split(',');
-      for (const rangeStr of timeRangeStrs) {
-        const [from, to] = rangeStr.split('-').map(parseTimeString);
-        timeRanges.push({from, to});
-      }
-    }
-    allTimeRanges.push(timeRanges);
-  }
-  return allTimeRanges;
-}
-
 function formatTimeRanges(timeRanges) {
   return timeRanges.map((day) => {
     return day.map((range) => {
@@ -98,79 +76,71 @@ function formatTimeRanges(timeRanges) {
   }).join('\n');
 }
 
-/* Change a message from backend to frontend format
-    Backend format is chainlit message format.
-    Frontend format is { type, author, text, ... }
-      RANGE messages have fromDate, toDate
-      TIME_RANGES messages have timeRanges
-      TIME messages have week, timesPrompt
-      OPEN and CLOSE messages have from, to
-*/
-function parseMessage(msg) {
-  let parsedMessage = {
-    author: msg.name,
-    type: getMessageType(msg.output),
-    text: removeMessageType(msg.output)
-  };
-  if (parsedMessage.type === MessageTypes.RANGE) {
-    const { fromDate, toDate } = parseRange(parsedMessage.text);
-    parsedMessage.fromDate = fromDate;
-    parsedMessage.toDate = toDate;
-  } else if (parsedMessage.type === MessageTypes.TIME_RANGES) {
-    const timeRanges = parseTimeRanges(parsedMessage.text);
-    parsedMessage.timeRanges = timeRanges;
-  } else if (parsedMessage.type === MessageTypes.TIMES) {
-    const [week, timesPrompt] = parsedMessage.text.split(':');
-    parsedMessage.week = week;
-    parsedMessage.timesPrompt = timesPrompt;
-  }
-  return parsedMessage;
-}
-
 function toIsoNoHyphens(date) {
   return moment(date).format('YYYYMMDD');
 }
 
-function formatRange(fromDate, toDate) {
-  return `${toIsoNoHyphens(fromDate)}-${toIsoNoHyphens(toDate)}`
+function dateTimeToIsoNoHyphens(dt) {
+  return moment(dt).format('YYYYMMDDHHmm');
 }
 
-function addMessageType(str, type) {
-  return `${type}:${str}`;
-}
-
-/* Change message from frontend to backend format
-    See definitions above
-*/
-function formatMessage(msg) {
-  let content;
-  if (msg.type === MessageTypes.RANGE) {
-    content = formatRange(msg.fromDate, msg.toDate);
-  } else if (msg.type === MessageTypes.TIMES) {
-    let week;
-    if (msg.week) {
-      week = toIsoNoHyphens(msg.week);
-    } else {
-      week = GENERAL_AVAIL_KEY
-    }
-    content = week + ':' + msg.text;
-  } else if (msg.type === MessageTypes.CONFIRM) {
-    content = '';
-  } else if (msg.type === MessageTypes.OPEN || msg.type === MessageTypes.CLOSE) {
-    const timeRange = {
-      from: { hour: msg.from.getHours(), minute: msg.from.getMinutes() },
-      to: { hour: msg.to.getHours(), minute: msg.to.getMinutes() },
-    }
-    content = toIsoNoHyphens(msg.from) + ':' + formatTimeRange(timeRange);
-  } else {
-    content = msg.text;
+/* Change a message from json format to internal format */
+function parseMessage(msg_str) {
+  let msg = JSON.parse(msg_str);
+  if (!validate(msg)) {
+    console.log(msg);
+    console.log(validate.errors);
+    throw new Error('Invalid message format');
   }
-  content = addMessageType(content, msg.type);
+  if (msg.type === MessageTypes.RANGE) {
+    msg.fromDate = fromIsoNoHyphens(msg.fromDate);
+    msg.toDate = fromIsoNoHyphens(msg.toDate);
+  } else if (msg.type === MessageTypes.TIMES) {
+    msg.week = fromIsoNoHyphens(msg.week);
+  } else if (msg.type === MessageTypes.TIME_RANGES) {
+    for (const day of msg.timeRanges) {
+      for (let timeRange of day) {
+        timeRange.from = parseTimeString(timeRange.from);
+        timeRange.to = parseTimeString(timeRange.to);
+      }
+    }
+  } else if ([MessageTypes.OPEN, MessageTypes.CLOSE].includes(msg.type)) {
+    msg.from = dateTimeFromIsoNoHyphens(msg.from);
+    msg.to = dateTimeFromIsoNoHyphens(msg.to);
+  }
+  return msg;
+}
+
+/* Convert message from internal to json format */
+function formatMessage(msg) {
+  if (msg.type === MessageTypes.RANGE) {
+    msg.fromDate = toIsoNoHyphens(msg.fromDate);
+    msg.toDate = toIsoNoHyphens(msg.toDate);
+  } else if (msg.type === MessageTypes.TIMES) {
+    if (msg.week !== GENERAL_AVAIL_KEY) {
+      msg.week = toIsoNoHyphens(msg.week);
+    }
+  } else if (msg.type === MessageTypes.TIME_RANGES) {
+    for (const day of msg.timeRanges) {
+      for (let timeRange of day) {
+        timeRange.from = formatTimeString(timeRange.from);
+        timeRange.to = formatTimeString(timeRange.to);
+      }
+    }
+  } else if ([MessageTypes.OPEN, MessageTypes.CLOSE].includes(msg.type)) {
+    msg.from = dateTimeToIsoNoHyphens(msg.from);
+    msg.to = dateTimeToIsoNoHyphens(msg.to);
+  }
+  if (!validate(msg)) {
+    console.log(msg);
+    console.log(validate.errors);
+    throw new Error('Invalid message format');
+  }
   return {
     id: uuidv4(),
     name: msg.author,
     type: msg.author === Authors.USER ? 'user_message' : 'assistant_message', // this is a TS enum in chainlit
-    output: content,
+    output: JSON.stringify(msg),
     createdAt: new Date().toISOString(),
   };
 }
@@ -216,7 +186,7 @@ function useMessageService() {
   }, []);
 
   const messages = useMemo(
-    () => chainlitMessages.map((msg) => parseMessage(msg)),
+    () => chainlitMessages.map((msg) => parseMessage(msg.output)),
     [chainlitMessages]
   );
 

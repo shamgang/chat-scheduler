@@ -2,29 +2,28 @@ from uuid import uuid4
 import chainlit as cl
 from .logger import logger
 from .hour_translation import WeeklyTimeGrid
-
-
-GENERAL_TIME_GRID_KEY = 'GENERAL'
+from .datetime_helpers import GENERAL_WEEK_KEY
 
 
 class SessionState:
     def __init__(self):
         self.chosen_dates = None # TODO: validation / type hint
         self.time_grids = { 
-            GENERAL_TIME_GRID_KEY: WeeklyTimeGrid()
+            GENERAL_WEEK_KEY: WeeklyTimeGrid()
         }
 
     def get_time_grid(self, week):
         if week not in self.time_grids:
             # Creating specific availability, copy general availability and edit
             self.time_grids[week] = WeeklyTimeGrid.clone(
-                self.time_grids[GENERAL_TIME_GRID_KEY]
+                self.time_grids[GENERAL_WEEK_KEY]
             )
         return self.time_grids[week]
 
 
 # TODO: real persistence method
 sessions = {}
+
 
 CL_SESSION_ID_KEY = 'session_id'
 

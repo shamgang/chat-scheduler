@@ -61,6 +61,7 @@ function App() {
     setNumMessagesProcessed,
     currentWeek,
     setRange,
+    timeRanges,
     setTimeRanges
   ]);
 
@@ -68,12 +69,12 @@ function App() {
     // Sending a chat message
     const type = flowState === StateMachine.SELECT_DATES ? MessageTypes.DATES : MessageTypes.TIMES;
     let message = {
-      author: Authors.USER,
       type: type,
-      text: input
+      author: Authors.USER,
+      prompt: input
     };
     if (type === MessageTypes.TIMES) {
-      message.week = flowState === StateMachine.GENERAL_AVAIL ? null : currentWeek;
+      message.week = flowState === StateMachine.GENERAL_AVAIL ? GENERAL_AVAIL_KEY : currentWeek;
     }
     sendMessage(message);
   }, [flowState, currentWeek, sendMessage]);
@@ -86,8 +87,8 @@ function App() {
   const onSubmit = useCallback(() => {
     // Confirming date range
     sendMessage({
-      author: Authors.USER,
       type: MessageTypes.RANGE,
+      author: Authors.USER,
       fromDate: range[0],
       toDate: range[1]
     });
@@ -96,8 +97,8 @@ function App() {
 
   const onConfirm = useCallback(() => {
     sendMessage({
-      author: Authors.USER,
-      type: MessageTypes.CONFIRM
+      type: MessageTypes.CONFIRM,
+      author: Authors.USER
     });
     if (flowState === StateMachine.GENERAL_AVAIL) {
       setCurrentWeek(lastMonday());
@@ -107,8 +108,8 @@ function App() {
 
   const onSelectSlot = useCallback(({start, end}) => {
     sendMessage({
-      author: Authors.USER,
       type: MessageTypes.OPEN,
+      author: Authors.USER,
       from: start,
       to: end
     });
@@ -116,8 +117,8 @@ function App() {
 
   const onSelectEvent = useCallback(({ start, end }) => {
     sendMessage({
-      author: Authors.USER,
       type: MessageTypes.CLOSE,
+      author: Authors.USER,
       from: start,
       to: end
     });

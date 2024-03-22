@@ -9,6 +9,7 @@ from .chain_helpers import create_chain, invoke_chain
 from .errors import TranslationFailedError
 from .logger import logger
 from .client_message import ClientMessageType
+from .datetime_helpers import TimeRange, from_time_string
 
 
 generic_time_parse_failure_message = """
@@ -17,28 +18,9 @@ Can you try using more specific language?
 """
 
 
-class TimeRange:
-    def __init__(self, start_time, end_time):
-        self.start_time = start_time
-        self.end_time = end_time
-
-    def __str__(self):
-        return f"{self.start_time.strftime('%H%M')}-{self.end_time.strftime('%H%M')}"
-
-    def __repr__(self):
-        return self.__str__()
-
-
 class HourStatementType(str, Enum):
     OPEN = "OPEN"
     CLOSE = "CLOSE"
-
-
-def from_time_string(time_str):
-    return datetime.strptime(time_str, '%I%M%p').time()
-
-
-day_inds = { calendar.day_name[i]: i for i in range(7) }
 
 
 SLOTS_PER_DAY = 48
@@ -118,8 +100,8 @@ class WeeklyTimeGrid:
         if msg.type not in [ClientMessageType.OPEN, ClientMessageType.CLOSE]:
             raise ValueError('Message type must be OPEN or CLOSE')
         self._set(
-            msg.from_date.weekday(),
-            TimeRange(msg.from_date, msg.to_date),
+            msg.from_time.weekday(),
+            TimeRange(msg.from_time.time(), msg.to_time.time()),
             1 if msg.type == ClientMessageType.OPEN else 0
         )
 

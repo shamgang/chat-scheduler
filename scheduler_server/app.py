@@ -3,9 +3,9 @@ from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 from datetime import timedelta
 from lib.date_translation import DateTranslator
-from lib.hour_translation import HourTranslator, WeeklyTimeGrid
+from lib.hour_translation import HourTranslator
 from lib.errors import TranslationFailedError
-from lib.session_state import create_session, get_session, GENERAL_TIME_GRID_KEY
+from lib.session_state import create_session, get_session
 from lib.logger import logger
 from lib.client_message import (
     ClientMessage,
@@ -23,7 +23,6 @@ load_dotenv('./chainlit-backend/.env')
 model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 date_translator = DateTranslator(model)
 hour_translator = HourTranslator(model)
-CHATBOT_USERNAME = 'SCHEDULER'
 
 
 @cl.on_chat_start
@@ -34,30 +33,30 @@ async def on_chat_start():
 @cl.on_message
 async def on_message(message: cl.Message):
     logger.debug(f'Received message: {message.content}')
-    msg = parse_message(message)
+    msg = parse_message(message.content)
     session_state = get_session()
     if msg.type == ClientMessageType.DATES:
         # User is defining a date range
         try:
-            start_date, end_date = date_translator.translate_to_date_range(msg.text)
+            start_date, end_date = date_translator.translate_to_date_range(msg.prompt)
             response = ClientMessage(
-                ClientMessageType.RANGE,
-                Author.SCHEDULER,
+                type=ClientMessageType.RANGE,
+                author=Author.SCHEDULER,
                 from_date=start_date,
                 to_date=end_date
             )
         except TranslationFailedError as tfe:
             response = ClientMessage(
-                ClientMessageType.ERROR,
-                Author.SCHEDULER,
-                str(tfe)
+                type=ClientMessageType.ERROR,
+                author=Author.SCHEDULER,
+                error_message=str(tfe)
             )
         except Exception as e:
             logger.error(e)
             response = ClientMessage(
-                ClientMessageType.ERROR,
-                Author.SCHEDULER,
-                'An unknown error occured.'
+                type=ClientMessageType.ERROR,
+                author=Author.SCHEDULER,
+                error_message='An unknown error occured.'
             ) # TODO: bug reporting
         cl_message = response.format_message()
         logger.debug(f'Model response: {cl_message.content}')
@@ -67,13 +66,14 @@ async def on_message(message: cl.Message):
         session_state.chosen_dates = [msg.from_date, msg.to_date]
     elif msg.type == ClientMessageType.TIMES:
         # User is defining time slots
-        actions = hour_translator.translate_to_calendar_actions(msg.times_prompt)
+        actions = hour_translator.translate_to_calendar_actions(msg.prompt)
         grid = session_state.get_time_grid(msg.week)
         grid.process_calendar_actions(actions)
         time_ranges = grid.get_time_ranges()
         response = ClientMessage(
-            ClientMessageType.TIME_RANGES,
-            Author.SCHEDULER,
+            type=ClientMessageType.TIME_RANGES,
+            author=Author.SCHEDULER,
+            week=msg.week,
             time_ranges=time_ranges
         )
         cl_message = response.format_message()
@@ -91,16 +91,15 @@ async def on_message(message: cl.Message):
         # TODO: can our date grid be more general-
         # an array of dates instead of an array of weeks
         # with days of the week?
-        slot_date = msg.from_date.date()
-        monday = to_iso_no_hyphens(slot_date - timedelta(slot_date.weekday()))
-        print(monday)
-        time_grid = session_state.get_time_grid(monday)
-        print(time_grid.grid)
+        slot_date = msg.from_time.date()
+        monday = slot_date - timedelta(days=slot_date.weekday())
+        monday_str = to_iso_no_hyphens(monday)
+        time_grid = session_state.get_time_grid(monday_str)
         time_grid.process_message(msg)
-        print(time_grid.grid)
         response = ClientMessage(
-            ClientMessageType.TIME_RANGES,
-            Author.SCHEDULER,
+            type=ClientMessageType.TIME_RANGES,
+            author=Author.SCHEDULER,
+            week=monday,
             time_ranges=time_grid.get_time_ranges()
         )
         cl_message = response.format_message()
