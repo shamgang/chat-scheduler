@@ -5,11 +5,9 @@ import {
   MessageContainer,
   MessageList
 } from "@minchat/react-chat-ui";
-import { generateDisplayMessages } from "../helpers/DisplayMessages";
 import { Authors } from "../services/MessageService";
 
 function Chat({onSendMessage, messages}) {
-  let displayMessages = generateDisplayMessages(messages);
 
   return (
     <MinChatUiProvider theme="#6ea9d7">
@@ -17,7 +15,7 @@ function Chat({onSendMessage, messages}) {
         <MessageContainer>
           <MessageList
             currentUserId={Authors.USER.toLowerCase()}
-            messages={displayMessages}
+            messages={messages}
           />
           <MessageInput
             placeholder="Type message here"

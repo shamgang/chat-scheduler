@@ -1,11 +1,13 @@
+from fastapi import Request
 import chainlit as cl
+from chainlit.server import app
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 from datetime import timedelta
 from lib.date_translation import DateTranslator
 from lib.hour_translation import HourTranslator
 from lib.errors import TranslationFailedError
-from lib.session_state import create_session, get_session
+from lib.event_state import get_or_create_event, get_event, format_event_state
 from lib.logger import logger
 from lib.client_message import (
     ClientMessage,
@@ -14,6 +16,7 @@ from lib.client_message import (
     Author
 )
 from lib.model_tools import to_iso_no_hyphens
+
 
 # Expect the following keys to exist in .env:
 # LANGCHAIN_TRACING_V2
@@ -25,16 +28,10 @@ date_translator = DateTranslator(model)
 hour_translator = HourTranslator(model)
 
 
-@cl.on_chat_start
-async def on_chat_start():
-    create_session()
-
-
 @cl.on_message
 async def on_message(message: cl.Message):
     logger.debug(f'Received message: {message.content}')
     msg = parse_message(message.content)
-    session_state = get_session()
     if msg.type == ClientMessageType.DATES:
         # User is defining a date range
         try:
@@ -63,11 +60,14 @@ async def on_message(message: cl.Message):
         await cl_message.send()
     elif msg.type == ClientMessageType.RANGE:
         # User has confirmed date range
-        session_state.chosen_dates = [msg.from_date, msg.to_date]
+        get_or_create_event(msg.event_id).chosen_dates = {
+            'from': msg.from_date,
+            'to': msg.to_date
+        }
     elif msg.type == ClientMessageType.TIMES:
         # User is defining time slots
         actions = hour_translator.translate_to_calendar_actions(msg.prompt)
-        grid = session_state.get_time_grid(msg.week)
+        grid = get_or_create_event(msg.event_id).get_time_grid(msg.week)
         grid.process_calendar_actions(actions)
         time_ranges = grid.get_time_ranges()
         response = ClientMessage(
@@ -81,11 +81,7 @@ async def on_message(message: cl.Message):
         await cl_message.send()
     elif msg.type == ClientMessageType.CONFIRM:
         # User has confirmed general avail
-        # TODO: this is not necessary - hack for front end
-        # because front end is currently stateless with messages
-        # and relies on chainlit for message storage
-        # Instead, can sync messages with a queue on the front end
-        pass
+        get_or_create_event(msg.event_id).general_avail_confirmed = True
     elif msg.type == ClientMessageType.OPEN or msg.type == ClientMessageType.CLOSE:
         # Find the right grid or create it
         # TODO: can our date grid be more general-
@@ -94,7 +90,7 @@ async def on_message(message: cl.Message):
         slot_date = msg.from_time.date()
         monday = slot_date - timedelta(days=slot_date.weekday())
         monday_str = to_iso_no_hyphens(monday)
-        time_grid = session_state.get_time_grid(monday_str)
+        time_grid = get_or_create_event(msg.event_id).get_time_grid(monday_str)
         time_grid.process_message(msg)
         response = ClientMessage(
             type=ClientMessageType.TIME_RANGES,
@@ -105,3 +101,15 @@ async def on_message(message: cl.Message):
         cl_message = response.format_message()
         logger.debug(f'Model response: {cl_message.content}')
         await cl_message.send()
+
+
+@app.get("/state/{event_id}")
+async def get_state(
+    request: Request,
+    event_id: str
+):
+    logger.debug(f'Retrieving event state: {event_id}')
+    event_state = format_event_state(get_event(event_id))
+    logger.debug(f'State retrieved: {event_state}')
+    return event_state
+    

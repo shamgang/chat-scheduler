@@ -57,6 +57,9 @@
         "toDate": {
           "type": "string",
           "$comment": "YYYYMMDD format"
+        },
+        "eventId": {
+          "type": "string"
         }
       },
       "required": [
@@ -74,12 +77,16 @@
         "week": { "$ref": "#/definitions/week" },
         "prompt": {
           "type": "string"
+        },
+        "eventId": {
+          "type": "string"
         }
       },
       "required": [
         "type",
         "week",
-        "prompt"
+        "prompt",
+        "eventId"
       ]
     },
     "timeRangesMessage": {
@@ -126,10 +133,14 @@
       "properties": {
         "type": {
           "const": "CONFIRM"
+        },
+        "eventId": {
+          "type": "string"
         }
       },
       "required": [
-        "type"
+        "type",
+        "eventId"
       ]
     },
     "openOrCloseMessage": {
@@ -145,12 +156,16 @@
         "to": {
           "type": "string",
           "$comment": "YYYYMMDDHHmm format"
+        },
+        "eventId": {
+          "type": "string"
         }
       },
       "required": [
         "type",
         "from",
-        "to"
+        "to",
+        "eventId"
       ]
     },
     "errorMessage": {

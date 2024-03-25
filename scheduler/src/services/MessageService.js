@@ -5,6 +5,7 @@ import { useRecoilValue } from 'recoil';
 import moment from 'moment';
 import schema from '../assets/message_schema.json';
 import Ajv from 'ajv';
+import { parseTimeRanges, fromIsoNoHyphens } from '../helpers/FormatHelpers';
 
 const CHAINLIT_SERVER_URL = 'http://localhost:8000';
 
@@ -32,13 +33,7 @@ const MessageTypes = {
 
 const GENERAL_AVAIL_KEY = "GENERAL"
 
-function fromIsoNoHyphens(dateStr) {
-  return new Date(
-    parseInt(dateStr.substring(0, 4), 10),
-    parseInt(dateStr.substring(4, 6), 10) - 1,
-    parseInt(dateStr.substring(6, 8), 10)
-  );
-}
+
 
 function dateTimeFromIsoNoHyphens(dateTimeStr) {
   return new Date(
@@ -48,12 +43,6 @@ function dateTimeFromIsoNoHyphens(dateTimeStr) {
     parseInt(dateTimeStr.substring(8, 10), 10),
     parseInt(dateTimeStr.substring(10, 12), 10)
   );
-}
-
-function parseTimeString(timeStr) {
-  const hour = parseInt(timeStr.substring(0, 2), 10);
-  const minute = parseInt(timeStr.substring(2, 4), 10);
-  return {hour, minute};
 }
 
 function formatTimeString(time) {
@@ -66,14 +55,6 @@ function pad2(int) {
   } else {
     return int.toString();
   }
-}
-
-function formatTimeRanges(timeRanges) {
-  return timeRanges.map((day) => {
-    return day.map((range) => {
-      return range.join('-');
-    }).join(',');
-  }).join('\n');
 }
 
 function toIsoNoHyphens(date) {
@@ -98,12 +79,7 @@ function parseMessage(msg_str) {
   } else if (msg.type === MessageTypes.TIMES) {
     msg.week = fromIsoNoHyphens(msg.week);
   } else if (msg.type === MessageTypes.TIME_RANGES) {
-    for (const day of msg.timeRanges) {
-      for (let timeRange of day) {
-        timeRange.from = parseTimeString(timeRange.from);
-        timeRange.to = parseTimeString(timeRange.to);
-      }
-    }
+    msg.timeRanges = parseTimeRanges(msg.timeRanges);
   } else if ([MessageTypes.OPEN, MessageTypes.CLOSE].includes(msg.type)) {
     msg.from = dateTimeFromIsoNoHyphens(msg.from);
     msg.to = dateTimeFromIsoNoHyphens(msg.to);
@@ -201,8 +177,6 @@ export {
   useMessageService,
   MessageTypes,
   Authors,
-  formatTimeRanges,
   GENERAL_AVAIL_KEY,
-  toIsoNoHyphens,
-  fromIsoNoHyphens
+  toIsoNoHyphens
 };

@@ -1,9 +1,10 @@
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, useEffect } from 'react';
 import { Calendar, Views, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css'
-import { GENERAL_AVAIL_KEY, fromIsoNoHyphens, toIsoNoHyphens } from '../services/MessageService';
+import { GENERAL_AVAIL_KEY, toIsoNoHyphens } from '../services/MessageService';
 import { getDatesBetweenDates, getDayOfWeek, lastMonday, nextSunday } from '../helpers/Dates';
+import { fromIsoNoHyphens } from '../helpers/FormatHelpers'
 
 moment.locale('en-us', {
   week: {
@@ -85,7 +86,7 @@ function Scheduler({
   onSelectEvent,
   onSelectSlot
 }) {
-  const [focusedDate, setFocusedDate] = useState(dateRange[0]);
+  const [focusedDate, setFocusedDate] = useState(dateRange[0]); // must be a Monday
 
   const { style, defaultView, views } = useMemo(() => ({
     style: { height: 500 },
@@ -105,12 +106,17 @@ function Scheduler({
   const onNavigate = useCallback((date) => {
     const monday = lastMonday(date);
     const sunday = nextSunday(date);
-    if (monday < dateRange[1] && sunday > dateRange[0]) {
+    if (monday <= dateRange[1] && sunday >= dateRange[0]) {
       // Desired week is in range, allow navigation
       setFocusedDate(monday);
-      setCurrentWeek(monday);  
     }
-  }, [dateRange, setFocusedDate, setCurrentWeek]);
+  }, [dateRange, setFocusedDate]);
+
+  // When the user navigates, report the change up
+  // NOTE: assumes focusedDate is a Monday
+  useEffect(() => {
+    setCurrentWeek(focusedDate);
+  }, [focusedDate, setCurrentWeek]);
 
   const dateCellWrapper = ({value, children, resource}) => {
     const isOut = (

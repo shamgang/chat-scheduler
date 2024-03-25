@@ -1,29 +1,22 @@
 from enum import Enum
 import chainlit as cl
-from datetime import datetime
 import json
-import jsonschema
-import os.path
-from lib.model_tools import from_iso_no_hyphens, to_iso_no_hyphens
-from lib.datetime_helpers import (
-    TimeRange,
-    from_time_string,
-    to_time_string,
+from .model_tools import from_iso_no_hyphens, to_iso_no_hyphens
+from .datetime_helpers import (
     datetime_from_iso_no_hyphens,
     datetime_to_iso_no_hyphens,
     format_week,
-    parse_week,
-    GENERAL_WEEK_KEY
+    parse_week
+)
+from .json_helpers import (
+    parse_time_ranges,
+    format_time_ranges,
+    message_validator,
+    validate_verbose
 )
 
 
-MESSAGE_SCHEMA_PATH = os.path.join(
-    os.path.dirname(__file__),
-    '../../assets/message_schema.json'
-)
-with open(MESSAGE_SCHEMA_PATH, 'r') as schema_file:
-    schema = json.load(schema_file)
-validator = jsonschema.Draft7Validator(schema)
+
 
 
 class ClientMessageType(str, Enum):
@@ -45,7 +38,7 @@ class Author(str, Enum):
 def parse_message(msg_str):
     '''Convert from json message to internal format'''
     msg = json.loads(msg_str)
-    validator.validate(msg)
+    validate_verbose(message_validator, msg)
     msg_type = msg['type']
     from_date, to_date, week, time_ranges, from_time, to_time = (None, None, None, None, None, None)
     if msg_type == ClientMessageType.RANGE:
@@ -55,13 +48,7 @@ def parse_message(msg_str):
         week = parse_week(msg['week'])
     if msg_type == ClientMessageType.TIME_RANGES:
         week = parse_week(msg['week'])
-        time_ranges = msg['timeRanges']
-        for day in time_ranges:
-            for i, time_range in enumerate(day):
-                day[i] = TimeRange(
-                    from_time_string(time_range['from']),
-                    from_time_string(time_range['to'])
-                )
+        time_ranges = parse_time_ranges(msg['timeRanges'])
     if msg_type in [ClientMessageType.OPEN, ClientMessageType.CLOSE]:
         from_time = datetime_from_iso_no_hyphens(msg['from'])
         to_time = datetime_from_iso_no_hyphens(msg['to'])
@@ -75,7 +62,8 @@ def parse_message(msg_str):
         time_ranges=time_ranges,
         from_time=from_time,
         to_time=to_time,
-        error_message=msg.get('error_message')
+        error_message=msg.get('errorMessage'),
+        event_id=msg.get('eventId')
     )
 
 
@@ -92,13 +80,7 @@ def format_message(msg):
         msg_json['week'] = format_week(msg.week)
     if msg.type == ClientMessageType.TIME_RANGES:
         msg_json['week'] = format_week(msg.week)
-        for day in msg.time_ranges:
-            for i, time_range in enumerate(day):
-                day[i] = {
-                    'from': to_time_string(time_range.start_time),
-                    'to': to_time_string(time_range.end_time)
-                }
-        msg_json['timeRanges'] = msg.time_ranges
+        msg_json['timeRanges'] = format_time_ranges(msg.time_ranges)
     if msg.type in [ClientMessageType.OPEN, ClientMessageType.CLOSE]:
         msg_json['from'] = datetime_to_iso_no_hyphens(msg.from_time)
         msg_json['to'] = datetime_to_iso_no_hyphens(msg.to_time)
@@ -106,7 +88,9 @@ def format_message(msg):
         msg_json['prompt'] = msg.prompt
     if msg.error_message:
         msg_json['errorMessage'] = msg.error_message
-    validator.validate(msg_json)
+    if msg.event_id:
+        msg_json['eventId'] = msg.event_id
+    validate_verbose(message_validator, msg_json)
     return msg_json
 
 
@@ -123,7 +107,8 @@ class ClientMessage:
         time_ranges=None,
         from_time=None,
         to_time=None,
-        error_message=None
+        error_message=None,
+        event_id=None
     ):
         self.type = type
         self.author = author
@@ -135,6 +120,7 @@ class ClientMessage:
         self.from_time = from_time
         self.to_time = to_time
         self.error_message = error_message
+        self.event_id = event_id
             
     def format_message(self):
         '''To chainlit format'''

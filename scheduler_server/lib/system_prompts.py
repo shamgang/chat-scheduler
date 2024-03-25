@@ -112,6 +112,7 @@ Where <day_of_week> is the day of week mentioned by the person and <time_range> 
 If the person mentions multiple days or a range of days in one phrase, create a statement for each day.
 If any time does not have AM or PM, Assistant will make an educated guess and add either AM or PM based on what people usually mean.
 All times will be four digits in the format HHMM followed immediately by AM or PM with no spaces.
+Use the 12-hour clock, not the 24-hour clock.
 Single-digit hours will be padded with a leading zero.
 Single-digit minutes will be padded with a leading zero.
 For any ranges that use the word "after" or don't have an end time, use 1200AM as the end time.

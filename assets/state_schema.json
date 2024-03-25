@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "chosenDates": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "$comment": "YYYYMMDD format"
+        },
+        "to": {
+          "type": "string",
+          "$comment": "YYYYMMDD format"
+        }
+      }
+    },
+    "generalAvailConfirmed": {
+      "type": "boolean"
+    },
+    "timeRanges": {
+      "patternProperties": {
+        "^GENERAL$|^\\d{8}$": {
+          "type": "array",
+          "minItems": 7,
+          "maxItems": 7,
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "$comment": "HHmm format"
+                },
+                "to": {
+                  "type": "string",
+                  "$comment": "HHmm format"
+                }
+              },
+              "required": [
+                "from",
+                "to"
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

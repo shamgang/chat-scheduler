@@ -5,10 +5,12 @@ import {
   DATE_ENTERED_MESSAGE,
   DATE_ENTERED_MESSAGE_SHORT,
   TIMES_MESSAGE,
+  TIMES_MESSAGE_FRESH,
   USER_CONFIRMED_RANGE_MESSAGE,
   GENERAL_TIME_RANGES_MESSAGE,
   GENERAL_TIME_RANGES_MESSAGE_SHORT,
   SPECIFIC_AVAIL_MESSAGE,
+  SPECIFIC_AVAIL_MESSAGE_FRESH,
   SPECIFIC_TIME_RANGES_MESSAGE,
   SPECIFIC_TIME_RANGES_MESSAGE_SHORT
 } from './SchedulerMessages';
@@ -27,17 +29,33 @@ function displayMessage(text, author) {
 
 // Convert the client-server message history into display messages
 // Note - neither of these are the prompt message history.
-function generateDisplayMessages(messages) {
+function generateDisplayMessages(messages, isNew, isSpecific) {
   // temporarily store in [text, author] format for brevity
   let displayMessages = [];
-
-  // Welcome message, display only
-  displayMessages.push([WELCOME_MESSAGE, Authors.SCHEDULER]);
 
   let state = StateMachine.SELECT_DATES; // track message-to-message state
   let explainedDates = false;
   let explainedGeneralAvail = false;
   let explainedSpecificAvail = false;
+
+  // Welcome message, display only
+  if (isNew) {
+    // New event
+    displayMessages.push([WELCOME_MESSAGE, Authors.SCHEDULER]);
+  } else {
+    // Existing event
+    if (isSpecific) {
+      // Prompt for specific avail
+      state = StateMachine.SPECIFIC_AVAIL;
+      displayMessages.push([SPECIFIC_AVAIL_MESSAGE_FRESH, Authors.SCHEDULER]);
+    } else {
+      // Prompt for general avail
+      state = StateMachine.GENERAL_AVAIL;
+      displayMessages.push([TIMES_MESSAGE_FRESH, Authors.SCHEDULER]);
+      explainedGeneralAvail = true;
+    }
+  }
+  
   for (const msg of messages) {
     let text;
     if ([MessageTypes.DATES, MessageTypes.TIMES].includes(msg.type)) {
