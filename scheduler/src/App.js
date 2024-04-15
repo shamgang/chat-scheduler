@@ -76,7 +76,7 @@ function App() {
         msg.author === Authors.SCHEDULER &&
         msg.type === MessageTypes.TIME_RANGES
       ) {
-        console.log(`Chatbot setting time ranges for user: ${msg.name} for week ${msg.week}: ${msg.text}`);
+        console.log(`Chatbot setting time ranges for user: ${msg.name} for week ${msg.week}: ${JSON.stringify(msg.timeRanges, 2)}`);
         let trs = {...timeRanges}; // shallow-ish copy
         if (!trs) {
           trs = {};
@@ -93,7 +93,6 @@ function App() {
     messages,
     numMessagesProcessed,
     setNumMessagesProcessed,
-    currentWeek,
     setRange,
     timeRanges,
     setTimeRanges
@@ -168,6 +167,9 @@ function App() {
   }, [eventId, name, flowState, setFlowState, sendMessage]);
 
   const onSelectSlot = useCallback(({start, end}) => {
+    if (flowState !== StateMachine.SPECIFIC_AVAIL) {
+      return;
+    }
     sendMessage({
       type: MessageTypes.OPEN,
       author: Authors.USER,
@@ -176,9 +178,12 @@ function App() {
       eventId: eventId,
       name: name
     });
-  }, [eventId, name, sendMessage]);
+  }, [eventId, name, flowState, sendMessage]);
 
   const onSelectEvent = useCallback(({ start, end }) => {
+    if (flowState !== StateMachine.SPECIFIC_AVAIL) {
+      return;
+    }
     sendMessage({
       type: MessageTypes.CLOSE,
       author: Authors.USER,
@@ -187,7 +192,7 @@ function App() {
       eventId: eventId,
       name: name
     });
-  }, [eventId, name, sendMessage]);
+  }, [eventId, name, flowState, sendMessage]);
 
   const displayMessages = generateDisplayMessages(
     messages,
