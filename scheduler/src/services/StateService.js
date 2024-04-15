@@ -2,8 +2,11 @@ import { parseTimeRanges, fromIsoNoHyphens } from "../helpers/FormatHelpers";
 
 function parseEventState(eventState) {
   let timeRanges = {}
-  for (const key of Object.keys(eventState.timeRanges)) {
-    timeRanges[key] = parseTimeRanges(eventState.timeRanges[key])
+  for (const name of Object.keys(eventState.timeRanges)) {
+    timeRanges[name] = {}
+    for (const key of Object.keys(eventState.timeRanges[name])) {
+      timeRanges[name][key] = parseTimeRanges(eventState.timeRanges[name][key])
+    }
   }
   return {
     chosenDates: {

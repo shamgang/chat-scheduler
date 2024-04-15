@@ -8,18 +8,28 @@ from .model_tools import to_iso_no_hyphens
 class EventState:
     def __init__(self):
         self.chosen_dates = None # TODO: validation / type hint
-        self.general_avail_confirmed = False
-        self.time_grids = { 
-            GENERAL_WEEK_KEY: WeeklyTimeGrid()
-        }
+        self.general_avail_confirmed = {}
+        self.time_grids = {}
 
-    def get_time_grid(self, week):
-        if week not in self.time_grids:
+    def get_time_grid(self, name, week):
+        if name not in self.time_grids:
+            self.time_grids[name] = {
+                GENERAL_WEEK_KEY: WeeklyTimeGrid()
+            }
+        if week not in self.time_grids[name]:
             # Creating specific availability, copy general availability and edit
-            self.time_grids[week] = WeeklyTimeGrid.clone(
-                self.time_grids[GENERAL_WEEK_KEY]
+            self.time_grids[name][week] = WeeklyTimeGrid.clone(
+                self.time_grids[name][GENERAL_WEEK_KEY]
             )
-        return self.time_grids[week]
+        return self.time_grids[name][week]
+    
+    def get_general_avail_confirmed(self, name):
+        if name not in self.general_avail_confirmed:
+            self.general_avail_confirmed[name] = False
+        return self.general_avail_confirmed[name]
+    
+    def set_general_avail_confirmed(self, name, val):
+        self.general_avail_confirmed[name] = val
 
 
 # TODO: real persistence method
@@ -46,8 +56,11 @@ def format_event_state(event_state):
         } if event_state.chosen_dates else None,
         'generalAvailConfirmed': event_state.general_avail_confirmed,
         'timeRanges': {
-            key: format_time_ranges(grid.get_time_ranges())
-            for key, grid in event_state.time_grids.items()
+            user: {
+                key: format_time_ranges(grid.get_time_ranges())
+                for key, grid in ranges.items()
+            }
+            for user, ranges in event_state.time_grids.items()
         }
     }
     validate_verbose(state_validator, result)

@@ -16,34 +16,48 @@
       }
     },
     "generalAvailConfirmed": {
-      "type": "boolean"
+      "type": "object",
+      "$comment": "keys are user names",
+      "patternProperties": {
+        "^\\w+$": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
     },
     "timeRanges": {
+      "type": "object",
       "patternProperties": {
-        "^GENERAL$|^\\d{8}$": {
-          "type": "array",
-          "minItems": 7,
-          "maxItems": 7,
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "from": {
-                  "type": "string",
-                  "$comment": "HHmm format"
-                },
-                "to": {
-                  "type": "string",
-                  "$comment": "HHmm format"
+        "^\\w+$": {
+          "type": "object",
+          "patternProperties": {
+            "^GENERAL$|^\\d{8}$": {
+              "type": "array",
+              "minItems": 7,
+              "maxItems": 7,
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "from": {
+                      "type": "string",
+                      "$comment": "HHmm format"
+                    },
+                    "to": {
+                      "type": "string",
+                      "$comment": "HHmm format"
+                    }
+                  },
+                  "required": [
+                    "from",
+                    "to"
+                  ]
                 }
-              },
-              "required": [
-                "from",
-                "to"
-              ]
+              }
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

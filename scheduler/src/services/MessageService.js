@@ -23,6 +23,7 @@ const Authors = {
 const MessageTypes = {
   RANGE: "RANGE",
   DATES: "DATES",
+  NAME: "NAME",
   TIMES: "TIMES",
   TIME_RANGES: "TIME_RANGES",
   CONFIRM: "CONFIRM",

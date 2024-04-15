@@ -12,6 +12,13 @@ You can also edit manually.
 When the range is good, click the OK button.`;
 export const DATE_ENTERED_MESSAGE_SHORT = 'Updated! OK to confirm.';
 export const USER_CONFIRMED_RANGE_MESSAGE = 'OK';
+export const NAME_MESSAGE = `
+Now, type your name for me so I can save your availability!
+`;
+export const NAME_MESSAGE_FRESH = `
+Hey! I'm here to help you schedule a time to meet.
+Tell me your name so I can update your availability. 
+`;
 export const TIMES_MESSAGE = `
 Got it! Now tell me about your availability in an average week.
 `;
@@ -32,9 +39,8 @@ we're looking at. You can also click time slots to remove availability
 or click and drag to create availability.
 `;
 export const SPECIFIC_AVAIL_MESSAGE_FRESH = `
-Hey! I'm here to help you schedule a time to meet.
-You've already told me about your general availability -
-now you can navigate to specific weeks and tell me about them.
+You can now update your availability week-to-week.
+You can navigate to specific weeks and tell me about them.
 You can also click time slots to remove availability
 or click and drag to create availability.
 `;

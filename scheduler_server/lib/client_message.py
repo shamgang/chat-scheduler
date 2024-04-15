@@ -22,6 +22,7 @@ from .json_helpers import (
 class ClientMessageType(str, Enum):
     DATES = 'DATES'
     RANGE = 'RANGE'
+    NAME = 'NAME'
     TIMES = 'TIMES'
     TIME_RANGES = 'TIME_RANGES' # TODO: refactor all of these to be clearer
     CONFIRM = 'CONFIRM'
@@ -63,7 +64,8 @@ def parse_message(msg_str):
         from_time=from_time,
         to_time=to_time,
         error_message=msg.get('errorMessage'),
-        event_id=msg.get('eventId')
+        event_id=msg.get('eventId'),
+        name=msg.get('name')
     )
 
 
@@ -90,6 +92,8 @@ def format_message(msg):
         msg_json['errorMessage'] = msg.error_message
     if msg.event_id:
         msg_json['eventId'] = msg.event_id
+    if msg.name:
+        msg_json['name'] = msg.name
     validate_verbose(message_validator, msg_json)
     return msg_json
 
@@ -108,7 +112,8 @@ class ClientMessage:
         from_time=None,
         to_time=None,
         error_message=None,
-        event_id=None
+        event_id=None,
+        name=None
     ):
         self.type = type
         self.author = author
@@ -121,6 +126,7 @@ class ClientMessage:
         self.to_time = to_time
         self.error_message = error_message
         self.event_id = event_id
+        self.name = name
             
     def format_message(self):
         '''To chainlit format'''

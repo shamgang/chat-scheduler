@@ -9,6 +9,9 @@ describe('default spec', () => {
     cy.wait(6000);
     cy.get('#range-submit').click();
     cy.wait(1000);
+    msgInput.type('shamik');
+    msgForm.submit();
+    cy.wait(1000);
     msgInput.type('free all day tuesday');
     msgForm.submit();
     cy.wait(5000);
@@ -32,5 +35,14 @@ describe('default spec', () => {
     cy.get('.rbc-day-slot:nth-child(6) > .rbc-timeslot-group:nth-child(8)').trigger('mousemove', {force: true});
     cy.wait(1000);
     cy.get('.rbc-day-slot:nth-child(6) > .rbc-timeslot-group:nth-child(8)').trigger('mouseup', {force: true});
+    cy.reload();
+    cy.wait(1000);
+    const msgInput2 = cy.get('[data-testid="message-input"]');
+    const msgForm2 = cy.get('[data-testid="message-form"]');
+    msgInput2.type('shamik');
+    msgForm2.submit();
+    cy.wait(1000);
+    msgInput2.type('free all day friday');
+    msgForm2.submit();
   });
 });

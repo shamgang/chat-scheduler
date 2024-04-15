@@ -7,6 +7,8 @@ import {
   TIMES_MESSAGE,
   TIMES_MESSAGE_FRESH,
   USER_CONFIRMED_RANGE_MESSAGE,
+  NAME_MESSAGE,
+  NAME_MESSAGE_FRESH,
   GENERAL_TIME_RANGES_MESSAGE,
   GENERAL_TIME_RANGES_MESSAGE_SHORT,
   SPECIFIC_AVAIL_MESSAGE,
@@ -29,7 +31,7 @@ function displayMessage(text, author) {
 
 // Convert the client-server message history into display messages
 // Note - neither of these are the prompt message history.
-function generateDisplayMessages(messages, isNew, isSpecific) {
+function generateDisplayMessages(messages, isNew, eventState, name) {
   // temporarily store in [text, author] format for brevity
   let displayMessages = [];
 
@@ -44,18 +46,9 @@ function generateDisplayMessages(messages, isNew, isSpecific) {
     displayMessages.push([WELCOME_MESSAGE, Authors.SCHEDULER]);
   } else {
     // Existing event
-    if (isSpecific) {
-      // Prompt for specific avail
-      state = StateMachine.SPECIFIC_AVAIL;
-      displayMessages.push([SPECIFIC_AVAIL_MESSAGE_FRESH, Authors.SCHEDULER]);
-    } else {
-      // Prompt for general avail
-      state = StateMachine.GENERAL_AVAIL;
-      displayMessages.push([TIMES_MESSAGE_FRESH, Authors.SCHEDULER]);
-      explainedGeneralAvail = true;
-    }
+    displayMessages.push([NAME_MESSAGE_FRESH, Authors.SCHEDULER]);
   }
-  
+
   for (const msg of messages) {
     let text;
     if ([MessageTypes.DATES, MessageTypes.TIMES].includes(msg.type)) {
@@ -72,6 +65,8 @@ function generateDisplayMessages(messages, isNew, isSpecific) {
         text = USER_CONFIRMED_RANGE_MESSAGE;
         state = StateMachine.GENERAL_AVAIL;
       }
+    } else if (msg.type === MessageTypes.NAME) {
+      text = msg.name;
     } else if (msg.type === MessageTypes.TIME_RANGES) {
       if (state === StateMachine.GENERAL_AVAIL) {
         if (!explainedGeneralAvail) {
@@ -94,12 +89,31 @@ function generateDisplayMessages(messages, isNew, isSpecific) {
       displayMessages.push([text, msg.author]);
     }
     // If a user RANGE message has already been sent, the chat
-    // will prompt for times now.
+    // will prompt for a name now.
     if (
       msg.author === Authors.USER &&
       msg.type === MessageTypes.RANGE
     ) {
-      displayMessages.push([TIMES_MESSAGE, Authors.SCHEDULER]);
+      displayMessages.push([NAME_MESSAGE, Authors.SCHEDULER]);
+    }
+    // If a user NAME message has already been sent,
+    // the chat will prompt for general avail now.
+    if (
+      msg.author === Authors.USER &&
+      msg.type === MessageTypes.NAME
+    ) {
+      if (isNew) {
+        displayMessages.push([TIMES_MESSAGE, Authors.SCHEDULER]);
+      } else if (eventState && name && (name in eventState.generalAvailConfirmed) && eventState.generalAvailConfirmed[name]) {
+        // Prompt for specific avail
+        state = StateMachine.SPECIFIC_AVAIL;
+        displayMessages.push([SPECIFIC_AVAIL_MESSAGE_FRESH, Authors.SCHEDULER]);
+      } else {
+        // Prompt for general avail
+        state = StateMachine.GENERAL_AVAIL;
+        displayMessages.push([TIMES_MESSAGE_FRESH, Authors.SCHEDULER]);
+        explainedGeneralAvail = true;
+      } 
     }
     // If a user CONFIRM message has already been sent,
     // the chat will prompt for specific avail now

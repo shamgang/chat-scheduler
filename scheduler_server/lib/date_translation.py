@@ -140,7 +140,7 @@ class DateTranslator:
         try:
             return from_iso_no_hyphens(translater_output)
         except ValueError:
-            logger.error(f"Statement '{statement}' could not be translated to a date.")
+            logger.error(f"Statement '{statement}' generated output: '{translater_output}' which could not be translated to a date.")
             raise TranslationFailedError(generic_date_parse_failure_message)     
 
     def _translate_start_and_end_to_dates(self, start, end):

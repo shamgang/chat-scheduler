@@ -68,11 +68,32 @@
         "toDate"
       ]
     },
+    "nameMessage": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "NAME"
+        },
+        "name": {
+          "type": "string"
+        },
+        "eventId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "eventId"
+      ]
+    },
     "timesMessage": {
       "type": "object",
       "properties": {
         "type": {
           "const": "TIMES"
+        },
+        "name": {
+          "type": "string"
         },
         "week": { "$ref": "#/definitions/week" },
         "prompt": {
@@ -84,6 +105,7 @@
       },
       "required": [
         "type",
+        "name",
         "week",
         "prompt",
         "eventId"
@@ -94,6 +116,9 @@
       "properties": {
         "type": {
           "const": "TIME_RANGES"
+        },
+        "name": {
+          "type": "string"
         },
         "week": { "$ref": "#/definitions/week" },
         "timeRanges": {
@@ -124,6 +149,7 @@
       },
       "required": [
         "type",
+        "name",
         "week",
         "timeRanges"
       ]
@@ -136,11 +162,15 @@
         },
         "eventId": {
           "type": "string"
+        },
+        "name": {
+          "type": "string"
         }
       },
       "required": [
         "type",
-        "eventId"
+        "eventId",
+        "name"
       ]
     },
     "openOrCloseMessage": {
@@ -159,13 +189,17 @@
         },
         "eventId": {
           "type": "string"
+        },
+        "name": {
+          "type": "string"
         }
       },
       "required": [
         "type",
         "from",
         "to",
-        "eventId"
+        "eventId",
+        "name"
       ]
     },
     "errorMessage": {
@@ -191,6 +225,7 @@
       "oneOf": [
         { "$ref": "#/definitions/datesMessage" },
         { "$ref": "#/definitions/rangeMessage" },
+        { "$ref": "#/definitions/nameMessage" },
         { "$ref": "#/definitions/timesMessage" },
         { "$ref": "#/definitions/timeRangesMessage" },
         { "$ref": "#/definitions/confirmMessage" },

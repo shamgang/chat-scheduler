@@ -37,14 +37,14 @@ function eventFromTimeRange(currentDate, from, to) {
     and the time ranges are organized by day of week, list of time ranges,
     time range of format { from: {hour, minute}, to: {hour, minute} }.
 */
-function eventsFromTimeRanges(timeRanges, fromDate, toDate) {
-  if (!timeRanges) {
+function eventsFromTimeRanges(timeRanges, currentUser, fromDate, toDate) {
+  if (!timeRanges || !(currentUser in timeRanges)) {
     return [];
   }
   let events = [];
   const dates = getDatesBetweenDates(fromDate, toDate).map(toIsoNoHyphens);
   const weeks = (
-    Object.keys(timeRanges)
+    Object.keys(timeRanges[currentUser])
     .filter(key => key !== GENERAL_AVAIL_KEY)
   );
   // Populate specific avail first, then fill in any remaining
@@ -52,7 +52,7 @@ function eventsFromTimeRanges(timeRanges, fromDate, toDate) {
   let visited = new Array(dates.length).fill(false);
   for (const week of weeks) {
     for (let day = 0; day < 7; day++) {
-      const todayRanges = timeRanges[week][day];
+      const todayRanges = timeRanges[currentUser][week][day];
       const monday = fromIsoNoHyphens(week);
       // day is days since Monday - today is Monday + day
       const today = new Date(monday).setDate(monday.getDate() + day);
@@ -69,7 +69,7 @@ function eventsFromTimeRanges(timeRanges, fromDate, toDate) {
     if (!visited[i]) {
       const dateObj = fromIsoNoHyphens(dates[i]);
       const day = getDayOfWeek(dateObj); // Sunday-0 to Monday-0
-      const todayRanges = timeRanges[GENERAL_AVAIL_KEY][day];
+      const todayRanges = timeRanges[currentUser][GENERAL_AVAIL_KEY][day];
       for (const { from, to } of todayRanges) {
         events.push(eventFromTimeRange(dateObj, from, to));
       }
@@ -84,7 +84,8 @@ function Scheduler({
   onConfirm,
   setCurrentWeek,
   onSelectEvent,
-  onSelectSlot
+  onSelectSlot,
+  currentUser
 }) {
   const [focusedDate, setFocusedDate] = useState(dateRange[0]); // must be a Monday
 
@@ -96,8 +97,8 @@ function Scheduler({
   }), []);
 
   const events = useMemo(() => {
-    return eventsFromTimeRanges(timeRanges, dateRange[0], dateRange[1]);
-  }, [dateRange, timeRanges]);
+    return eventsFromTimeRanges(timeRanges, currentUser, dateRange[0], dateRange[1]);
+  }, [dateRange, timeRanges, currentUser]);
 
   const defaultDate = useMemo(() => {
     return dateRange[0];

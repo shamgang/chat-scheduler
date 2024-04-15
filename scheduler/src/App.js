@@ -38,12 +38,10 @@ function App() {
   const [flowState, setFlowState] = useState(StateMachine.SELECT_DATES);
   const [currentWeek, setCurrentWeek] = useState(null);
   const { eventId, eventState } = useLoaderData();
+  const [name, setName] = useState(null);
   const navigate = useNavigate();
   // If the first render has no eventId, this is a new event.
   const isNew = useRef(!eventId);
-  // If event has loaded state and general avail is confirmed,
-  // we are starting in specific mode.
-  const isSpecific = useRef(eventState && eventState.generalAvailConfirmed);
 
   // Populate loaded state if this is an existing event
   useEffect(() => {
@@ -52,16 +50,11 @@ function App() {
       if (!isNew.current) {
         // This is a fresh load of an existing event, set state from server
         setRange([eventState.chosenDates.from, eventState.chosenDates.to]);
-        if (eventState.generalAvailConfirmed === true) {
-          setFlowState(StateMachine.SPECIFIC_AVAIL);
-        } else {
-          setFlowState(StateMachine.GENERAL_AVAIL);
-        }
+        setFlowState(StateMachine.NAME);
         setTimeRanges(eventState.timeRanges);
       }
     }
-  }, [eventId, eventState]);
-
+  }, [eventId, eventState, setRange, setFlowState, setTimeRanges]);
 
 
   // Take action based on latest messages
@@ -83,12 +76,15 @@ function App() {
         msg.author === Authors.SCHEDULER &&
         msg.type === MessageTypes.TIME_RANGES
       ) {
-        console.log(`Chatbot setting time ranges for week ${msg.week}: ${msg.text}`);
+        console.log(`Chatbot setting time ranges for user: ${msg.name} for week ${msg.week}: ${msg.text}`);
         let trs = {...timeRanges}; // shallow-ish copy
         if (!trs) {
           trs = {};
         }
-        trs[msg.week] = msg.timeRanges;
+        if (!(msg.name in trs)) {
+          trs[msg.name] = {};
+        }
+        trs[msg.name][msg.week] = msg.timeRanges;
         setTimeRanges(trs);
       }
       setNumMessagesProcessed(n => n+1);
@@ -105,18 +101,39 @@ function App() {
 
   const onSend = useCallback((input) => {
     // Sending a chat message
-    const type = flowState === StateMachine.SELECT_DATES ? MessageTypes.DATES : MessageTypes.TIMES;
-    let message = {
-      type: type,
-      author: Authors.USER,
-      prompt: input
-    };
-    if (type === MessageTypes.TIMES) {
-      message.week = flowState === StateMachine.GENERAL_AVAIL ? GENERAL_AVAIL_KEY : currentWeek;
-      message.eventId = eventId;
+    if (flowState === StateMachine.SELECT_DATES) {
+      sendMessage({
+        type: MessageTypes.DATES,
+        author: Authors.USER,
+        prompt: input
+      });
+    } else if (flowState === StateMachine.NAME) {
+      sendMessage({
+        type: MessageTypes.NAME,
+        author: Authors.USER,
+        eventId: eventId,
+        name: input
+      });
+      setName(input);
+      if (eventState && input in eventState.generalAvailConfirmed && eventState.generalAvailConfirmed[input]) {
+        // Pre-loaded backend state shows we already did general availability.
+        setFlowState(StateMachine.SPECIFIC_AVAIL);
+      } else {
+        setFlowState(StateMachine.GENERAL_AVAIL);
+      }
+    } else if ([StateMachine.GENERAL_AVAIL, StateMachine.SPECIFIC_AVAIL].includes(flowState)) {
+      sendMessage({
+        type: MessageTypes.TIMES,
+        author: Authors.USER,
+        prompt: input,
+        week: flowState === StateMachine.GENERAL_AVAIL ? GENERAL_AVAIL_KEY : currentWeek,
+        eventId: eventId,
+        name: name
+      });
+    } else {
+      console.error(`Invalid flow state: ${flowState}, message not sent.`);
     }
-    sendMessage(message);
-  }, [eventId, flowState, currentWeek, sendMessage]);
+  }, [eventId, eventState, flowState, currentWeek, name, sendMessage, setFlowState, setName]);
 
   const onRangeChanged = useCallback((value) => {
     console.log(`Manual range change from: ${value[0]} to: ${value[1]}`);
@@ -125,7 +142,7 @@ function App() {
 
   const onSubmit = useCallback(() => {
     // Confirming date range
-    // Now that date range is confirmed, created a persisted event
+    // Now that date range is confirmed, create a persisted event
     const eventId = uuidv4();
     sendMessage({
       type: MessageTypes.RANGE,
@@ -134,7 +151,7 @@ function App() {
       toDate: range[1],
       eventId: eventId
     });
-    setFlowState(StateMachine.GENERAL_AVAIL);
+    setFlowState(StateMachine.NAME);
     navigate(`/${eventId}`);
   }, [sendMessage, setFlowState, range, navigate]);
 
@@ -142,12 +159,13 @@ function App() {
     sendMessage({
       type: MessageTypes.CONFIRM,
       author: Authors.USER,
-      eventId: eventId
+      eventId: eventId,
+      name: name
     });
     if (flowState === StateMachine.GENERAL_AVAIL) {
       setFlowState(StateMachine.SPECIFIC_AVAIL);
     }
-  }, [eventId, flowState, setFlowState, sendMessage]);
+  }, [eventId, name, flowState, setFlowState, sendMessage]);
 
   const onSelectSlot = useCallback(({start, end}) => {
     sendMessage({
@@ -155,9 +173,10 @@ function App() {
       author: Authors.USER,
       from: start,
       to: end,
-      eventId: eventId
+      eventId: eventId,
+      name: name
     });
-  }, [eventId, sendMessage]);
+  }, [eventId, name, sendMessage]);
 
   const onSelectEvent = useCallback(({ start, end }) => {
     sendMessage({
@@ -165,15 +184,41 @@ function App() {
       author: Authors.USER,
       from: start,
       to: end,
-      eventId: eventId
+      eventId: eventId,
+      name: name
     });
-  }, [eventId, sendMessage]);
+  }, [eventId, name, sendMessage]);
 
   const displayMessages = generateDisplayMessages(
     messages,
     isNew.current,
-    isSpecific.current
+    eventState,
+    name
   );
+
+  const renderWidget = () => {
+    if (flowState === StateMachine.SELECT_DATES) {
+      return (
+        <Calendar
+          range={range}
+          onRangeChanged={onRangeChanged}
+          onSubmit={onSubmit}
+        />
+      );
+    } else if ([StateMachine.GENERAL_AVAIL, StateMachine.SPECIFIC_AVAIL].includes(flowState)) {
+      return (
+        <Scheduler
+          dateRange={range}
+          timeRanges={timeRanges}
+          onConfirm={onConfirm}
+          setCurrentWeek={setCurrentWeek}
+          onSelectEvent={onSelectEvent}
+          onSelectSlot={onSelectSlot}
+          currentUser={name}
+        />
+      );
+    }
+  };
 
   return (
     <div className='grid-container'>
@@ -186,20 +231,7 @@ function App() {
       <div className='calendar-container'>
         <div className='calendar'>
           {
-            flowState === StateMachine.SELECT_DATES ?
-            <Calendar
-              range={range}
-              onRangeChanged={onRangeChanged}
-              onSubmit={onSubmit}
-            /> :
-            <Scheduler
-              dateRange={range}
-              timeRanges={timeRanges}
-              onConfirm={onConfirm}
-              setCurrentWeek={setCurrentWeek}
-              onSelectEvent={onSelectEvent}
-              onSelectSlot={onSelectSlot}
-            />
+            renderWidget()
           }
         </div>
       </div>
