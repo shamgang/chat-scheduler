@@ -16,7 +16,8 @@ from lib.client_message import (
     Author
 )
 from lib.model_tools import to_iso_no_hyphens
-from lib.datetime_helpers import format_week
+from lib.datetime_helpers import format_week, get_last_monday
+from lib.scheduler import find_times
 
 
 # Expect the following keys to exist in .env:
@@ -33,6 +34,7 @@ hour_translator = HourTranslator(model)
 async def on_message(message: cl.Message):
     logger.debug(f'Received message: {message.content}')
     msg = parse_message(message.content)
+    response = None
     if msg.type == ClientMessageType.DATES:
         # User is defining a date range
         try:
@@ -56,9 +58,6 @@ async def on_message(message: cl.Message):
                 author=Author.SCHEDULER,
                 error_message='An unknown error occured.'
             ) # TODO: bug reporting
-        cl_message = response.format_message()
-        logger.debug(f'Model response: {cl_message.content}')
-        await cl_message.send()
     elif msg.type == ClientMessageType.RANGE:
         # User has confirmed date range
         get_or_create_event(msg.event_id).chosen_dates = {
@@ -81,9 +80,6 @@ async def on_message(message: cl.Message):
             week=msg.week,
             time_ranges=time_ranges
         )
-        cl_message = response.format_message()
-        logger.debug(f'Model response: {cl_message.content}')
-        await cl_message.send()
     elif msg.type == ClientMessageType.CONFIRM:
         # User has confirmed general avail
         get_or_create_event(msg.event_id).set_general_avail_confirmed(msg.name, True)
@@ -93,7 +89,7 @@ async def on_message(message: cl.Message):
         # an array of dates instead of an array of weeks
         # with days of the week?
         slot_date = msg.from_time.date()
-        monday = slot_date - timedelta(days=slot_date.weekday())
+        monday = get_last_monday(slot_date)
         monday_str = to_iso_no_hyphens(monday)
         time_grid = get_or_create_event(msg.event_id).get_time_grid(msg.name, monday_str)
         time_grid.process_message(msg)
@@ -104,6 +100,18 @@ async def on_message(message: cl.Message):
             week=monday,
             time_ranges=time_grid.get_time_ranges()
         )
+    elif msg.type == ClientMessageType.FIND_TIMES:
+        event_state = get_or_create_event(msg.event_id)
+        response = ClientMessage(
+            type=ClientMessageType.FOUND_TIMES,
+            author=Author.SCHEDULER,
+            found_times=find_times(
+                event_state.chosen_dates['from'],
+                event_state.chosen_dates['to'],
+                event_state.time_grids
+            )
+        )
+    if response:
         cl_message = response.format_message()
         logger.debug(f'Model response: {cl_message.content}')
         await cl_message.send()

@@ -12,11 +12,10 @@ from .json_helpers import (
     parse_time_ranges,
     format_time_ranges,
     message_validator,
-    validate_verbose
+    validate_verbose,
+    parse_found_times,
+    format_found_times
 )
-
-
-
 
 
 class ClientMessageType(str, Enum):
@@ -28,6 +27,8 @@ class ClientMessageType(str, Enum):
     CONFIRM = 'CONFIRM'
     OPEN = 'OPEN'
     CLOSE = 'CLOSE'
+    FIND_TIMES = 'FIND_TIMES'
+    FOUND_TIMES = 'FOUND_TIMES'
     ERROR = 'ERROR'
 
 
@@ -41,7 +42,7 @@ def parse_message(msg_str):
     msg = json.loads(msg_str)
     validate_verbose(message_validator, msg)
     msg_type = msg['type']
-    from_date, to_date, week, time_ranges, from_time, to_time = (None, None, None, None, None, None)
+    from_date, to_date, week, time_ranges, from_time, to_time, found_times = (None, None, None, None, None, None, None)
     if msg_type == ClientMessageType.RANGE:
         from_date = from_iso_no_hyphens(msg['fromDate'])
         to_date = from_iso_no_hyphens(msg['toDate'])
@@ -53,6 +54,8 @@ def parse_message(msg_str):
     if msg_type in [ClientMessageType.OPEN, ClientMessageType.CLOSE]:
         from_time = datetime_from_iso_no_hyphens(msg['from'])
         to_time = datetime_from_iso_no_hyphens(msg['to'])
+    if msg_type == ClientMessageType.FOUND_TIMES:
+        found_times = parse_found_times(msg['foundTimes'])
     return ClientMessage(
         type=msg_type,
         author=msg['author'],
@@ -65,7 +68,8 @@ def parse_message(msg_str):
         to_time=to_time,
         error_message=msg.get('errorMessage'),
         event_id=msg.get('eventId'),
-        name=msg.get('name')
+        name=msg.get('name'),
+        found_times=found_times
     )
 
 
@@ -86,6 +90,9 @@ def format_message(msg):
     if msg.type in [ClientMessageType.OPEN, ClientMessageType.CLOSE]:
         msg_json['from'] = datetime_to_iso_no_hyphens(msg.from_time)
         msg_json['to'] = datetime_to_iso_no_hyphens(msg.to_time)
+    if msg.type == ClientMessageType.FOUND_TIMES:
+        msg_json['foundTimes'] = format_found_times(msg.found_times)
+        print(msg_json)
     if msg.prompt:
         msg_json['prompt'] = msg.prompt
     if msg.error_message:
@@ -113,7 +120,8 @@ class ClientMessage:
         to_time=None,
         error_message=None,
         event_id=None,
-        name=None
+        name=None,
+        found_times=None
     ):
         self.type = type
         self.author = author
@@ -127,6 +135,7 @@ class ClientMessage:
         self.error_message = error_message
         self.event_id = event_id
         self.name = name
+        self.found_times = found_times
             
     def format_message(self):
         '''To chainlit format'''

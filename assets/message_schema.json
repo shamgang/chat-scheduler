@@ -202,6 +202,64 @@
         "name"
       ]
     },
+    "findTimesMessage": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "FIND_TIMES"
+        },
+        "eventId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "eventId"
+      ]
+    },
+    "foundTimesMessage": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "FOUND_TIMES"
+        },
+        "foundTimes": {
+          "type": "object",
+          "patternProperties": {
+            "^\\d+$": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "$comment": "YYYYMMDD format"
+                  },
+                  "from": {
+                    "type": "string",
+                    "$comment": "HHmm format"
+                  },
+                  "to": {
+                    "type": "string",
+                    "$comment": "HHmm format"
+                  }
+                },
+                "required": [
+                  "date",
+                  "from",
+                  "to"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "type",
+        "foundTimes"
+      ]
+    },
     "errorMessage": {
       "type": "object",
       "properties": {
@@ -230,6 +288,8 @@
         { "$ref": "#/definitions/timeRangesMessage" },
         { "$ref": "#/definitions/confirmMessage" },
         { "$ref": "#/definitions/openOrCloseMessage" },
+        { "$ref": "#/definitions/findTimesMessage" },
+        { "$ref": "#/definitions/foundTimesMessage" },
         { "$ref": "#/definitions/errorMessage" }
       ]
     }

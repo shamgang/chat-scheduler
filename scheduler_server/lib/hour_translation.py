@@ -62,6 +62,13 @@ class HourTranslator:
         return [CalendarAction(s) for s in statement_lines]
 
 
+def get_time_from_slot(slot_num):
+    return time(
+        int(slot_num // SLOTS_PER_HOUR),
+        int((slot_num % SLOTS_PER_HOUR) * MINUTES_PER_SLOT)
+    )
+
+
 class WeeklyTimeGrid:
     '''A representation of a weekly calendar with a certain slot size'''
     def __init__(self):
@@ -104,12 +111,6 @@ class WeeklyTimeGrid:
             TimeRange(msg.from_time.time(), msg.to_time.time()),
             1 if msg.type == ClientMessageType.OPEN else 0
         )
-
-    def _get_time_from_slot(self, slot_num):
-        return time(
-            int(slot_num // SLOTS_PER_HOUR),
-            int((slot_num % SLOTS_PER_HOUR) * MINUTES_PER_SLOT)
-        )
     
     def get_time_ranges(self):
         ranges = [[], [], [], [], [], [], []] # list of ranges per day of week
@@ -121,12 +122,12 @@ class WeeklyTimeGrid:
                     # Open slot
                     if start is None:
                         # Found a new open range
-                        start = self._get_time_from_slot(slot)
+                        start = get_time_from_slot(slot)
                 elif slot_value == 0:
                     # Closed slot
                     if start is not None:
                         # Reached the end of an open range
-                        ranges[day].append(TimeRange(start, self._get_time_from_slot(slot)))
+                        ranges[day].append(TimeRange(start, get_time_from_slot(slot)))
                         start = None
             if start is not None:
                 # Reached the end of the day with an open time range

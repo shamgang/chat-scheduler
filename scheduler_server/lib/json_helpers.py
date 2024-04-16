@@ -3,6 +3,7 @@ import os.path
 import json
 from .logger import logger
 from .datetime_helpers import from_time_string, to_time_string, TimeRange
+from .model_tools import to_iso_no_hyphens, from_iso_no_hyphens
 
 
 MESSAGE_SCHEMA_PATH = os.path.join(
@@ -58,4 +59,34 @@ def format_time_ranges(time_ranges):
                 'to': to_time_string(time_range.end_time)
             })
         result.append(day_result)
+    return result
+
+
+def parse_found_times(json_found_times):
+    '''Create a native format found times object from a JSON formatted version'''
+    result = {}
+    for num_attendees, slots in json_found_times:
+        num_attendees_result = []
+        for slot in slots:
+            num_attendees_result.append({
+                'date': from_iso_no_hyphens(slot['date']),
+                'from': from_time_string(slot['from']),
+                'to': from_time_string(slot['to'])
+            })
+        result[int(num_attendees)] = num_attendees_result
+    return result
+
+
+def format_found_times(found_times):
+    '''Creates a JSON formatted version of the found times object'''
+    result = {}
+    for num_attendees, slots in found_times.items():
+        num_attendees_result = []
+        for slot in slots:
+            num_attendees_result.append({
+                'date': to_iso_no_hyphens(slot['date']),
+                'from': to_time_string(slot['from']),
+                'to': to_time_string(slot['to'])
+            })
+        result[str(num_attendees)] = num_attendees_result
     return result

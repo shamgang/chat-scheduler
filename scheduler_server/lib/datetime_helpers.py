@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import calendar
 from .model_tools import from_iso_no_hyphens, to_iso_no_hyphens
 
@@ -34,6 +34,10 @@ def format_week(week):
     if week_str != GENERAL_WEEK_KEY:
         week_str = to_iso_no_hyphens(week)
     return week_str
+
+
+def get_last_monday(dt):
+    return dt - timedelta(days=dt.weekday())
 
 
 day_inds = { calendar.day_name[i]: i for i in range(7) }

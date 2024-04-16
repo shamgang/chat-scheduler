@@ -2,9 +2,9 @@ import { useMemo, useCallback, useState, useEffect } from 'react';
 import { Calendar, Views, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css'
-import { GENERAL_AVAIL_KEY, toIsoNoHyphens } from '../services/MessageService';
+import { GENERAL_AVAIL_KEY } from '../services/MessageService';
 import { getDatesBetweenDates, getDayOfWeek, lastMonday, nextSunday } from '../helpers/Dates';
-import { fromIsoNoHyphens } from '../helpers/FormatHelpers'
+import { fromIsoNoHyphens, toIsoNoHyphens } from '../helpers/FormatHelpers'
 
 moment.locale('en-us', {
   week: {

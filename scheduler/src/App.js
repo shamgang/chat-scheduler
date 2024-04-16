@@ -100,7 +100,13 @@ function App() {
 
   const onSend = useCallback((input) => {
     // Sending a chat message
-    if (flowState === StateMachine.SELECT_DATES) {
+    if (input == 'FIND TIMES' && eventId) {
+      sendMessage({
+        type: MessageTypes.FIND_TIMES,
+        author: Authors.USER,
+        eventId: eventId
+      });
+    } else if (flowState === StateMachine.SELECT_DATES) {
       sendMessage({
         type: MessageTypes.DATES,
         author: Authors.USER,

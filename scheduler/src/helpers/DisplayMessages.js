@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { Authors, MessageTypes } from '../services/MessageService'
 import {
   WELCOME_MESSAGE,
@@ -27,6 +28,23 @@ function displayMessage(text, author) {
         id: author.toLowerCase() // Minchat assumes lowercase ID in their comparison logic
       }
     }
+}
+
+function displayFoundTimes(foundTimes) {
+  let numAttendeesOptions = Object.keys(foundTimes);
+  numAttendeesOptions.sort();
+  numAttendeesOptions.reverse();
+  let response = '';
+  for (const opt of numAttendeesOptions) {
+    response += `Time slots with ${opt} attendees:\n`;
+    for (const slot of foundTimes[opt]) {
+      const readableDate = moment(slot.date).format('dddd, MMMM DD YYYY');
+      const readableFrom = moment(slot.from).format('h:mm A');
+      const readableTo = moment(slot.to).format('h:mm A');
+      response += `${readableDate} ${readableFrom}-${readableTo}\n`;
+    }
+  }
+  return response;
 }
 
 // Convert the client-server message history into display messages
@@ -83,6 +101,8 @@ function generateDisplayMessages(messages, isNew, eventState, name) {
           text = SPECIFIC_TIME_RANGES_MESSAGE_SHORT;
         }
       }
+    } else if (msg.type === MessageTypes.FOUND_TIMES) {
+      text = displayFoundTimes(msg.foundTimes);
     }
     // Push the current message, except in certain cases where we hide it.
     if (text) {

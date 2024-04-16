@@ -5,7 +5,14 @@ import { useRecoilValue } from 'recoil';
 import moment from 'moment';
 import schema from '../assets/message_schema.json';
 import Ajv from 'ajv';
-import { parseTimeRanges, fromIsoNoHyphens } from '../helpers/FormatHelpers';
+import {
+  parseTimeRanges,
+  toIsoNoHyphens,
+  fromIsoNoHyphens,
+  parseFoundTimes,
+  formatFoundTimes,
+  formatTimeString
+} from '../helpers/FormatHelpers';
 
 const CHAINLIT_SERVER_URL = 'http://localhost:8000';
 
@@ -29,11 +36,12 @@ const MessageTypes = {
   CONFIRM: "CONFIRM",
   CLOSE: "CLOSE",
   OPEN: "OPEN",
+  FIND_TIMES: "FIND_TIMES",
+  FOUND_TIMES: "FOUND_TIMES",
   ERROR: "ERROR"
 };
 
 const GENERAL_AVAIL_KEY = "GENERAL"
-
 
 
 function dateTimeFromIsoNoHyphens(dateTimeStr) {
@@ -44,22 +52,6 @@ function dateTimeFromIsoNoHyphens(dateTimeStr) {
     parseInt(dateTimeStr.substring(8, 10), 10),
     parseInt(dateTimeStr.substring(10, 12), 10)
   );
-}
-
-function formatTimeString(time) {
-  return pad2(time.getHours()) + pad2(time.getMinutes())
-}
-
-function pad2(int) {
-  if (int < 10 && int > -10) {
-    return '0' + int.toString();
-  } else {
-    return int.toString();
-  }
-}
-
-function toIsoNoHyphens(date) {
-  return moment(date).format('YYYYMMDD');
 }
 
 function dateTimeToIsoNoHyphens(dt) {
@@ -84,6 +76,8 @@ function parseMessage(msg_str) {
   } else if ([MessageTypes.OPEN, MessageTypes.CLOSE].includes(msg.type)) {
     msg.from = dateTimeFromIsoNoHyphens(msg.from);
     msg.to = dateTimeFromIsoNoHyphens(msg.to);
+  } else if (msg.type === MessageTypes.FOUND_TIMES) {
+    msg.foundTimes = parseFoundTimes(msg.foundTimes)
   }
   return msg;
 }
@@ -107,10 +101,12 @@ function formatMessage(msg) {
   } else if ([MessageTypes.OPEN, MessageTypes.CLOSE].includes(msg.type)) {
     msg.from = dateTimeToIsoNoHyphens(msg.from);
     msg.to = dateTimeToIsoNoHyphens(msg.to);
+  } else if (msg.type === MessageTypes.FOUND_TIMES) {
+    msg.foundTimes = formatFoundTimes(msg.foundTimes)
   }
   if (!validate(msg)) {
-    console.log(msg);
-    console.log(validate.errors);
+    console.error('Validation failed:', msg);
+    console.error('Validation errors:', validate.errors);
     throw new Error('Invalid message format');
   }
   return {
