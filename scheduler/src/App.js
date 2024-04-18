@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import cloneDeep from "lodash.clonedeep";
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useLoaderData, useNavigate } from "react-router-dom";
 import './App.css';
@@ -77,7 +78,7 @@ function App() {
         msg.type === MessageTypes.TIME_RANGES
       ) {
         console.log(`Chatbot setting time ranges for user: ${msg.name} for week ${msg.week}: ${JSON.stringify(msg.timeRanges, 2)}`);
-        let trs = {...timeRanges}; // shallow-ish copy
+        let trs = cloneDeep(timeRanges);
         if (!trs) {
           trs = {};
         }

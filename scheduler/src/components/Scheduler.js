@@ -87,7 +87,7 @@ function Scheduler({
   onSelectSlot,
   currentUser
 }) {
-  const [focusedDate, setFocusedDate] = useState(dateRange[0]); // must be a Monday
+  const [focusedDate, setFocusedDate] = useState(lastMonday(dateRange[0]));
 
   const { style, defaultView, views } = useMemo(() => ({
     style: { height: 500 },
