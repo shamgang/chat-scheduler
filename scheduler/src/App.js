@@ -101,7 +101,7 @@ function App() {
 
   const onSend = useCallback((input) => {
     // Sending a chat message
-    if (input == 'FIND TIMES' && eventId) {
+    if (input === 'FIND TIMES' && eventId) {
       sendMessage({
         type: MessageTypes.FIND_TIMES,
         author: Authors.USER,

@@ -103,6 +103,8 @@ function generateDisplayMessages(messages, isNew, eventState, name) {
       }
     } else if (msg.type === MessageTypes.FOUND_TIMES) {
       text = displayFoundTimes(msg.foundTimes);
+    } else if (msg.type === MessageTypes.ERROR) {
+      text = msg.errorMessage;
     }
     // Push the current message, except in certain cases where we hide it.
     if (text) {
