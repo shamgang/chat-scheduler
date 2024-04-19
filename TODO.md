@@ -7,3 +7,5 @@
 * Cleanup - use ajv custom formatters and the “format” keyword in the schema to avoid having to index into all the messages and convert field-by-field (parseMessage, formatMessage). Automatically convert-in-place based on format specifier. Also possible in Python? That would further reduce format translation code size.
 * RANGE session id is currently optional because it can be client or server message: split this into two message types?
 * Replace in-memory chat history with a history fetching method
+* JSON schema validation on the front end for state document
+* iPhone - gets stuck on "Let me think"

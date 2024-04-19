@@ -24,9 +24,7 @@ import { StateMachine } from './StateMachine';
 function displayMessage(text, author) {
     return {
       text: text,
-      user: {
-        id: author.toLowerCase() // Minchat assumes lowercase ID in their comparison logic
-      }
+      fromUser: author === Authors.USER
     }
 }
 

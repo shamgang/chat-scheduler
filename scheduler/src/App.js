@@ -15,6 +15,7 @@ import {
 import { generateDisplayMessages } from './helpers/DisplayMessages'
 import { StateMachine } from './helpers/StateMachine';
 import { getEventState } from "./services/StateService";
+import { getRandomBackgroundImageUrl } from "./helpers/BackgroundImage";
 
 export async function loader({ params }) {
   // TODO: keep a state variable so we don't
@@ -28,6 +29,8 @@ export async function loader({ params }) {
   }
   return {}
 }
+
+const BACKGROUND_IMAGE = getRandomBackgroundImageUrl();
 
 function App() {
   const { messages, sendMessage } = useMessageService();
@@ -43,6 +46,10 @@ function App() {
   const navigate = useNavigate();
   // If the first render has no eventId, this is a new event.
   const isNew = useRef(!eventId);
+
+  const backgroundStyle = {
+    backgroundImage: 'url(' + BACKGROUND_IMAGE + ')'
+  };
 
   // Populate loaded state if this is an existing event
   useEffect(() => {
@@ -233,7 +240,7 @@ function App() {
   };
 
   return (
-    <div className='grid-container'>
+    <div className='grid-container' style={backgroundStyle}>
       <div className='chat'>
         <Chat
           onSendMessage={onSend}

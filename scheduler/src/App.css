@@ -8,22 +8,29 @@ html, body {
     padding: 0;
 }
 .grid-container {
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
     display: grid;
     grid-template: 'chat calendar';
     grid-template-columns: 50% 50%;
     grid-template-rows: 100%;
-    height: 100vh;
 }
 .chat {
     grid-area: chat;
+    display: grid;
+    height: 100%;
+    width: 100%;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+    place-items: center;
 }
 .calendar-container {
     grid-area: calendar;
     display: grid;
     height: 100%;
     width: 100%;
-    justify-items: center;
-    align-items: center;
+    place-items: center;
 }
 @media (max-aspect-ratio: 1/1) {
     .grid-container {

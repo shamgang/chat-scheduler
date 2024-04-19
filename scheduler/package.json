@@ -5,6 +5,9 @@
   "//": "There is a (filed) bug in react-big-calendar 1.11.2 with selection",
   "dependencies": {
     "@chainlit/react-client": "^0.0.5",
+    "@fortawesome/fontawesome-svg-core": "^6.5.2",
+    "@fortawesome/free-solid-svg-icons": "^6.5.2",
+    "@fortawesome/react-fontawesome": "^0.2.0",
     "@minchat/react-chat-ui": "^0.16.2",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
