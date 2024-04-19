@@ -8,4 +8,3 @@
 * RANGE session id is currently optional because it can be client or server message: split this into two message types?
 * Replace in-memory chat history with a history fetching method
 * JSON schema validation on the front end for state document
-* iPhone - gets stuck on "Let me think"

@@ -16,7 +16,9 @@ function Chat({onSendMessage, messages}) {
       const lastMessage = messagesRef.current.lastElementChild;
       if (lastMessage) {
         lastMessage.scrollIntoView({
-          behavior: 'smooth'
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'nearest'
         });
       }
     }

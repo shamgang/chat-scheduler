@@ -14,7 +14,7 @@ import {
   formatTimeString
 } from '../helpers/FormatHelpers';
 
-const CHAINLIT_SERVER_URL = 'http://localhost:8000';
+const CHAINLIT_SERVER_URL = 'http://192.168.0.134:8000';
 
 const apiClient = new ChainlitAPI(CHAINLIT_SERVER_URL);
 
