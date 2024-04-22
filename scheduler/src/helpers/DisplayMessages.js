@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { Authors, MessageTypes } from '../services/MessageService'
 import {
-  WELCOME_MESSAGE,
+  WELCOME_MESSAGES,
   LOADING_MESSAGE,
   DATE_ENTERED_MESSAGE,
   DATE_ENTERED_MESSAGE_SHORT,
@@ -59,7 +59,9 @@ function generateDisplayMessages(messages, isNew, eventState, name) {
   // Welcome message, display only
   if (isNew) {
     // New event
-    displayMessages.push([WELCOME_MESSAGE, Authors.SCHEDULER]);
+    for (const msg of WELCOME_MESSAGES) {
+      displayMessages.push([msg, Authors.SCHEDULER]);
+    }
   } else {
     // Existing event
     displayMessages.push([NAME_MESSAGE_FRESH, Authors.SCHEDULER]);

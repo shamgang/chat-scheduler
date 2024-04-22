@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, Children, cloneElement } from 'react';
+import { useCallback, useRef, useState, Children, cloneElement, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAnglesRight, faAnglesLeft } from '@fortawesome/free-solid-svg-icons'
 import { Calendar as BigCalendar, Views, momentLocalizer } from 'react-big-calendar';
@@ -14,7 +14,8 @@ moment.locale('en-us', {
 });
 const localizer = momentLocalizer(moment)
 
-function CustomToolbar({ label, onNavigate }) {
+export function CustomToolbar({ label, onNavigate }) {
+
   const onPrev = useCallback(() => {
     onNavigate('PREV');
   }, [onNavigate]);
@@ -22,6 +23,7 @@ function CustomToolbar({ label, onNavigate }) {
   const onNext = useCallback(() => {
     onNavigate('NEXT');
   }, [onNavigate]);
+
   return (
     <div className="calendar-toolbar">
       <span className="calendar-prev" onClick={onPrev}>
@@ -54,6 +56,11 @@ function DateCellWrapper({children, value, onRangeSelected}) {
 function Calendar({range, onRangeChanged, onSubmit}) {
     const calendarRef = useRef(null);
     const [rangeStart, setRangeStart] = useState(null);
+    const [focusedDate, setFocusedDate] = useState(range[0]);
+
+    useEffect(() => {
+      setFocusedDate(range[0]);
+    }, [range, setFocusedDate]);
 
     const onRangeSelected = useCallback((slotInfo) => {
       const start = slotInfo.start;
@@ -65,11 +72,16 @@ function Calendar({range, onRangeChanged, onSubmit}) {
           // Don't fire a range change, just log the date clicked as the start of a range
           setRangeStart(start);
         } else {
-          onRangeChanged([rangeStart, start]);
+          // Handle forward and backward selection
+          onRangeChanged([
+            moment.min(moment(rangeStart), moment(start)).toDate(),
+            moment.max(moment(rangeStart), moment(start)).toDate()
+          ]);
           setRangeStart(null);
         }
       } else {
         // Range drag-selected
+        setRangeStart(null);
         onRangeChanged([start, end]);
       } 
     }, [onRangeChanged, rangeStart, setRangeStart]);
@@ -90,6 +102,10 @@ function Calendar({range, onRangeChanged, onSubmit}) {
       }
     }, [range, rangeStart]);
 
+    const onNavigate = useCallback((dt) => {
+      setFocusedDate(dt);
+    }, [setFocusedDate]);
+
     return (
         <div className="calendar-container">
             <BigCalendar
@@ -105,6 +121,8 @@ function Calendar({range, onRangeChanged, onSubmit}) {
               selectable={true}
               onSelectSlot={onRangeSelected}
               dayPropGetter={dayPropGetter}
+              date={focusedDate}
+              onNavigate={onNavigate}
             />
             <button className='calendar-submit' id='range-submit' onClick={onSubmit}>OK</button>
         </div>

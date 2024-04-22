@@ -1,3 +1,9 @@
+import moment from 'moment';
+
+export const SLOTS_PER_DAY = 48;
+export const SLOTS_PER_HOUR = SLOTS_PER_DAY / 24;
+export const MINUTES_PER_SLOT = 60 / SLOTS_PER_HOUR;
+
 export function getDatesBetweenDates(from, to) {
   let dates = []
   let currentDate = new Date(from);
@@ -38,4 +44,21 @@ export function equalDates(date1, date2) {
 
 export function cloneDate(dt) {
   return new Date(dt);
+}
+
+// Rounds a time to a slot time
+function roundToSlot(tm) {
+  let dt = cloneDate(tm);
+  dt.setMinutes(
+    Math.round(tm.getMinutes() / MINUTES_PER_SLOT) * MINUTES_PER_SLOT
+  );
+  return dt;
+}
+
+export function equalSlots(time1, time2) {
+  return moment(roundToSlot(time1)).isSame(moment(roundToSlot(time2)));
+}
+
+export function addSlots(tm, slots) {
+  return moment(tm).add(MINUTES_PER_SLOT * slots, 'minutes').toDate();
 }

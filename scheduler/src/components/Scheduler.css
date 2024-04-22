@@ -1,5 +1,59 @@
-.scheduler-container {
-    place-self: center;
-    height: 50%;
-    width: 80%;
+.calendar {
+    height: 100% !important;
+}
+
+.rbc-header button {
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.rbc-time-gutter .rbc-timeslot-group {
+    font-weight: bold;
+    display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+    place-items: center;
+}
+
+.rbc-time-gutter .rbc-timeslot-group div:first-child {
+    border-left: none !important;
+}
+
+.rbc-day-slot .time-slot-out-of-range {
+    background-color: rgba(180, 180, 180, 0.5);
+}
+
+.rbc-day-slot .time-slot-selecting {
+    background-color:rgba(220, 220, 255, 1) !important;
+}
+
+.rbc-day-slot .time-slot-default {
+    background-color: white;
+}
+
+.rbc-events-container {
+    margin-right: 0 !important;
+    pointer-events: none;
+}
+
+.rbc-event-label {
+    display: none;
+}
+
+.rbc-event {
+    border-radius: 0;
+    border: none !important;
+    outline: none !important;
+    width: 100%;
+    background-color: rgba(200, 200, 255, 1) !important;
+    pointer-events: all;
+}
+
+@media (max-aspect-ratio: 1/1) {
+    .rbc-header button {
+        font-size: 0.5em;
+    }
+    .rbc-time-gutter {
+        font-size: 0.5em;
+    }
 }

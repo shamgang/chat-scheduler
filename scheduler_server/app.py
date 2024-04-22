@@ -69,17 +69,24 @@ async def on_message(message: cl.Message):
         pass
     elif msg.type == ClientMessageType.TIMES:
         # User is defining time slots
-        actions = hour_translator.translate_to_calendar_actions(msg.prompt)
-        grid = get_or_create_event(msg.event_id).get_time_grid(msg.name, format_week(msg.week))
-        grid.process_calendar_actions(actions)
-        time_ranges = grid.get_time_ranges()
-        response = ClientMessage(
-            type=ClientMessageType.TIME_RANGES,
-            author=Author.SCHEDULER,
-            name=msg.name,
-            week=msg.week,
-            time_ranges=time_ranges
-        )
+        try:
+            actions = hour_translator.translate_to_calendar_actions(msg.prompt)
+            grid = get_or_create_event(msg.event_id).get_time_grid(msg.name, format_week(msg.week))
+            grid.process_calendar_actions(actions)
+            time_ranges = grid.get_time_ranges()
+            response = ClientMessage(
+                type=ClientMessageType.TIME_RANGES,
+                author=Author.SCHEDULER,
+                name=msg.name,
+                week=msg.week,
+                time_ranges=time_ranges
+            )
+        except TranslationFailedError as tfe:
+            response = ClientMessage(
+                type=ClientMessageType.ERROR,
+                author=Author.SCHEDULER,
+                error_message=str(tfe)
+            )
     elif msg.type == ClientMessageType.CONFIRM:
         # User has confirmed general avail
         get_or_create_event(msg.event_id).set_general_avail_confirmed(msg.name, True)

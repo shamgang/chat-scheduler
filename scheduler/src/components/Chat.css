@@ -122,4 +122,7 @@
     .input-container {
         font-size: 1em;
     }
+    .input-container .send-icon {
+        height: 70%;
+    }
 }

@@ -13,8 +13,7 @@ from .datetime_helpers import TimeRange, from_time_string
 
 
 generic_time_parse_failure_message = """
-Sorry, I had trouble understanding that as availability.
-Can you try using more specific language?
+Sorry, I didn't get that. I only understand general availability right now.
 """
 
 

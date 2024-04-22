@@ -148,11 +148,13 @@ function App() {
     }
   }, [eventId, eventState, flowState, currentWeek, name, sendMessage, setFlowState, setName]);
 
+  // When date calendar selection changes
   const onRangeChanged = useCallback((value) => {
     console.log(`Manual range change from: ${value[0]} to: ${value[1]}`);
     setRange(value);
   }, [setRange]);
 
+  // When date range is confirmed
   const onSubmit = useCallback(() => {
     // Confirming date range
     // Now that date range is confirmed, create a persisted event
@@ -168,6 +170,7 @@ function App() {
     navigate(`/${eventId}`);
   }, [sendMessage, setFlowState, range, navigate]);
 
+  // When general avail is confirmed
   const onConfirm = useCallback(() => {
     sendMessage({
       type: MessageTypes.CONFIRM,
@@ -180,6 +183,10 @@ function App() {
     }
   }, [eventId, name, flowState, setFlowState, sendMessage]);
 
+  // Hourly calendar selectable
+  const scheduleSelectable = flowState === StateMachine.SPECIFIC_AVAIL;
+
+  // When hourly calendar slot is selected
   const onSelectSlot = useCallback(({start, end}) => {
     if (flowState !== StateMachine.SPECIFIC_AVAIL) {
       return;
@@ -194,6 +201,7 @@ function App() {
     });
   }, [eventId, name, flowState, sendMessage]);
 
+  // When hourly calendar event is selected
   const onSelectEvent = useCallback(({ start, end }) => {
     if (flowState !== StateMachine.SPECIFIC_AVAIL) {
       return;
@@ -208,6 +216,7 @@ function App() {
     });
   }, [eventId, name, flowState, sendMessage]);
 
+  // Messages to show in chat
   const displayMessages = generateDisplayMessages(
     messages,
     isNew.current,
@@ -215,6 +224,7 @@ function App() {
     name
   );
 
+  // Date calendar or hourly calendar depending where we are in flow
   const renderWidget = () => {
     if (flowState === StateMachine.SELECT_DATES) {
       return (
@@ -231,6 +241,7 @@ function App() {
           timeRanges={timeRanges}
           onConfirm={onConfirm}
           setCurrentWeek={setCurrentWeek}
+          selectable={scheduleSelectable}
           onSelectEvent={onSelectEvent}
           onSelectSlot={onSelectSlot}
           currentUser={name}

@@ -17,7 +17,7 @@ from .config import config
 from .errors import TranslationFailedError
 
 
-generic_date_parse_failure_message = "Sorry, I had trouble understanding that as a date range. Can you try using more specific language?"
+generic_date_parse_failure_message = "Sorry, I didn't get that. I can only understand date ranges right now."
 
 
 class StatementType(str, Enum):

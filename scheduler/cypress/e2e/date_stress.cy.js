@@ -28,8 +28,8 @@ const badInputs = [
 async function test() {
   cy.visit('http://localhost:3000');
   waitForNumIncoming(1);
-  const msgInput = cy.get('[data-testid="message-input"]');
-  const msgForm = cy.get('[data-testid="message-form"]');
+  const msgInput = cy.get('[id="messageInput"]');
+  const msgForm = cy.get('[id="messageForm"]');
   let numUpdates = 0;
   for (const input of goodInputs) {
     msgInput.type(input);

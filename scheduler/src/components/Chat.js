@@ -48,8 +48,8 @@ function Chat({onSendMessage, messages}) {
           ))
         }
       </div>
-      <form onSubmit={onFormSubmit} className='input-container'>
-        <input type="text" value={input} className="message-input" autoFocus onChange={onInputChange}/>
+      <form onSubmit={onFormSubmit} className='input-container' id="messageForm">
+        <input type="text" value={input} className="message-input" id="messageInput" autoFocus onChange={onInputChange}/>
         <button type="submit" className="send">
           <FontAwesomeIcon
             icon={faAnglesRight}

@@ -2,9 +2,9 @@ describe('default spec', () => {
   it('Should go through basic flow without crashing', () => {
     cy.visit('http://localhost:3000');
     cy.wait(1000);
-    const msgInput = cy.get('[data-testid="message-input"]');
+    const msgInput = cy.get('[id="messageInput"]');
     msgInput.type('the next two weeks');
-    const msgForm = cy.get('[data-testid="message-form"]');
+    const msgForm = cy.get('[id="messageForm"]');
     msgForm.submit();
     cy.wait(6000);
     cy.get('#range-submit').click();
@@ -37,8 +37,8 @@ describe('default spec', () => {
     cy.get('.rbc-day-slot:nth-child(6) > .rbc-timeslot-group:nth-child(8)').trigger('mouseup', {force: true});
     cy.reload();
     cy.wait(1000);
-    const msgInput2 = cy.get('[data-testid="message-input"]');
-    const msgForm2 = cy.get('[data-testid="message-form"]');
+    const msgInput2 = cy.get('[id="messageInput"]');
+    const msgForm2 = cy.get('[id="messageForm"]');
     msgInput2.type('shamik');
     msgForm2.submit();
     cy.wait(1000);
@@ -46,8 +46,8 @@ describe('default spec', () => {
     msgForm2.submit();
     cy.reload();
     cy.wait(1000);
-    const msgInput3 = cy.get('[data-testid="message-input"]');
-    const msgForm3 = cy.get('[data-testid="message-form"]');
+    const msgInput3 = cy.get('[id="messageInput"]');
+    const msgForm3 = cy.get('[id="messageForm"]');
     msgInput3.type('shamik2');
     msgForm3.submit();
     cy.wait(1000);
