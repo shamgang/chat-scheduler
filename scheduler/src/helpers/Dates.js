@@ -27,3 +27,15 @@ export function nextSunday(date = new Date()) {
   let monday = lastMonday(date);
   return monday.setDate(monday.getDate() + 6);
 }
+
+export function equalDates(date1, date2) {
+  return (
+    date1.getYear() === date2.getYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+}
+
+export function cloneDate(dt) {
+  return new Date(dt);
+}

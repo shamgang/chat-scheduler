@@ -1,8 +1,6 @@
 export const WELCOME_MESSAGE = `
-Hey! I'm here to help you schedule a time to meet.
-First, let's pick a time frame to consider for scheduling.
-Describe the range of dates to me, for example "the next two weeks" or "the first half of next month".
-I'll do my best to interpret!
+Hey! Let me help you schedule a meeting.
+First, tell me the general time frame - for example: "the next two weeks".
 `;
 export const LOADING_MESSAGE = 'Let me think...';
 export const DATE_ENTERED_MESSAGE = `

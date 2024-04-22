@@ -5,6 +5,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import { GENERAL_AVAIL_KEY } from '../services/MessageService';
 import { getDatesBetweenDates, getDayOfWeek, lastMonday, nextSunday } from '../helpers/Dates';
 import { fromIsoNoHyphens, toIsoNoHyphens } from '../helpers/FormatHelpers'
+import './Scheduler.css';
 
 moment.locale('en-us', {
   week: {
@@ -141,7 +142,7 @@ function Scheduler({
   }, [onSelectSlot]);
 
   return (
-    <div>
+    <div className="scheduler-container">
       <Calendar
         localizer={localizer}
         events={events}

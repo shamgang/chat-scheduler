@@ -1,0 +1,146 @@
+.calendar-container {
+    place-self: center;
+    height: 80%;
+    width: 80%;
+    display: grid;
+    grid-template-rows: 90% 10%;
+    grid-template-columns: 100%;
+    grid-template-areas: 
+        'calendar'
+        'calendarSubmit';
+    padding: 5px;
+    background-color: black;
+    background-image: url('../img/gradients/dark1.jpg');
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(100, 100, 100, 0.5);
+    color: white;
+}
+
+.calendar {
+    grid-area: calendar;
+}
+
+.calendar-toolbar {
+    display: grid;
+    padding: 1em;
+    grid-template-rows: 100%;
+    grid-template-columns: min-content 1fr max-content 1fr min-content;
+    grid-template-areas: 'calendarPrev . calendarLabel . calendarNext';
+}
+
+.calendar-prev {
+    grid-area: calendarPrev;
+}
+
+.calendar-label {
+    grid-area: calendarLabel;
+    text-transform: uppercase;
+    font-family: Verdana, sans-serif;
+    font-weight: bold;
+}
+
+.calendar-next {
+    grid-area: calendarNext;
+}
+
+.calendar-nav-arrow:hover {
+    transform: scale(1.2);
+}
+
+.calendar-nav-arrow:active {
+    transform: scale(1.1);
+}
+
+.calendar-submit {
+    grid-area: calendarSubmit;
+    background-color: transparent;
+    color: white;
+    font-family: Verdana, sans-serif;
+    font-weight: bold;
+    font-size: 1.5em;
+    box-shadow: 0 0 5px white;
+}
+
+.calendar-submit:hover {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    font-size: 1.6em;
+}
+
+.calendar-submit:active {
+    font-size: 1.5em;
+}
+
+.date-default {
+    background-color: rgba(200, 200, 200, 0.5);
+    justify-content: center;
+}
+
+.date-selected {
+    background-color: rgba(200, 200, 255, 0.7);
+}
+
+.date-out-of-month {
+    background-color: rgba(200, 200, 200, 0.3);
+}
+
+.date-selecting {
+    background-color: rgba(200, 200, 200, 0.7);
+}
+
+.rbc-selected-cell {
+    background-color: rgba(200, 200, 200, 0.7);
+}
+
+.rbc-month-header {
+    text-transform: uppercase;
+}
+
+.rbc-row-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+    pointer-events: none;
+}
+
+.rbc-date-cell {
+    display: grid;
+    align-items: center;
+}
+
+.rbc-date-cell:hover {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.rbc-date-cell button {
+    cursor: default;
+    font-size: 1.2em;
+    color: white;
+    text-shadow: inherit;
+}
+
+@media (max-aspect-ratio: 1/1) {
+    .calendar-container {
+        height: 90%;
+        width: 90%;
+    }
+    .calendar-label {
+        font-size: 0.9em;
+    }
+    .rbc-date-cell button {
+        font-size: 0.5em;
+    }
+    .calendar-submit {
+        font-size: 1em;
+    }
+    .calendar-submit:hover {
+        font-size: 1.1em;
+    }
+    .calendar-submit:active {
+        font-size: 1em;
+    }
+}

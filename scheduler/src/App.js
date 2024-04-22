@@ -241,18 +241,14 @@ function App() {
 
   return (
     <div className='grid-container' style={backgroundStyle}>
-      <div className='chat'>
+      <div className='chat-section'>
         <Chat
           onSendMessage={onSend}
           messages={displayMessages}
         />
       </div>
-      <div className='calendar-container'>
-        <div className='calendar'>
-          {
-            renderWidget()
-          }
-        </div>
+      <div className='calendar-section'>
+          { renderWidget() }
       </div>
     </div>
   );

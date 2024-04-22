@@ -9,6 +9,7 @@
 }
 
 .chat-container {
+    place-self: center;
     height: 80%;
     width: 80%;
     background-color: white;
@@ -113,6 +114,12 @@
     .chat-container {
         height: 90%;
         width: 90%;
+        font-size: 1em;
+    }
+    .messages-container {
+        font-size: 0.8em;
+    }
+    .input-container {
         font-size: 1em;
     }
 }
