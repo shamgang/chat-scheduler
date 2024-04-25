@@ -19,9 +19,8 @@ function BaseWeeklyCalendar({
   selectable,
   isOut,
   onSelectSlot,
+  onSlotHover,
   getSlotFullness,
-  onClick,
-  buttonText,
   calendarProps,
   calendarComponents
 }) {
@@ -98,25 +97,22 @@ function BaseWeeklyCalendar({
   const combinedComponents = useMemo(() => {
     return {
       ...calendarComponents,
-      timeSlotWrapper: (props) => <TimeSlotWrapper {...props} onSlotTap={onSlotTap} />
+      timeSlotWrapper: (props) => <TimeSlotWrapper {...props} onSlotTap={onSlotTap} onSlotHover={onSlotHover} />
     };
-  }, [calendarComponents, onSlotTap]);
+  }, [calendarComponents, onSlotTap, onSlotHover]);
 
   return (
-    <div className="calendar-container">
-      <Calendar
-        className="calendar"
-        localizer={localizer}
-        defaultView={defaultView}
-        views={views}
-        onSelectSlot={onSelectSlotHelper}
-        components={combinedComponents}
-        selectable={selectable}
-        slotPropGetter={slotPropGetterHelper}
-        {...calendarProps}
-      />
-      <button className="calendar-submit" id='scheduler-submit' onClick={onClick}>{buttonText}</button>
-    </div>
+    <Calendar
+      className="calendar"
+      localizer={localizer}
+      defaultView={defaultView}
+      views={views}
+      onSelectSlot={onSelectSlotHelper}
+      components={combinedComponents}
+      selectable={selectable}
+      slotPropGetter={slotPropGetterHelper}
+      {...calendarProps}
+    />
   );
 }
 

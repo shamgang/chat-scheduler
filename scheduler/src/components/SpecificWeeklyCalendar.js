@@ -1,4 +1,5 @@
 import { useMemo, useCallback, useState } from 'react';
+import { Tooltip } from 'react-tooltip';
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import {
   lastMonday,
@@ -9,12 +10,20 @@ import { toIsoNoHyphens } from '../helpers/FormatHelpers'
 import { CalendarToolbar } from './CalendarToolbar';
 import BaseWeeklyCalendar from './BaseWeeklyCalendar';
 
+function getSlotNames(slot, timeGrid) {
+  const slotKey = toIsoNoHyphens(slot);
+  if (!timeGrid || !(slotKey in timeGrid)){
+    return [];
+  }
+  return timeGrid[toIsoNoHyphens(slot)][slotNum(slot)];
+}
+
 function getSlotFullness(slot, timeGrid, names, editingName) {
   const slotKey = toIsoNoHyphens(slot);
   if (!timeGrid || !(slotKey in timeGrid)){
     return 0;
   }
-  const available = timeGrid[toIsoNoHyphens(slot)][slotNum(slot)];
+  const available = getSlotNames(slot, timeGrid);
   if (editingName) {
     // Show only this user avail
     if (available.includes(editingName)) {
@@ -52,6 +61,7 @@ function SpecificWeeklyCalendar({
   editingName
 }) {
   const [focusedDate, setFocusedDate] = useState(lastMonday(dateRange[0]));
+  const [focusedSlotNames, setFocusedSlotNames] = useState(null);
 
   const onNavigate = useCallback((date) => {
     const monday = lastMonday(date);
@@ -71,6 +81,10 @@ function SpecificWeeklyCalendar({
     return getSlotFullness(slot, timeGrid, names, editingName);
   }, [timeGrid, names, editingName]);
 
+  const onSlotHover = useCallback((slot) => {
+    setFocusedSlotNames(getSlotNames(slot, timeGrid));
+  }, [timeGrid, setFocusedSlotNames]);
+
   const calendarProps = useMemo(() => {
     return {
       defaultDate: dateRange[0],
@@ -87,17 +101,27 @@ function SpecificWeeklyCalendar({
   }, []);
 
   return (
-    <BaseWeeklyCalendar
-      timeGrid={timeGrid}
-      selectable={selectable}
-      isOut={isOutHelper}
-      onSelectSlot={onSelectSlot}
-      getSlotFullness={getSlotFullnessHelper}
-      onClick={onSubmit}
-      buttonText={submitText}
-      calendarProps={calendarProps}
-      calendarComponents={components}
-    />
+    <div className='calendar-container'>
+      <BaseWeeklyCalendar
+        timeGrid={timeGrid}
+        selectable={selectable}
+        isOut={isOutHelper}
+        onSelectSlot={onSelectSlot}
+        onSlotHover={onSlotHover}
+        getSlotFullness={getSlotFullnessHelper}
+        calendarProps={calendarProps}
+        calendarComponents={components}
+      >
+      </BaseWeeklyCalendar>
+      <button className="calendar-submit" id='scheduler-submit' onClick={onSubmit}>{submitText}</button>
+      {
+        !editingName && focusedSlotNames && focusedSlotNames.length > 0 &&
+        <Tooltip anchorSelect='.slot-anchor' place="top">
+          {
+            focusedSlotNames && focusedSlotNames.map(name => <div key={'tooltip-name-' + name}>{name}</div>)
+          }
+        </Tooltip>}
+    </div>
   );
 }
 

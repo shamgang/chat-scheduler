@@ -19,7 +19,6 @@
 * Refine color schema - should have a dark mode? or just be dark mode? Calendar looks a little too intense, maybe should be light
 * Have link easily copiable without going to URL bar
 * React profiling
-* Show the found times on the UI - highlight them in a different color + show attendees on hover/tap for each slot
 * Accessibility - Calendar selection is probably not accessible.
 * Make the mobile view longer? scroll
 * Test using an invalid event ID in the url

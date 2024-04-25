@@ -35,6 +35,31 @@
     border-top: none !important;
 }
 
+.rbc-day-slot .rbc-timeslot-group {
+    display: grid;
+    grid-template-rows: 50% 50%;
+    grid-template-columns: 100%;
+    place-items: center;
+}
+
+.slot-anchor {
+    height: 100%;
+    width: 100%;
+    display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+    place-items: center;
+}
+
+.rbc-day-slot .slot-anchor .rbc-time-slot {
+    height: 100%;
+    width: 100%;
+}
+
+.rbc-time-gutter .slot-anchor {
+    pointer-events: none;
+}
+
 .rbc-events-container {
     margin-right: 0 !important;
     pointer-events: none;

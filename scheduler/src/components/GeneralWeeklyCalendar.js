@@ -61,17 +61,18 @@ function GeneralWeeklyCalendar({
   }, []);
 
   return (
-    <BaseWeeklyCalendar
-      timeGrid={timeGrid}
-      selectable={selectable}
-      isOut={isOut}
-      onSelectSlot={onSelectSlot}
-      getSlotFullness={getSlotFullnessHelper}
-      onClick={onSubmit}
-      buttonText="OK"
-      calendarProps={calendarProps}
-      calendarComponents={components}
-    />
+    <div className='calendar-container'>
+      <BaseWeeklyCalendar
+        timeGrid={timeGrid}
+        selectable={selectable}
+        isOut={isOut}
+        onSelectSlot={onSelectSlot}
+        getSlotFullness={getSlotFullnessHelper}
+        calendarProps={calendarProps}
+        calendarComponents={components}
+      />
+      <button className="calendar-submit" id='calendar-submit' onClick={onSubmit}>OK</button>
+    </div>
   );
 }
 
