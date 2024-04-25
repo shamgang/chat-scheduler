@@ -41,10 +41,6 @@ function getSlotFullness(slot, timeGrid, names, editingName) {
   }
 }
 
-function slotGlows(slot, timeGrid, names) {
-  return names && names.length > 1 && getSlotNames(slot, timeGrid).length === names.length;
-}
-
 // Check if a time is in a dateRange [start, end]
 function isOut(slot, dateRange) {
   return (
@@ -87,7 +83,7 @@ function SpecificWeeklyCalendar({
 
   const slotGlowsHelper = useCallback((slot) => {
     return names && names.length > 1 && !editingName && getSlotFullness(slot, timeGrid, names, editingName) === 1;
-  }, [timeGrid, names, timeGrid, editingName]);
+  }, [names, timeGrid, editingName]);
 
   const onSlotHover = useCallback((slot) => {
     setFocusedSlotNames(getSlotNames(slot, timeGrid));

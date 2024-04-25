@@ -14,6 +14,10 @@ export function getDatesBetweenDates(from, to) {
   return dates;
 }
 
+export function getDateRangeLengthDays(from, to) {
+  return moment(to).diff(moment(from), 'days');
+}
+
 /* Day of week with Monday 0, Sunday 6 */
 export function getDayOfWeek(date) {
   return (date.getDay() + 6) % 7; // Monday-0 instead of Sunday-0

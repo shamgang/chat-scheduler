@@ -16,7 +16,7 @@ import { generateDisplayMessages } from './helpers/DisplayMessages'
 import { StateMachine } from './helpers/StateMachine';
 import { getEventState } from "./services/StateService";
 import { getRandomBackgroundImageUrl } from "./helpers/BackgroundImage";
-import { lastMonday, getDayOfWeek } from "./helpers/Dates";
+import { lastMonday, getDayOfWeek, getDateRangeLengthDays } from "./helpers/Dates";
 
 export async function loader({ params }) {
   // TODO: keep a state variable so we don't
@@ -105,6 +105,8 @@ function App() {
     setTimeGrid
   ]);
 
+  const shortRange = range && getDateRangeLengthDays(range[0], range[1]) < 10;
+
   const onSend = useCallback((input) => {
     // Sending a chat message
     if (flowState === StateMachine.SELECT_DATES) {
@@ -127,7 +129,13 @@ function App() {
       }
       setNames(nextNames);
       setEditingName(input);
-      if (eventState && input in eventState.generalAvailConfirmed && eventState.generalAvailConfirmed[input]) {
+      if (
+        (
+          eventState &&
+          input in eventState.generalAvailConfirmed &&
+          eventState.generalAvailConfirmed[input] // user has already entered general avail
+        ) || shortRange
+      ) {
         // Pre-loaded backend state shows we already did general availability.
         setFlowState(StateMachine.SPECIFIC_AVAIL);
       } else {
@@ -152,6 +160,7 @@ function App() {
     currentWeek,
     name,
     names,
+    shortRange,
     sendMessage,
     setFlowState,
     setName,
@@ -240,7 +249,8 @@ function App() {
     messages,
     isNew.current,
     eventState,
-    name
+    name,
+    shortRange
   );
 
   let buttonText;

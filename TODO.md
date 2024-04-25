@@ -23,4 +23,5 @@
 * Make the mobile view longer? scroll
 * Test using an invalid event ID in the url
 * Fix button design when toggling between edit and view - use icons, and show as more visible toggle
-* Skip general avail if under a certain number of days
+* Display messages code has a lot of state machine redunancy - combine with the main state machine - and then maybe do away with chainlit and use websockets directly?
+* Change tooltip anchor to button for accessibility
