@@ -10,10 +10,10 @@ export const DATE_ENTERED_MESSAGE_SHORT = 'Updated! OK to confirm.';
 export const USER_CONFIRMED_RANGE_MESSAGE = 'OK';
 export const NAME_MESSAGE = `
 This meeting's been saved! Copy the link in the URL bar to share.
-Now, tell me your name!
+Now, tell me your name if you're ready to enter your availability!
 `;
 export const NAME_MESSAGE_FRESH = `
-Hey! We're in the middle of scheduling the meeting - tell me your name so I can look up your info. 
+Hey! We're in the middle of scheduling the meeting - tell me your name if you want to update your availability. 
 `;
 export const TIMES_MESSAGE = `
 Got it! If you want, start by telling me your availability generally, for example: "I'm free 9am-5pm every weekday",

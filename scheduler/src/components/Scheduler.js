@@ -25,19 +25,29 @@ const localizer = momentLocalizer(moment)
 const defaultView = Views.WEEK;
 const views = [Views.WEEK];
 
-function getSlotColor(slot, timeGrid, names) {
+function getSlotColor(slot, timeGrid, names, editingName) {
   const baseColor = 'white';
   const slotKey = toIsoNoHyphens(slot);
   if (!timeGrid || !(slotKey in timeGrid)){
     return baseColor;
   }
   const available = timeGrid[toIsoNoHyphens(slot)][slotNum(slot)];
-  const proportionAvailable = available.length / names.length;
-  const saturation = Math.round(proportionAvailable * 100);
-  if(available.length > 0) {
-    return `hsl(199 ${saturation}% 50%)`;
+  if (editingName) {
+    // Show only this user avail
+    if (available.includes(editingName)) {
+      return `hsl(199 100 50%)`;
+    } else {
+      return baseColor;
+    }
   } else {
-    return baseColor;
+    // Show all users, color coded
+    const proportionAvailable = available.length / names.length;
+    const saturation = Math.round(proportionAvailable * 100);
+    if(available.length > 0) {
+      return `hsl(199 ${saturation}% 50%)`;
+    } else {
+      return baseColor;
+    }
   }
 }
 
@@ -64,9 +74,9 @@ function Scheduler({
   submitText,
   setCurrentWeek,
   selectable,
-  onSelectEvent,
   onSelectSlot,
-  names
+  names,
+  editingName
 }) {
   const [focusedDate, setFocusedDate] = useState(lastMonday(dateRange[0]));
   // Track current selection
@@ -84,14 +94,6 @@ function Scheduler({
       setCurrentWeek(monday);
     }
   }, [dateRange, setFocusedDate, setCurrentWeek]);
-
-  const onSelectEventHelper = useMemo(() => {
-    if (selectable) {
-      return onSelectEvent;
-    } else {
-      return () => {};
-    }
-  }, [selectable, onSelectEvent]);
 
   const onSelectSlotHelper = useCallback(({action, start, end}) => {
     if (!selectable) {
@@ -154,9 +156,9 @@ function Scheduler({
     } else if (isOut(slot, dateRange)) {
       return { className: 'time-slot-out-of-range' };
     } else {
-      return { style: { backgroundColor: getSlotColor(slot, timeGrid, names) } };
+      return { style: { backgroundColor: getSlotColor(slot, timeGrid, names, editingName) } };
     }
-  }, [rangeStart, dateRange, lastSubmittedRange, timeGrid]);
+  }, [rangeStart, dateRange, lastSubmittedRange, timeGrid, editingName]);
 
   // Memoize modular components
   const components = useMemo(() => {

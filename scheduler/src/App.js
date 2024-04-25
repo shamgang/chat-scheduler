@@ -44,6 +44,7 @@ function App() {
   const { eventId, eventState } = useLoaderData();
   const [name, setName] = useState(null);
   const [names, setNames] = useState(null);
+  const [editingName, setEditingName] = useState(null);
   const navigate = useNavigate();
   // If the first render has no eventId, this is a new event.
   const isNew = useRef(!eventId);
@@ -121,6 +122,7 @@ function App() {
         nextNames.push(input);
       }
       setNames(nextNames);
+      setEditingName(input);
       if (eventState && input in eventState.generalAvailConfirmed && eventState.generalAvailConfirmed[input]) {
         // Pre-loaded backend state shows we already did general availability.
         setFlowState(StateMachine.SPECIFIC_AVAIL);
@@ -139,7 +141,7 @@ function App() {
     } else {
       console.error(`Invalid flow state: ${flowState}, message not sent.`);
     }
-  }, [eventId, eventState, flowState, currentWeek, name, sendMessage, setFlowState, setName, setNames]);
+  }, [eventId, eventState, flowState, currentWeek, name, sendMessage, setFlowState, setName, setNames, setEditingName]);
 
   // When date calendar selection changes
   const onRangeChanged = useCallback((value) => {
@@ -174,9 +176,13 @@ function App() {
       });
       setFlowState(StateMachine.SPECIFIC_AVAIL);
     } else if (flowState === StateMachine.SPECIFIC_AVAIL) {
-      // TODO: implement finding times on frontend
+      setFlowState(StateMachine.VIEW_AVAIL);
+      setEditingName(null);
+    } else if (flowState === StateMachine.VIEW_AVAIL) {
+      setFlowState(StateMachine.SPECIFIC_AVAIL);
+      setEditingName(name);
     }
-  }, [eventId, name, flowState, setFlowState, sendMessage]);
+  }, [eventId, name, flowState, setFlowState, sendMessage, setEditingName]);
 
   // Hourly calendar selectable
   const scheduleSelectable = flowState === StateMachine.SPECIFIC_AVAIL;
@@ -204,6 +210,15 @@ function App() {
     name
   );
 
+  let buttonText;
+  if (flowState === StateMachine.GENERAL_AVAIL) {
+    buttonText = 'OK';
+  } else if (flowState === StateMachine.SPECIFIC_AVAIL) {
+    buttonText = 'VIEW';
+  } else if (flowState === StateMachine.VIEW_AVAIL) {
+    buttonText = 'EDIT';
+  }
+
   // Date calendar or hourly calendar depending where we are in flow
   const renderWidget = () => {
     if (flowState === StateMachine.SELECT_DATES) {
@@ -214,17 +229,18 @@ function App() {
           onSubmit={onSubmit}
         />
       );
-    } else if ([StateMachine.GENERAL_AVAIL, StateMachine.SPECIFIC_AVAIL].includes(flowState)) {
+    } else {
       return (
         <Scheduler
           dateRange={range}
           timeGrid={timeGrid}
           onSubmit={onConfirm}
-          submitText={flowState === StateMachine.GENERAL_AVAIL ? "OK" : "FIND TIMES"}
+          submitText={buttonText}
           setCurrentWeek={setCurrentWeek}
           selectable={scheduleSelectable}
           onSelectSlot={onSelectSlot}
           names={names}
+          editingName={editingName}
         />
       );
     }
