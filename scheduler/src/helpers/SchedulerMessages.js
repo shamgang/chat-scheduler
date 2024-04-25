@@ -7,7 +7,6 @@ When it looks good, click OK.
 export const LOADING_MESSAGE = 'Let me think...';
 export const DATE_ENTERED_MESSAGE = `Updated! Hit OK to confirm.`;
 export const DATE_ENTERED_MESSAGE_SHORT = 'Updated! OK to confirm.';
-export const USER_CONFIRMED_RANGE_MESSAGE = 'OK';
 export const NAME_MESSAGE = `
 This meeting's been saved! Copy the link in the URL bar to share.
 Now, tell me your first name if you're ready to enter your availability!

@@ -9,7 +9,7 @@
         'calendar'
         'calendarFooter';
     padding: 5px;
-    background-color: black;
+    background-color: rgb(14, 14, 43);
     background-image: url('../img/gradients/dark1.jpg');
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(100, 100, 100, 0.5);
@@ -29,8 +29,6 @@
 .calendar-submit {
     background-color: transparent;
     color: white;
-    font-family: Verdana, sans-serif;
-    font-weight: bold;
     font-size: 1.5em;
     box-shadow: 0 0 5px white;
 }

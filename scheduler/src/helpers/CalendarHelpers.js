@@ -15,6 +15,7 @@ export function availabilityColor(proportion) {
   if (proportion === 0) {
     return BASE_COLOR;
   }
-  const saturation = Math.round(proportion * 100);
-  return `hsl(199 ${saturation}% 50%)`;
+  const lightness = 100 - Math.round(proportion * 100 / 2);
+  return `hsl(240 30% ${lightness}%)`;
+  
 }

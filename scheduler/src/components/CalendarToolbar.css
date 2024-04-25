@@ -13,12 +13,16 @@
 .calendar-label {
     grid-area: calendarLabel;
     text-transform: uppercase;
-    font-family: Verdana, sans-serif;
+    font-family: Helvetica, sans-serif;
     font-weight: bold;
 }
 
 .calendar-next {
     grid-area: calendarNext;
+}
+
+.calendar-nav-arrow {
+    font-size: 1.2em;
 }
 
 .calendar-nav-arrow:hover {

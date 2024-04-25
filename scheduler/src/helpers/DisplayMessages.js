@@ -62,7 +62,6 @@ function generateDisplayMessages(messages, isNew, eventState, name, shortRange) 
           text = DATE_ENTERED_MESSAGE_SHORT;
         }
       } else if (msg.author === Authors.USER) {
-        text = USER_CONFIRMED_RANGE_MESSAGE;
         state = StateMachine.GENERAL_AVAIL;
       }
     } else if (msg.type === MessageTypes.NAME) {
