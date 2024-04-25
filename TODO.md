@@ -17,9 +17,10 @@
 * Official method for scheduling the meeting
 * API integration for events
 * Refine color schema - should have a dark mode? or just be dark mode? Calendar looks a little too intense, maybe should be light
-* Have link easily copiable without going to URL bar
+* Have link easily copiable without going to URL bar - share button?
 * React profiling
 * Accessibility - Calendar selection is probably not accessible.
 * Make the mobile view longer? scroll
 * Test using an invalid event ID in the url
 * Fix button design when toggling between edit and view - use icons, and show as more visible toggle
+* Skip general avail if under a certain number of days

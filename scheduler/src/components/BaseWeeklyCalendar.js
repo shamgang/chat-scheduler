@@ -21,6 +21,7 @@ function BaseWeeklyCalendar({
   onSelectSlot,
   onSlotHover,
   getSlotFullness,
+  slotGlows,
   calendarProps,
   calendarComponents
 }) {
@@ -88,10 +89,16 @@ function BaseWeeklyCalendar({
       return { className: 'time-slot-selecting' };
     } else if (isOut(slot)) {
       return { className: 'time-slot-out-of-range' };
+    } else if (slotGlows && slotGlows(slot)) {
+      return { className: 'time-slot-glowing' };
     } else {
-      return { style: { backgroundColor: availabilityColor(getSlotFullness(slot)) } };
+      return {
+        style: { 
+          backgroundColor: availabilityColor(getSlotFullness(slot))
+        }
+      };
     }
-  }, [rangeStart, lastSubmittedRange, isOut, getSlotFullness]);
+  }, [rangeStart, lastSubmittedRange, isOut, getSlotFullness, slotGlows]);
 
   // Memoize modular components
   const combinedComponents = useMemo(() => {
