@@ -1,21 +1,22 @@
-import { parseTimeRanges, fromIsoNoHyphens } from "../helpers/FormatHelpers";
+import Ajv from 'ajv';
+import { fromIsoNoHyphens } from "../helpers/FormatHelpers";
+import commonSchema from '../assets/common_schema.json';
+import stateSchema from '../assets/state_schema.json';
+
+const ajv = new Ajv({verbose: true});
+
+const validate = ajv.addSchema(commonSchema).compile(stateSchema);
 
 function parseEventState(eventState) {
-  let timeRanges = {}
-  for (const name of Object.keys(eventState.timeRanges)) {
-    timeRanges[name] = {}
-    for (const key of Object.keys(eventState.timeRanges[name])) {
-      timeRanges[name][key] = parseTimeRanges(eventState.timeRanges[name][key])
-    }
+  if (!validate(eventState)) {
+    console.log(eventState);
+    console.log(validate.errors);
+    throw new Error('Invalid message format');
   }
-  return {
-    chosenDates: {
-      from: fromIsoNoHyphens(eventState.chosenDates.from),
-      to: fromIsoNoHyphens(eventState.chosenDates.to)
-    },
-    generalAvailConfirmed: eventState.generalAvailConfirmed,
-    timeRanges: timeRanges
-  }
+  eventState.fromDate = fromIsoNoHyphens(eventState.fromDate);
+  eventState.toDate = fromIsoNoHyphens(eventState.toDate);
+  // NOTE: not parsing time grid date keys - leave as strings
+  return eventState;
 }
 
 export async function getEventState(eventId) {

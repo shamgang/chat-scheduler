@@ -55,6 +55,11 @@ function roundToSlot(tm) {
   return dt;
 }
 
+export function slotNum(tm) {
+  return Math.round(60 * tm.getHours() / MINUTES_PER_SLOT) +
+    Math.round(tm.getMinutes() / MINUTES_PER_SLOT);
+}
+
 export function equalSlots(time1, time2) {
   return moment(roundToSlot(time1)).isSame(moment(roundToSlot(time2)));
 }

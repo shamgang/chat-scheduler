@@ -1,27 +1,16 @@
 from .logger import logger
-from .hour_translation import WeeklyTimeGrid
-from .datetime_helpers import GENERAL_WEEK_KEY
-from .json_helpers import format_time_ranges, state_validator, validate_verbose
+from .time_grid import TimeGrid
+from .json_helpers import format_time_grid, state_validator, validate_verbose
 from .model_tools import to_iso_no_hyphens
 
 
 class EventState:
-    def __init__(self):
-        self.chosen_dates = None # TODO: validation / type hint
+    def __init__(self, from_date, to_date):
+        self.from_date = from_date
+        self.to_date = to_date
         self.general_avail_confirmed = {}
-        self.time_grids = {}
-
-    def get_time_grid(self, name, week):
-        if name not in self.time_grids:
-            self.time_grids[name] = {
-                GENERAL_WEEK_KEY: WeeklyTimeGrid()
-            }
-        if week not in self.time_grids[name]:
-            # Creating specific availability, copy general availability and edit
-            self.time_grids[name][week] = WeeklyTimeGrid.clone(
-                self.time_grids[name][GENERAL_WEEK_KEY]
-            )
-        return self.time_grids[name][week]
+        self.time_grid = TimeGrid(from_date, to_date)
+        self.names = []
     
     def get_general_avail_confirmed(self, name):
         if name not in self.general_avail_confirmed:
@@ -31,16 +20,21 @@ class EventState:
     def set_general_avail_confirmed(self, name, val):
         self.general_avail_confirmed[name] = val
 
+    def add_name(self, name):
+        if name not in self.names:
+            self.names.append(name)
+
 
 # TODO: real persistence method
 events = {}
 
 
-def get_or_create_event(event_id):
+def create_event(event_id, from_date, to_date):
     '''Gets or creates event state by ID'''
-    if event_id not in events:
-        logger.debug(f'Creating new event: {event_id}')
-        events[event_id] = EventState()
+    if event_id in events:
+        raise KeyError('Trying to create an event that already exists')
+    events[event_id] = EventState(from_date, to_date)
+    logger.debug(f'Created new event: {event_id}')
     return events[event_id]
 
 
@@ -50,18 +44,11 @@ def get_event(event_id):
 
 def format_event_state(event_state):
     result = {
-        'chosenDates': {
-            'from': to_iso_no_hyphens(event_state.chosen_dates['from']),
-            'to': to_iso_no_hyphens(event_state.chosen_dates['to']),
-        } if event_state.chosen_dates else None,
+        'fromDate': to_iso_no_hyphens(event_state.from_date),
+        'toDate': to_iso_no_hyphens(event_state.to_date),
         'generalAvailConfirmed': event_state.general_avail_confirmed,
-        'timeRanges': {
-            user: {
-                key: format_time_ranges(grid.get_time_ranges())
-                for key, grid in ranges.items()
-            }
-            for user, ranges in event_state.time_grids.items()
-        }
+        'timeGrid': format_time_grid(event_state.time_grid),
+        'names': event_state.names
     }
     validate_verbose(state_validator, result)
     return result

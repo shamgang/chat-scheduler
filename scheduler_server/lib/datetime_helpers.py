@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 import calendar
 from .model_tools import from_iso_no_hyphens, to_iso_no_hyphens
+from .config import SLOTS_PER_HOUR, MINUTES_PER_SLOT
 
 
 GENERAL_WEEK_KEY = 'GENERAL'
@@ -40,16 +41,19 @@ def get_last_monday(dt):
     return dt - timedelta(days=dt.weekday())
 
 
+def get_dates_between_dates(from_date, to_date):
+    return [from_date + timedelta(days=i) for i in range((to_date - from_date).days + 1)]
+
+
+def get_time_from_slot(slot_num):
+    return time(
+        int(slot_num // SLOTS_PER_HOUR),
+        int((slot_num % SLOTS_PER_HOUR) * MINUTES_PER_SLOT)
+    )
+
+
+def get_slot_from_time(time):
+    return int(time.hour * SLOTS_PER_HOUR + round(time.minute / MINUTES_PER_SLOT))
+
+
 day_inds = { calendar.day_name[i]: i for i in range(7) }
-
-
-class TimeRange:
-    def __init__(self, start_time, end_time):
-        self.start_time = start_time
-        self.end_time = end_time
-
-    def __str__(self):
-        return f"{to_time_string(self.start_time)}-{to_time_string(self.end_time)}"
-
-    def __repr__(self):
-        return self.__str__()

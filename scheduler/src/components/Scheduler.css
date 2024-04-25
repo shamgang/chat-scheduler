@@ -27,10 +27,6 @@
     background-color:rgba(220, 220, 255, 1) !important;
 }
 
-.rbc-day-slot .time-slot-default {
-    background-color: white;
-}
-
 .rbc-events-container {
     margin-right: 0 !important;
     pointer-events: none;

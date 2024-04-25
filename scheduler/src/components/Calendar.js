@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, Children, cloneElement, useEffect } from 'react';
+import { useCallback, useRef, useState, Children, cloneElement, useEffect, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAnglesRight, faAnglesLeft } from '@fortawesome/free-solid-svg-icons'
 import { Calendar as BigCalendar, Views, momentLocalizer } from 'react-big-calendar';
@@ -58,6 +58,7 @@ function Calendar({range, onRangeChanged, onSubmit}) {
     const [rangeStart, setRangeStart] = useState(null);
     const [focusedDate, setFocusedDate] = useState(range[0]);
 
+    // Nav to start of range when range changes
     useEffect(() => {
       setFocusedDate(range[0]);
     }, [range, setFocusedDate]);
@@ -106,14 +107,19 @@ function Calendar({range, onRangeChanged, onSubmit}) {
       setFocusedDate(dt);
     }, [setFocusedDate]);
 
+    // Memoize modular components
+    const components = useMemo(() => {
+      return {
+        toolbar: CustomToolbar,
+        dateCellWrapper: (props) => <DateCellWrapper {...props} onRangeSelected={onRangeSelected} />
+      };
+    }, [onRangeSelected]);
+
     return (
         <div className="calendar-container">
             <BigCalendar
               ref={calendarRef}
-              components={{
-                toolbar: CustomToolbar,
-                dateCellWrapper: (props) => <DateCellWrapper {...props} onRangeSelected={onRangeSelected} />
-              }}
+              components={components}
               className='calendar'
               localizer={localizer}
               defaultView={Views.MONTH}

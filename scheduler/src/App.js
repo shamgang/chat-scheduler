@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from "uuid";
-import cloneDeep from "lodash.clonedeep";
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useLoaderData, useNavigate } from "react-router-dom";
 import './App.css';
@@ -16,6 +15,7 @@ import { generateDisplayMessages } from './helpers/DisplayMessages'
 import { StateMachine } from './helpers/StateMachine';
 import { getEventState } from "./services/StateService";
 import { getRandomBackgroundImageUrl } from "./helpers/BackgroundImage";
+import { lastMonday } from "./helpers/Dates";
 
 export async function loader({ params }) {
   // TODO: keep a state variable so we don't
@@ -38,17 +38,18 @@ function App() {
   const [range, setRange] = useState([new Date(), new Date()]);
   // Time ranges here will be a map of key to 3D time ranges array.
   // Each key will represent a different week or general availability.
-  const [timeRanges, setTimeRanges] = useState(null);
+  const [timeGrid, setTimeGrid] = useState(null);
   const [flowState, setFlowState] = useState(StateMachine.SELECT_DATES);
-  const [currentWeek, setCurrentWeek] = useState(null);
+  const [currentWeek, setCurrentWeek] = useState(lastMonday(new Date()));
   const { eventId, eventState } = useLoaderData();
   const [name, setName] = useState(null);
+  const [names, setNames] = useState(null);
   const navigate = useNavigate();
   // If the first render has no eventId, this is a new event.
   const isNew = useRef(!eventId);
 
   const backgroundStyle = {
-    backgroundImage: 'url(' + BACKGROUND_IMAGE + ')'
+    backgroundImage: `url(${BACKGROUND_IMAGE})`
   };
 
   // Populate loaded state if this is an existing event
@@ -57,12 +58,13 @@ function App() {
       // Rendering an existing event
       if (!isNew.current) {
         // This is a fresh load of an existing event, set state from server
-        setRange([eventState.chosenDates.from, eventState.chosenDates.to]);
+        setRange([eventState.fromDate, eventState.toDate]);
         setFlowState(StateMachine.NAME);
-        setTimeRanges(eventState.timeRanges);
+        setTimeGrid(eventState.timeGrid);
+        setNames(eventState.names);
       }
     }
-  }, [eventId, eventState, setRange, setFlowState, setTimeRanges]);
+  }, [eventId, eventState, setRange, setFlowState, setTimeGrid, setNames]);
 
 
   // Take action based on latest messages
@@ -82,18 +84,10 @@ function App() {
       // Set time ranges if messages change and last message is a time range
       if (
         msg.author === Authors.SCHEDULER &&
-        msg.type === MessageTypes.TIME_RANGES
+        msg.type === MessageTypes.TIME_GRID
       ) {
-        console.log(`Chatbot setting time ranges for user: ${msg.name} for week ${msg.week}: ${JSON.stringify(msg.timeRanges, 2)}`);
-        let trs = cloneDeep(timeRanges);
-        if (!trs) {
-          trs = {};
-        }
-        if (!(msg.name in trs)) {
-          trs[msg.name] = {};
-        }
-        trs[msg.name][msg.week] = msg.timeRanges;
-        setTimeRanges(trs);
+        console.log('Chatbot setting time grid:', msg.timeGrid);
+        setTimeGrid(msg.timeGrid);
       }
       setNumMessagesProcessed(n => n+1);
     } 
@@ -102,19 +96,13 @@ function App() {
     numMessagesProcessed,
     setNumMessagesProcessed,
     setRange,
-    timeRanges,
-    setTimeRanges
+    timeGrid,
+    setTimeGrid
   ]);
 
   const onSend = useCallback((input) => {
     // Sending a chat message
-    if (input === 'FIND TIMES' && eventId) {
-      sendMessage({
-        type: MessageTypes.FIND_TIMES,
-        author: Authors.USER,
-        eventId: eventId
-      });
-    } else if (flowState === StateMachine.SELECT_DATES) {
+    if (flowState === StateMachine.SELECT_DATES) {
       sendMessage({
         type: MessageTypes.DATES,
         author: Authors.USER,
@@ -128,6 +116,11 @@ function App() {
         name: input
       });
       setName(input);
+      let nextNames = [...(names || [])]
+      if(!nextNames.includes(input)) {
+        nextNames.push(input);
+      }
+      setNames(nextNames);
       if (eventState && input in eventState.generalAvailConfirmed && eventState.generalAvailConfirmed[input]) {
         // Pre-loaded backend state shows we already did general availability.
         setFlowState(StateMachine.SPECIFIC_AVAIL);
@@ -146,7 +139,7 @@ function App() {
     } else {
       console.error(`Invalid flow state: ${flowState}, message not sent.`);
     }
-  }, [eventId, eventState, flowState, currentWeek, name, sendMessage, setFlowState, setName]);
+  }, [eventId, eventState, flowState, currentWeek, name, sendMessage, setFlowState, setName, setNames]);
 
   // When date calendar selection changes
   const onRangeChanged = useCallback((value) => {
@@ -170,16 +163,18 @@ function App() {
     navigate(`/${eventId}`);
   }, [sendMessage, setFlowState, range, navigate]);
 
-  // When general avail is confirmed
+  // Button click from weekly calendar - confirming general avail or finding times
   const onConfirm = useCallback(() => {
-    sendMessage({
-      type: MessageTypes.CONFIRM,
-      author: Authors.USER,
-      eventId: eventId,
-      name: name
-    });
     if (flowState === StateMachine.GENERAL_AVAIL) {
+      sendMessage({
+        type: MessageTypes.CONFIRM,
+        author: Authors.USER,
+        eventId: eventId,
+        name: name
+      });
       setFlowState(StateMachine.SPECIFIC_AVAIL);
+    } else if (flowState === StateMachine.SPECIFIC_AVAIL) {
+      // TODO: implement finding times on frontend
     }
   }, [eventId, name, flowState, setFlowState, sendMessage]);
 
@@ -192,22 +187,7 @@ function App() {
       return;
     }
     sendMessage({
-      type: MessageTypes.OPEN,
-      author: Authors.USER,
-      from: start,
-      to: end,
-      eventId: eventId,
-      name: name
-    });
-  }, [eventId, name, flowState, sendMessage]);
-
-  // When hourly calendar event is selected
-  const onSelectEvent = useCallback(({ start, end }) => {
-    if (flowState !== StateMachine.SPECIFIC_AVAIL) {
-      return;
-    }
-    sendMessage({
-      type: MessageTypes.CLOSE,
+      type: MessageTypes.TOGGLE_SLOTS,
       author: Authors.USER,
       from: start,
       to: end,
@@ -238,13 +218,13 @@ function App() {
       return (
         <Scheduler
           dateRange={range}
-          timeRanges={timeRanges}
-          onConfirm={onConfirm}
+          timeGrid={timeGrid}
+          onSubmit={onConfirm}
+          submitText={flowState === StateMachine.GENERAL_AVAIL ? "OK" : "FIND TIMES"}
           setCurrentWeek={setCurrentWeek}
           selectable={scheduleSelectable}
-          onSelectEvent={onSelectEvent}
           onSelectSlot={onSelectSlot}
-          currentUser={name}
+          names={names}
         />
       );
     }

@@ -3,15 +3,12 @@ import { useEffect, useMemo, useCallback } from 'react';
 import { ChainlitAPI, sessionState, useChatSession, useChatMessages, useChatInteract } from '@chainlit/react-client';
 import { useRecoilValue } from 'recoil';
 import moment from 'moment';
-import schema from '../assets/message_schema.json';
+import commonSchema from '../assets/common_schema.json';
+import messageSchema from '../assets/message_schema.json';
 import Ajv from 'ajv';
 import {
-  parseTimeRanges,
   toIsoNoHyphens,
-  fromIsoNoHyphens,
-  parseFoundTimes,
-  formatFoundTimes,
-  formatTimeString
+  fromIsoNoHyphens
 } from '../helpers/FormatHelpers';
 
 const CHAINLIT_SERVER_URL = 'http://192.168.0.134:8000';
@@ -20,7 +17,7 @@ const apiClient = new ChainlitAPI(CHAINLIT_SERVER_URL);
 
 const ajv = new Ajv({verbose: true});
 
-const validate = ajv.compile(schema);
+const validate = ajv.addSchema(commonSchema).compile(messageSchema);
 
 const Authors = {
   USER: "USER",
@@ -32,12 +29,9 @@ const MessageTypes = {
   DATES: "DATES",
   NAME: "NAME",
   TIMES: "TIMES",
-  TIME_RANGES: "TIME_RANGES",
+  TIME_GRID: "TIME_GRID",
   CONFIRM: "CONFIRM",
-  CLOSE: "CLOSE",
-  OPEN: "OPEN",
-  FIND_TIMES: "FIND_TIMES",
-  FOUND_TIMES: "FOUND_TIMES",
+  TOGGLE_SLOTS: "TOGGLE_SLOTS",
   ERROR: "ERROR"
 };
 
@@ -58,7 +52,7 @@ function dateTimeToIsoNoHyphens(dt) {
   return moment(dt).format('YYYYMMDDHHmm');
 }
 
-/* Change a message from json format to internal format */
+/* Change a scheduler message from json format to internal format */
 function parseMessage(msg_str) {
   let msg = JSON.parse(msg_str);
   if (!validate(msg)) {
@@ -69,20 +63,12 @@ function parseMessage(msg_str) {
   if (msg.type === MessageTypes.RANGE) {
     msg.fromDate = fromIsoNoHyphens(msg.fromDate);
     msg.toDate = fromIsoNoHyphens(msg.toDate);
-  } else if (msg.type === MessageTypes.TIMES) {
-    msg.week = fromIsoNoHyphens(msg.week);
-  } else if (msg.type === MessageTypes.TIME_RANGES) {
-    msg.timeRanges = parseTimeRanges(msg.timeRanges);
-  } else if ([MessageTypes.OPEN, MessageTypes.CLOSE].includes(msg.type)) {
-    msg.from = dateTimeFromIsoNoHyphens(msg.from);
-    msg.to = dateTimeFromIsoNoHyphens(msg.to);
-  } else if (msg.type === MessageTypes.FOUND_TIMES) {
-    msg.foundTimes = parseFoundTimes(msg.foundTimes)
   }
+  // NOTE: not parsing time grid date keys - leave as strings
   return msg;
 }
 
-/* Convert message from internal to json format */
+/* Convert user message message from internal to json format */
 function formatMessage(msg) {
   if (msg.type === MessageTypes.RANGE) {
     msg.fromDate = toIsoNoHyphens(msg.fromDate);
@@ -91,18 +77,9 @@ function formatMessage(msg) {
     if (msg.week !== GENERAL_AVAIL_KEY) {
       msg.week = toIsoNoHyphens(msg.week);
     }
-  } else if (msg.type === MessageTypes.TIME_RANGES) {
-    for (const day of msg.timeRanges) {
-      for (let timeRange of day) {
-        timeRange.from = formatTimeString(timeRange.from);
-        timeRange.to = formatTimeString(timeRange.to);
-      }
-    }
-  } else if ([MessageTypes.OPEN, MessageTypes.CLOSE].includes(msg.type)) {
+  } else if (msg.type === MessageTypes.TOGGLE_SLOTS) {
     msg.from = dateTimeToIsoNoHyphens(msg.from);
     msg.to = dateTimeToIsoNoHyphens(msg.to);
-  } else if (msg.type === MessageTypes.FOUND_TIMES) {
-    msg.foundTimes = formatFoundTimes(msg.foundTimes)
   }
   if (!validate(msg)) {
     console.error('Validation failed:', msg);

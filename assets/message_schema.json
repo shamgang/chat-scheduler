@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "message_schema.json",
   "definitions": {
     "week": {
       "anyOf": [
@@ -37,6 +38,9 @@
         },
         "prompt": {
           "type": "string"
+        },
+        "author": {
+          "const": "USER"
         }
       },
       "required": [
@@ -79,6 +83,9 @@
         },
         "eventId": {
           "type": "string"
+        },
+        "author": {
+          "const": "USER"
         }
       },
       "required": [
@@ -101,6 +108,9 @@
         },
         "eventId": {
           "type": "string"
+        },
+        "author": {
+          "const": "USER"
         }
       },
       "required": [
@@ -111,47 +121,20 @@
         "eventId"
       ]
     },
-    "timeRangesMessage": {
+    "timeGridMessage": {
       "type": "object",
       "properties": {
         "type": {
-          "const": "TIME_RANGES"
+          "const": "TIME_GRID"
         },
-        "name": {
-          "type": "string"
+        "author": {
+          "const": "SCHEDULER"
         },
-        "week": { "$ref": "#/definitions/week" },
-        "timeRanges": {
-          "type": "array",
-          "minItems": 7,
-          "maxItems": 7,
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "from": {
-                  "type": "string",
-                  "$comment": "HHmm format"
-                },
-                "to": {
-                  "type": "string",
-                  "$comment": "HHmm format"
-                }
-              },
-              "required": [
-                "from",
-                "to"
-              ]
-            }
-          }
-        }
+        "timeGrid": { "$ref": "common_schema.json#/definitions/timeGrid" }
       },
       "required": [
         "type",
-        "name",
-        "week",
-        "timeRanges"
+        "timeGrid"
       ]
     },
     "confirmMessage": {
@@ -165,6 +148,9 @@
         },
         "name": {
           "type": "string"
+        },
+        "author": {
+          "const": "USER"
         }
       },
       "required": [
@@ -173,11 +159,11 @@
         "name"
       ]
     },
-    "openOrCloseMessage": {
+    "toggleSlotsMessage": {
       "type": "object",
       "properties": {
         "type": {
-          "enum": ["OPEN", "CLOSE"]
+          "const": "TOGGLE_SLOTS"
         },
         "from": {
           "type": "string",
@@ -192,6 +178,9 @@
         },
         "name": {
           "type": "string"
+        },
+        "author": {
+          "const": "USER"
         }
       },
       "required": [
@@ -202,64 +191,6 @@
         "name"
       ]
     },
-    "findTimesMessage": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "FIND_TIMES"
-        },
-        "eventId": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "type",
-        "eventId"
-      ]
-    },
-    "foundTimesMessage": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "const": "FOUND_TIMES"
-        },
-        "foundTimes": {
-          "type": "object",
-          "patternProperties": {
-            "^\\d+$": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "date": {
-                    "type": "string",
-                    "$comment": "YYYYMMDD format"
-                  },
-                  "from": {
-                    "type": "string",
-                    "$comment": "HHmm format"
-                  },
-                  "to": {
-                    "type": "string",
-                    "$comment": "HHmm format"
-                  }
-                },
-                "required": [
-                  "date",
-                  "from",
-                  "to"
-                ]
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "required": [
-        "type",
-        "foundTimes"
-      ]
-    },
     "errorMessage": {
       "type": "object",
       "properties": {
@@ -268,6 +199,9 @@
         },
         "errorMessage": {
           "type": "string"
+        },
+        "author": {
+          "const": "SCHEDULER"
         }
       },
       "required": [
@@ -285,11 +219,9 @@
         { "$ref": "#/definitions/rangeMessage" },
         { "$ref": "#/definitions/nameMessage" },
         { "$ref": "#/definitions/timesMessage" },
-        { "$ref": "#/definitions/timeRangesMessage" },
+        { "$ref": "#/definitions/timeGridMessage" },
         { "$ref": "#/definitions/confirmMessage" },
-        { "$ref": "#/definitions/openOrCloseMessage" },
-        { "$ref": "#/definitions/findTimesMessage" },
-        { "$ref": "#/definitions/foundTimesMessage" },
+        { "$ref": "#/definitions/toggleSlotsMessage" },
         { "$ref": "#/definitions/errorMessage" }
       ]
     }

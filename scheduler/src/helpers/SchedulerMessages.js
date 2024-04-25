@@ -9,23 +9,19 @@ export const DATE_ENTERED_MESSAGE = `Updated! Hit OK to confirm.`;
 export const DATE_ENTERED_MESSAGE_SHORT = 'Updated! OK to confirm.';
 export const USER_CONFIRMED_RANGE_MESSAGE = 'OK';
 export const NAME_MESSAGE = `
-Now, type your name for me so I can save your availability!
+This meeting's been saved! Copy the link in the URL bar to share.
+Now, tell me your name!
 `;
 export const NAME_MESSAGE_FRESH = `
-Hey! I'm here to help you schedule a time to meet.
-Tell me your name so I can update your availability. 
+Hey! We're in the middle of scheduling the meeting - tell me your name so I can look up your info. 
 `;
 export const TIMES_MESSAGE = `
-Got it! Now tell me about your availability in an average week. For example: "I'm free 9am-5pm every weekday."
-`;
-export const TIMES_MESSAGE_FRESH = `
-Hey! I'm here to help you schedule some time to meet.
-Start by telling me about your availability in an average week.
-You can say things like "I'm free 9-5 on weekdays".
-When you're done with general availability, click OK.
+Got it! If you want, start by telling me your availability generally, for example: "I'm free 9am-5pm every weekday",
+and I'll pre-fill all the weeks.
+Or, hit OK to start scheduling specific weeks.
 `;
 export const GENERAL_TIME_RANGES_MESSAGE = `
-Updated! If you're done with general availability, click OK.
+Updated! If you're done with general availability, hit OK.
 `;
 export const GENERAL_TIME_RANGES_MESSAGE_SHORT = 'Updated! OK to confirm.';
 export const SPECIFIC_AVAIL_MESSAGE = `

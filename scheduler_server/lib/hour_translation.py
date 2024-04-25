@@ -1,15 +1,12 @@
 from enum import Enum
-from datetime import datetime, time
 import calendar
-from copy import deepcopy
-import numpy as np
+
 from .system_prompts import hours_system_prompt
 from .model_tools import _day_of_week_from_str
 from .chain_helpers import create_chain, invoke_chain
 from .errors import TranslationFailedError
 from .logger import logger
-from .client_message import ClientMessageType
-from .datetime_helpers import TimeRange, from_time_string
+from .datetime_helpers import from_time_string
 
 
 generic_time_parse_failure_message = """
@@ -22,11 +19,6 @@ class HourStatementType(str, Enum):
     CLOSE = "CLOSE"
 
 
-SLOTS_PER_DAY = 48
-SLOTS_PER_HOUR = SLOTS_PER_DAY / 24
-MINUTES_PER_SLOT = 60 / SLOTS_PER_HOUR
-
-
 class CalendarAction:
     '''An OPEN or CLOSE action on a day and time range'''
     def __init__(self, statement_str):
@@ -37,10 +29,8 @@ class CalendarAction:
             raise TranslationFailedError(generic_time_parse_failure_message)
         self.day = _day_of_week_from_str(statement_str.split(':')[1])
         tr_str = statement_str.split(':')[2]
-        self.time_range = TimeRange(
-            from_time_string(tr_str.split('-')[0]), 
-            from_time_string(tr_str.split('-')[1]),
-        )
+        self.from_time = from_time_string(tr_str.split('-')[0])
+        self.to_time = from_time_string(tr_str.split('-')[1])
 
     def __str__(self):
         return f"{self.type}:{calendar.day_name[self.day]}:{self.time_range.start_time.strftime('%I%p')}-{self.time_range.end_time.strftime('%I%p')}"
@@ -59,77 +49,3 @@ class HourTranslator:
         statements = invoke_chain(hours_chain, input)
         statement_lines = statements.splitlines()
         return [CalendarAction(s) for s in statement_lines]
-
-
-def get_time_from_slot(slot_num):
-    return time(
-        int(slot_num // SLOTS_PER_HOUR),
-        int((slot_num % SLOTS_PER_HOUR) * MINUTES_PER_SLOT)
-    )
-
-
-class WeeklyTimeGrid:
-    '''A representation of a weekly calendar with a certain slot size'''
-    def __init__(self):
-        # Half-hour granularity
-        self.grid = np.zeros((SLOTS_PER_DAY, 7))
-
-    @classmethod
-    def clone(cls, other):
-        new_inst = cls()
-        new_inst.grid = deepcopy(other.grid)
-        return new_inst
-
-    def _get_num_slots(self, time):
-        last_hour_slots = round(time.minute / MINUTES_PER_SLOT)
-        return int(time.hour * SLOTS_PER_HOUR + last_hour_slots)
-    
-    def _set(self, day_ind, time_range, val):
-        '''Given a day index and a time range on that day, mark the grid with an integer value 0 or 1 during that range.'''
-        col = day_ind
-        row_start = self._get_num_slots(time_range.start_time)
-        row_end = self._get_num_slots(time_range.end_time)
-        if row_end == 0:
-            row_end = SLOTS_PER_DAY
-        self.grid[row_start:row_end, col] = val
-
-    def process_calendar_action(self, action):
-        # 1 for open, 0 for closed
-        self._set(action.day, action.time_range, 1 if action.type == HourStatementType.OPEN else 0)
-
-    def process_calendar_actions(self, actions):
-        for action in actions:
-            self.process_calendar_action(action)
-
-    def process_message(self, msg):
-        '''Process an OPEN or CLOSE message directly'''
-        if msg.type not in [ClientMessageType.OPEN, ClientMessageType.CLOSE]:
-            raise ValueError('Message type must be OPEN or CLOSE')
-        self._set(
-            msg.from_time.weekday(),
-            TimeRange(msg.from_time.time(), msg.to_time.time()),
-            1 if msg.type == ClientMessageType.OPEN else 0
-        )
-    
-    def get_time_ranges(self):
-        ranges = [[], [], [], [], [], [], []] # list of ranges per day of week
-        start = None
-        for day in range(7):
-            for slot in range(SLOTS_PER_DAY):
-                slot_value = self.grid[slot, day]
-                if slot_value == 1:
-                    # Open slot
-                    if start is None:
-                        # Found a new open range
-                        start = get_time_from_slot(slot)
-                elif slot_value == 0:
-                    # Closed slot
-                    if start is not None:
-                        # Reached the end of an open range
-                        ranges[day].append(TimeRange(start, get_time_from_slot(slot)))
-                        start = None
-            if start is not None:
-                # Reached the end of the day with an open time range
-                ranges[day].append(TimeRange(start, time(0, 0)))
-                start = None
-        return ranges

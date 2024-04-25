@@ -1,4 +1,3 @@
-import moment from 'moment';
 import { Authors, MessageTypes } from '../services/MessageService'
 import {
   WELCOME_MESSAGES,
@@ -6,7 +5,6 @@ import {
   DATE_ENTERED_MESSAGE,
   DATE_ENTERED_MESSAGE_SHORT,
   TIMES_MESSAGE,
-  TIMES_MESSAGE_FRESH,
   USER_CONFIRMED_RANGE_MESSAGE,
   NAME_MESSAGE,
   NAME_MESSAGE_FRESH,
@@ -26,23 +24,6 @@ function displayMessage(text, author) {
       text: text,
       fromUser: author === Authors.USER
     }
-}
-
-function displayFoundTimes(foundTimes) {
-  let numAttendeesOptions = Object.keys(foundTimes);
-  numAttendeesOptions.sort();
-  numAttendeesOptions.reverse();
-  let response = '';
-  for (const opt of numAttendeesOptions) {
-    response += `Time slots with ${opt} attendees:\n`;
-    for (const slot of foundTimes[opt]) {
-      const readableDate = moment(slot.date).format('dddd, MMMM DD YYYY');
-      const readableFrom = moment(slot.from).format('h:mm A');
-      const readableTo = moment(slot.to).format('h:mm A');
-      response += `${readableDate} ${readableFrom}-${readableTo}\n`;
-    }
-  }
-  return response;
 }
 
 // Convert the client-server message history into display messages
@@ -101,8 +82,6 @@ function generateDisplayMessages(messages, isNew, eventState, name) {
           text = SPECIFIC_TIME_RANGES_MESSAGE_SHORT;
         }
       }
-    } else if (msg.type === MessageTypes.FOUND_TIMES) {
-      text = displayFoundTimes(msg.foundTimes);
     } else if (msg.type === MessageTypes.ERROR) {
       text = msg.errorMessage;
     }
@@ -124,17 +103,14 @@ function generateDisplayMessages(messages, isNew, eventState, name) {
       msg.author === Authors.USER &&
       msg.type === MessageTypes.NAME
     ) {
-      if (isNew) {
-        displayMessages.push([TIMES_MESSAGE, Authors.SCHEDULER]);
-      } else if (eventState && name && (name in eventState.generalAvailConfirmed) && eventState.generalAvailConfirmed[name]) {
+      if (eventState && name && (name in eventState.generalAvailConfirmed) && eventState.generalAvailConfirmed[name]) {
         // Prompt for specific avail
         state = StateMachine.SPECIFIC_AVAIL;
         displayMessages.push([SPECIFIC_AVAIL_MESSAGE_FRESH, Authors.SCHEDULER]);
       } else {
         // Prompt for general avail
         state = StateMachine.GENERAL_AVAIL;
-        displayMessages.push([TIMES_MESSAGE_FRESH, Authors.SCHEDULER]);
-        explainedGeneralAvail = true;
+        displayMessages.push([TIMES_MESSAGE, Authors.SCHEDULER]);
       } 
     }
     // If a user CONFIRM message has already been sent,
