@@ -176,7 +176,7 @@ function App() {
   }, [setRange, setCurrentWeek]);
 
   // When date range is confirmed
-  const onSubmit = useCallback(() => {
+  const onConfirmRange = useCallback(() => {
     // Confirming date range
     // Now that date range is confirmed, create a persisted event
     const eventId = uuidv4();
@@ -192,23 +192,25 @@ function App() {
   }, [sendMessage, setFlowState, range, navigate]);
 
   // Button click from weekly calendar - confirming general avail or finding times
-  const onConfirm = useCallback(() => {
-    if (flowState === StateMachine.GENERAL_AVAIL) {
-      sendMessage({
-        type: MessageTypes.CONFIRM,
-        author: Authors.USER,
-        eventId: eventId,
-        name: name
-      });
-      setFlowState(StateMachine.SPECIFIC_AVAIL);
-    } else if (flowState === StateMachine.SPECIFIC_AVAIL) {
-      setFlowState(StateMachine.VIEW_AVAIL);
-      setEditingName(null);
-    } else if (flowState === StateMachine.VIEW_AVAIL) {
-      setFlowState(StateMachine.SPECIFIC_AVAIL);
-      setEditingName(name);
-    }
-  }, [eventId, name, flowState, setFlowState, sendMessage, setEditingName]);
+  const onConfirmGeneralAvail = useCallback(() => {
+    sendMessage({
+      type: MessageTypes.CONFIRM,
+      author: Authors.USER,
+      eventId: eventId,
+      name: name
+    });
+    setFlowState(StateMachine.SPECIFIC_AVAIL);
+  }, [eventId, name, setFlowState, sendMessage]);
+
+  const onEdit = useCallback(() => {
+    setFlowState(StateMachine.SPECIFIC_AVAIL);
+    setEditingName(name);
+  }, [name, setFlowState, setEditingName]);
+
+  const onView = useCallback(() => {
+    setFlowState(StateMachine.VIEW_AVAIL);
+    setEditingName(null);
+  }, [setFlowState, setEditingName]);
 
   // Hourly calendar selectable
   const scheduleSelectable = [StateMachine.GENERAL_AVAIL, StateMachine.SPECIFIC_AVAIL].includes(flowState);
@@ -253,15 +255,6 @@ function App() {
     shortRange
   );
 
-  let buttonText;
-  if (flowState === StateMachine.GENERAL_AVAIL) {
-    buttonText = 'OK';
-  } else if (flowState === StateMachine.SPECIFIC_AVAIL) {
-    buttonText = 'VIEW';
-  } else if (flowState === StateMachine.VIEW_AVAIL) {
-    buttonText = 'EDIT';
-  }
-
   // Date calendar or hourly calendar depending where we are in flow
   const renderWidget = () => {
     if (flowState === StateMachine.SELECT_DATES) {
@@ -269,7 +262,7 @@ function App() {
         <MonthlyCalendar
           range={range}
           onRangeChanged={onRangeChanged}
-          onSubmit={onSubmit}
+          onSubmit={onConfirmRange}
         />
       );
     } else if (flowState === StateMachine.GENERAL_AVAIL) {
@@ -277,7 +270,7 @@ function App() {
         <GeneralWeeklyCalendar
           timeGrid={timeGrid}
           name={name}
-          onSubmit={onConfirm}
+          onSubmit={onConfirmGeneralAvail}
           selectable={scheduleSelectable}
           onSelectSlot={onSelectGeneralSlot}
         />
@@ -287,13 +280,14 @@ function App() {
         <SpecificWeeklyCalendar
           dateRange={range}
           timeGrid={timeGrid}
-          onSubmit={onConfirm}
-          submitText={buttonText}
           setCurrentWeek={setCurrentWeek}
           selectable={scheduleSelectable}
           onSelectSlot={onSelectSlot}
           names={names}
           editingName={editingName}
+          showButtons={[StateMachine.SPECIFIC_AVAIL, StateMachine.VIEW_AVAIL].includes(flowState)}
+          onEdit={onEdit}
+          onView={onView}
         />
       );
     }

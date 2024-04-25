@@ -1,4 +1,6 @@
 import { useMemo, useCallback } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck } from '@fortawesome/free-solid-svg-icons';
 import {
   slotNum,
   getDayOfWeek
@@ -71,7 +73,11 @@ function GeneralWeeklyCalendar({
         calendarProps={calendarProps}
         calendarComponents={components}
       />
-      <button className="calendar-submit" id='calendar-submit' onClick={onSubmit}>OK</button>
+      <button className="calendar-submit" id='calendar-submit' onClick={onSubmit}>
+        <FontAwesomeIcon
+          icon={faCheck}
+        />
+      </button>
     </div>
   );
 }

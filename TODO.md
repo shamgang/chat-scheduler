@@ -10,7 +10,6 @@
 * If the user types something that looks like confirmation - OK, good, etc. - this could trigger the OK confirmation - would require another LLM round-trip
 * Stress test general availability mode, etc.
 * Double check that everything passed to react components is memo-ized
-* onSubmit / onConfirm poor naming App.js
 * Stress test date and time manual selection - mixing drag and click in weird ways, going across day boundaries, etc. - including mouseup on a disabled day
 * Name events so people can tell if they're coming to the correct place - use this in page title?
 * Font redesign
@@ -22,6 +21,5 @@
 * Accessibility - Calendar selection is probably not accessible.
 * Make the mobile view longer? scroll
 * Test using an invalid event ID in the url
-* Fix button design when toggling between edit and view - use icons, and show as more visible toggle
 * Display messages code has a lot of state machine redunancy - combine with the main state machine - and then maybe do away with chainlit and use websockets directly?
 * Change tooltip anchor to button for accessibility

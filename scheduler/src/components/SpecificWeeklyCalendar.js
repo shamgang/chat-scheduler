@@ -1,5 +1,7 @@
 import { useMemo, useCallback, useState } from 'react';
 import { Tooltip } from 'react-tooltip';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faUsers } from '@fortawesome/free-solid-svg-icons';
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import {
   lastMonday,
@@ -51,14 +53,15 @@ function isOut(slot, dateRange) {
 
 function SpecificWeeklyCalendar({
   dateRange,
-  timeGrid, 
-  onSubmit,
-  submitText,
+  timeGrid,
   setCurrentWeek,
   selectable,
   onSelectSlot,
   names,
-  editingName
+  editingName,
+  showButtons,
+  onEdit,
+  onView
 }) {
   const [focusedDate, setFocusedDate] = useState(lastMonday(dateRange[0]));
   const [focusedSlotNames, setFocusedSlotNames] = useState(null);
@@ -118,7 +121,32 @@ function SpecificWeeklyCalendar({
         calendarComponents={components}
       >
       </BaseWeeklyCalendar>
-      <button className="calendar-submit" id='scheduler-submit' onClick={onSubmit}>{submitText}</button>
+      <div className="calendar-footer">
+        { 
+          showButtons &&
+          <button
+            className={"calendar-submit" + (editingName ? ' calendar-button-selected' : '')}
+            id='calendar-edit'
+            onClick={onEdit}
+          >
+            <FontAwesomeIcon
+              icon={faEdit}
+            />
+          </button>
+        }
+        { 
+          showButtons &&
+          <button
+            className={"calendar-submit" + (editingName ? '' : ' calendar-button-selected')}
+            id='calendar-view'
+            onClick={onView}
+          >
+            <FontAwesomeIcon
+              icon={faUsers}
+            />
+          </button>
+        }
+      </div>
       {
         !editingName && focusedSlotNames && focusedSlotNames.length > 0 &&
         <Tooltip anchorSelect='.slot-anchor' place="top">

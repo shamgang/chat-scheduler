@@ -1,6 +1,8 @@
 import { useCallback, useRef, useState, Children, cloneElement, useEffect, useMemo } from 'react';
 import { Calendar as BigCalendar, Views } from 'react-big-calendar';
 import moment from 'moment';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCheck } from '@fortawesome/free-solid-svg-icons';
 import { equalDates, cloneDate } from '../helpers/Dates';
 import { localizer } from '../helpers/CalendarHelpers';
 import { CalendarToolbar } from './CalendarToolbar';
@@ -94,7 +96,11 @@ function MonthlyCalendar({range, onRangeChanged, onSubmit}) {
               date={focusedDate}
               onNavigate={onNavigate}
             />
-            <button className='calendar-submit' id='range-submit' onClick={onSubmit}>OK</button>
+            <button className='calendar-submit' id='range-submit' onClick={onSubmit}>
+              <FontAwesomeIcon
+                icon={faCheck}
+              />
+            </button>
         </div>
     );
 }

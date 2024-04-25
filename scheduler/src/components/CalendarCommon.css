@@ -7,7 +7,7 @@
     grid-template-columns: 100%;
     grid-template-areas: 
         'calendar'
-        'calendarSubmit';
+        'calendarFooter';
     padding: 5px;
     background-color: black;
     background-image: url('../img/gradients/dark1.jpg');
@@ -20,8 +20,13 @@
     grid-area: calendar;
 }
 
+.calendar-footer {
+    grid-area: calendarFooter;
+    display: grid;
+    grid-auto-flow: column;
+}
+
 .calendar-submit {
-    grid-area: calendarSubmit;
     background-color: transparent;
     color: white;
     font-family: Verdana, sans-serif;
@@ -33,6 +38,7 @@
 .calendar-submit:hover {
     text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
     font-size: 1.6em;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .calendar-submit:active {
