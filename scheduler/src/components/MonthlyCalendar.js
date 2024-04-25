@@ -1,59 +1,23 @@
 import { useCallback, useRef, useState, Children, cloneElement, useEffect, useMemo } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAnglesRight, faAnglesLeft } from '@fortawesome/free-solid-svg-icons'
-import { Calendar as BigCalendar, Views, momentLocalizer } from 'react-big-calendar';
+import { Calendar as BigCalendar, Views } from 'react-big-calendar';
 import moment from 'moment';
 import { equalDates, cloneDate } from '../helpers/Dates';
+import { localizer } from '../helpers/CalendarHelpers';
+import { CalendarToolbar } from './CalendarToolbar';
 import 'react-big-calendar/lib/css/react-big-calendar.css'
-import './Calendar.css';
-
-moment.locale('en-us', {
-  week: {
-    dow: 1 // Monday as first day of week
-  }
-});
-const localizer = momentLocalizer(moment)
-
-export function CustomToolbar({ label, onNavigate }) {
-
-  const onPrev = useCallback(() => {
-    onNavigate('PREV');
-  }, [onNavigate]);
-
-  const onNext = useCallback(() => {
-    onNavigate('NEXT');
-  }, [onNavigate]);
-
-  return (
-    <div className="calendar-toolbar">
-      <span className="calendar-prev" onClick={onPrev}>
-        <FontAwesomeIcon
-          icon={faAnglesLeft}
-          className="calendar-nav-arrow"
-        />
-      </span>
-      <span className="calendar-label">{label}</span>
-      <span className="calendar-next" onClick={onNext}>
-        <FontAwesomeIcon
-          icon={faAnglesRight}
-          className="calendar-nav-arrow"
-        />
-      </span>
-    </div>
-  );
-}
+import './MonthlyCalendar.css';
 
 function DateCellWrapper({children, value, onRangeSelected}) {
   return cloneElement(Children.only(children), {
     onTouchEnd: () => {
       let end = cloneDate(value);
       end.setDate(end.getDate() + 1); // onRangeSelected expects end-exclusive
-      onRangeSelected({start: value, end: end });
+      onRangeSelected({ start: value, end: end });
     }
   });
 }
 
-function Calendar({range, onRangeChanged, onSubmit}) {
+function MonthlyCalendar({range, onRangeChanged, onSubmit}) {
     const calendarRef = useRef(null);
     const [rangeStart, setRangeStart] = useState(null);
     const [focusedDate, setFocusedDate] = useState(range[0]);
@@ -110,7 +74,7 @@ function Calendar({range, onRangeChanged, onSubmit}) {
     // Memoize modular components
     const components = useMemo(() => {
       return {
-        toolbar: CustomToolbar,
+        toolbar: CalendarToolbar,
         dateCellWrapper: (props) => <DateCellWrapper {...props} onRangeSelected={onRangeSelected} />
       };
     }, [onRangeSelected]);
@@ -136,4 +100,4 @@ function Calendar({range, onRangeChanged, onSubmit}) {
 }
 
 
-export default Calendar;
+export default MonthlyCalendar;

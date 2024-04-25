@@ -3,8 +3,9 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useLoaderData, useNavigate } from "react-router-dom";
 import './App.css';
 import Chat from './components/Chat';
-import Calendar from './components/Calendar';
-import Scheduler from './components/Scheduler';
+import MonthlyCalendar from './components/MonthlyCalendar';
+import GeneralWeeklyCalendar from './components/GeneralWeeklyCalendar';
+import SpecificWeeklyCalendar from './components/SpecificWeeklyCalendar';
 import { 
   useMessageService,
   MessageTypes,
@@ -15,7 +16,7 @@ import { generateDisplayMessages } from './helpers/DisplayMessages'
 import { StateMachine } from './helpers/StateMachine';
 import { getEventState } from "./services/StateService";
 import { getRandomBackgroundImageUrl } from "./helpers/BackgroundImage";
-import { lastMonday } from "./helpers/Dates";
+import { lastMonday, getDayOfWeek } from "./helpers/Dates";
 
 export async function loader({ params }) {
   // TODO: keep a state variable so we don't
@@ -60,12 +61,13 @@ function App() {
       if (!isNew.current) {
         // This is a fresh load of an existing event, set state from server
         setRange([eventState.fromDate, eventState.toDate]);
+        setCurrentWeek(lastMonday(eventState.fromDate));
         setFlowState(StateMachine.NAME);
         setTimeGrid(eventState.timeGrid);
         setNames(eventState.names);
       }
     }
-  }, [eventId, eventState, setRange, setFlowState, setTimeGrid, setNames]);
+  }, [eventId, eventState, setRange, setCurrentWeek, setFlowState, setTimeGrid, setNames]);
 
 
   // Take action based on latest messages
@@ -81,6 +83,7 @@ function App() {
       ) {
         console.log(`Chatbot range change from: ${msg.fromDate} to: ${msg.toDate}`);
         setRange([msg.fromDate, msg.toDate]);
+        setCurrentWeek(lastMonday(msg.fromDate));
       }
       // Set time ranges if messages change and last message is a time range
       if (
@@ -97,6 +100,7 @@ function App() {
     numMessagesProcessed,
     setNumMessagesProcessed,
     setRange,
+    setCurrentWeek,
     timeGrid,
     setTimeGrid
   ]);
@@ -129,7 +133,7 @@ function App() {
       } else {
         setFlowState(StateMachine.GENERAL_AVAIL);
       }
-    } else if ([StateMachine.GENERAL_AVAIL, StateMachine.SPECIFIC_AVAIL].includes(flowState)) {
+    } else if ([StateMachine.GENERAL_AVAIL, StateMachine.SPECIFIC_AVAIL, StateMachine.VIEW_AVAIL].includes(flowState)) {
       sendMessage({
         type: MessageTypes.TIMES,
         author: Authors.USER,
@@ -141,13 +145,26 @@ function App() {
     } else {
       console.error(`Invalid flow state: ${flowState}, message not sent.`);
     }
-  }, [eventId, eventState, flowState, currentWeek, name, sendMessage, setFlowState, setName, setNames, setEditingName]);
+  }, [
+    eventId,
+    eventState,
+    flowState,
+    currentWeek,
+    name,
+    names,
+    sendMessage,
+    setFlowState,
+    setName,
+    setNames,
+    setEditingName
+  ]);
 
   // When date calendar selection changes
   const onRangeChanged = useCallback((value) => {
     console.log(`Manual range change from: ${value[0]} to: ${value[1]}`);
     setRange(value);
-  }, [setRange]);
+    setCurrentWeek(lastMonday(value[0]));
+  }, [setRange, setCurrentWeek]);
 
   // When date range is confirmed
   const onSubmit = useCallback(() => {
@@ -185,7 +202,23 @@ function App() {
   }, [eventId, name, flowState, setFlowState, sendMessage, setEditingName]);
 
   // Hourly calendar selectable
-  const scheduleSelectable = flowState === StateMachine.SPECIFIC_AVAIL;
+  const scheduleSelectable = [StateMachine.GENERAL_AVAIL, StateMachine.SPECIFIC_AVAIL].includes(flowState);
+
+  // When general calendar slot is selected
+  const onSelectGeneralSlot = useCallback(({start, end}) => {
+    if (flowState !== StateMachine.GENERAL_AVAIL) {
+      return;
+    }
+    sendMessage({
+      type: MessageTypes.TOGGLE_GENERAL_SLOTS,
+      author: Authors.USER,
+      day: getDayOfWeek(start),
+      from: start,
+      to: end,
+      eventId: eventId,
+      name: name
+    });
+  }, [eventId, name, flowState, sendMessage]);
 
   // When hourly calendar slot is selected
   const onSelectSlot = useCallback(({start, end}) => {
@@ -223,15 +256,25 @@ function App() {
   const renderWidget = () => {
     if (flowState === StateMachine.SELECT_DATES) {
       return (
-        <Calendar
+        <MonthlyCalendar
           range={range}
           onRangeChanged={onRangeChanged}
           onSubmit={onSubmit}
         />
       );
+    } else if (flowState === StateMachine.GENERAL_AVAIL) {
+      return (
+        <GeneralWeeklyCalendar
+          timeGrid={timeGrid}
+          name={name}
+          onSubmit={onConfirm}
+          selectable={scheduleSelectable}
+          onSelectSlot={onSelectGeneralSlot}
+        />
+      );
     } else {
       return (
-        <Scheduler
+        <SpecificWeeklyCalendar
           dateRange={range}
           timeGrid={timeGrid}
           onSubmit={onConfirm}

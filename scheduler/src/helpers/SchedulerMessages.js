@@ -17,8 +17,8 @@ Hey! We're in the middle of scheduling the meeting - tell me your name if you wa
 `;
 export const TIMES_MESSAGE = `
 Got it! If you want, start by telling me your availability generally, for example: "I'm free 9am-5pm every weekday",
-and I'll pre-fill all the weeks.
-Or, hit OK to start scheduling specific weeks.
+and I'll pre-fill all the weeks. You can also edit manually.
+Hit OK to move on to scheduling specific weeks.
 `;
 export const GENERAL_TIME_RANGES_MESSAGE = `
 Updated! If you're done with general availability, hit OK.

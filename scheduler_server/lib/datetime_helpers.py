@@ -7,11 +7,15 @@ from .config import SLOTS_PER_HOUR, MINUTES_PER_SLOT
 GENERAL_WEEK_KEY = 'GENERAL'
 
 
-def from_time_string(time_str):
+def from_time_string_12(time_str):
     return datetime.strptime(time_str, '%I%M%p').time()
 
 
-def to_time_string(time):
+def from_time_string_24(time_str):
+    return datetime.strptime(time_str, '%H%M').time()
+
+
+def to_time_string_24(time):
     return time.strftime('%H%M')
 
 

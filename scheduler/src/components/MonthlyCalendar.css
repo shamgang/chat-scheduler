@@ -1,0 +1,58 @@
+.date-default {
+    background-color: rgba(200, 200, 200, 0.5);
+    justify-content: center;
+}
+
+.date-selected {
+    background-color: rgba(200, 200, 255, 0.7);
+}
+
+.date-out-of-month {
+    background-color: rgba(200, 200, 200, 0.3);
+}
+
+.date-selecting {
+    background-color: rgba(200, 200, 200, 0.7);
+}
+
+.rbc-selected-cell {
+    background-color: rgba(200, 200, 200, 0.7);
+}
+
+.rbc-month-header {
+    text-transform: uppercase;
+}
+
+.rbc-row-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+    pointer-events: none;
+}
+
+.rbc-date-cell {
+    display: grid;
+    align-items: center;
+}
+
+.rbc-date-cell:hover {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.rbc-date-cell button {
+    cursor: default;
+    font-size: 1.2em;
+    color: white;
+    text-shadow: inherit;
+}
+
+@media (max-aspect-ratio: 1/1) {
+    .rbc-date-cell button {
+        font-size: 0.5em;
+    }
+}

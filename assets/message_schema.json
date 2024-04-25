@@ -191,6 +191,42 @@
         "name"
       ]
     },
+    "toggleGeneralSlotsMessage": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "TOGGLE_GENERAL_SLOTS"
+        },
+        "day": {
+          "type": "integer"
+        },
+        "from": {
+          "type": "string",
+          "$comment": "HHmm format"
+        },
+        "to": {
+          "type": "string",
+          "$comment": "HHmm format"
+        },
+        "eventId": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "author": {
+          "const": "USER"
+        }
+      },
+      "required": [
+        "type",
+        "day",
+        "from",
+        "to",
+        "eventId",
+        "name"
+      ]
+    },
     "errorMessage": {
       "type": "object",
       "properties": {
@@ -222,6 +258,7 @@
         { "$ref": "#/definitions/timeGridMessage" },
         { "$ref": "#/definitions/confirmMessage" },
         { "$ref": "#/definitions/toggleSlotsMessage" },
+        { "$ref": "#/definitions/toggleGeneralSlotsMessage" },
         { "$ref": "#/definitions/errorMessage" }
       ]
     }

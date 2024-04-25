@@ -8,7 +8,8 @@ import messageSchema from '../assets/message_schema.json';
 import Ajv from 'ajv';
 import {
   toIsoNoHyphens,
-  fromIsoNoHyphens
+  fromIsoNoHyphens,
+  formatTimeString
 } from '../helpers/FormatHelpers';
 
 const CHAINLIT_SERVER_URL = 'http://192.168.0.134:8000';
@@ -32,6 +33,7 @@ const MessageTypes = {
   TIME_GRID: "TIME_GRID",
   CONFIRM: "CONFIRM",
   TOGGLE_SLOTS: "TOGGLE_SLOTS",
+  TOGGLE_GENERAL_SLOTS: "TOGGLE_GENERAL_SLOTS",
   ERROR: "ERROR"
 };
 
@@ -80,6 +82,9 @@ function formatMessage(msg) {
   } else if (msg.type === MessageTypes.TOGGLE_SLOTS) {
     msg.from = dateTimeToIsoNoHyphens(msg.from);
     msg.to = dateTimeToIsoNoHyphens(msg.to);
+  } else if (msg.type === MessageTypes.TOGGLE_GENERAL_SLOTS) {
+    msg.from = formatTimeString(msg.from);
+    msg.to = formatTimeString(msg.to);
   }
   if (!validate(msg)) {
     console.error('Validation failed:', msg);

@@ -15,6 +15,10 @@
     place-items: center;
 }
 
+.rbc-time-gutter .rbc-time-slot {
+    background-color: transparent !important;
+}
+
 .rbc-time-gutter .rbc-timeslot-group div:first-child {
     border-left: none !important;
 }
@@ -25,6 +29,10 @@
 
 .rbc-day-slot .time-slot-selecting {
     background-color:rgba(220, 220, 255, 1) !important;
+}
+
+.rbc-time-slot {
+    border-top: none !important;
 }
 
 .rbc-events-container {

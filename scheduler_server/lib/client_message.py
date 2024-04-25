@@ -4,7 +4,8 @@ import json
 from .model_tools import from_iso_no_hyphens, to_iso_no_hyphens
 from .datetime_helpers import (
     datetime_from_iso_no_hyphens,
-    parse_week
+    parse_week,
+    from_time_string_24
 )
 from .json_helpers import (
     format_time_grid,
@@ -21,6 +22,7 @@ class ClientMessageType(str, Enum):
     TIME_GRID = 'TIME_GRID'
     CONFIRM = 'CONFIRM'
     TOGGLE_SLOTS = 'TOGGLE_SLOTS'
+    TOGGLE_GENERAL_SLOTS = 'TOGGLE_GENERAL_SLOTS'
     ERROR = 'ERROR'
 
 
@@ -43,6 +45,9 @@ def parse_message(msg_str):
     if msg_type == ClientMessageType.TOGGLE_SLOTS:
         from_time = datetime_from_iso_no_hyphens(msg['from'])
         to_time = datetime_from_iso_no_hyphens(msg['to'])
+    if msg_type == ClientMessageType.TOGGLE_GENERAL_SLOTS:
+        from_time = from_time_string_24(msg['from'])
+        to_time = from_time_string_24(msg['to'])
     return ClientMessage(
         type=msg_type,
         author=msg['author'],
@@ -51,6 +56,7 @@ def parse_message(msg_str):
         to_date=to_date,
         week=week,
         time_grid=None,
+        day=msg.get('day'),
         from_time=from_time,
         to_time=to_time,
         error_message=None,
@@ -91,6 +97,7 @@ class ClientMessage:
         to_date=None,
         week=None,
         time_grid=None,
+        day=None,
         from_time=None,
         to_time=None,
         error_message=None,
@@ -104,6 +111,7 @@ class ClientMessage:
         self.to_date = to_date
         self.week = week
         self.time_grid = time_grid
+        self.day = day
         self.from_time = from_time
         self.to_time = to_time
         self.error_message = error_message

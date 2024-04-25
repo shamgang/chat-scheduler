@@ -1,0 +1,56 @@
+.calendar-container {
+    place-self: center;
+    height: 80%;
+    width: 80%;
+    display: grid;
+    grid-template-rows: 90% 10%;
+    grid-template-columns: 100%;
+    grid-template-areas: 
+        'calendar'
+        'calendarSubmit';
+    padding: 5px;
+    background-color: black;
+    background-image: url('../img/gradients/dark1.jpg');
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(100, 100, 100, 0.5);
+    color: white;
+}
+
+.calendar {
+    grid-area: calendar;
+}
+
+.calendar-submit {
+    grid-area: calendarSubmit;
+    background-color: transparent;
+    color: white;
+    font-family: Verdana, sans-serif;
+    font-weight: bold;
+    font-size: 1.5em;
+    box-shadow: 0 0 5px white;
+}
+
+.calendar-submit:hover {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    font-size: 1.6em;
+}
+
+.calendar-submit:active {
+    font-size: 1.5em;
+}
+
+@media (max-aspect-ratio: 1/1) {
+    .calendar-container {
+        height: 90%;
+        width: 90%;
+    }
+    .calendar-submit {
+        font-size: 1em;
+    }
+    .calendar-submit:hover {
+        font-size: 1.1em;
+    }
+    .calendar-submit:active {
+        font-size: 1em;
+    }
+}

@@ -66,7 +66,7 @@ function generateDisplayMessages(messages, isNew, eventState, name) {
       }
     } else if (msg.type === MessageTypes.NAME) {
       text = msg.name;
-    } else if (msg.type === MessageTypes.TIME_RANGES) {
+    } else if (msg.type === MessageTypes.TIME_GRID) {
       if (state === StateMachine.GENERAL_AVAIL) {
         if (!explainedGeneralAvail) {
           text = GENERAL_TIME_RANGES_MESSAGE;

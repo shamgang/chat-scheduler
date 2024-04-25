@@ -70,8 +70,6 @@ async def on_message(message: cl.Message):
             response = ClientMessage(
                 type=ClientMessageType.TIME_GRID,
                 author=Author.SCHEDULER,
-                name=msg.name,
-                week=msg.week,
                 time_grid=time_grid
             )
         except TranslationFailedError as tfe:
@@ -84,21 +82,29 @@ async def on_message(message: cl.Message):
         # User has confirmed general avail
         get_event(msg.event_id).set_general_avail_confirmed(msg.name, True)
     elif msg.type == ClientMessageType.TOGGLE_SLOTS:
-        slot_date = msg.from_time.date()
-        monday = get_last_monday(slot_date)
         time_grid = get_event(msg.event_id).time_grid
         time_grid.toggle_availability(
             msg.name,
-            monday,
-            msg.from_time.weekday(),
+            msg.from_time.date(),
             msg.from_time.time(),
             msg.to_time.time()
         )
         response = ClientMessage(
             type=ClientMessageType.TIME_GRID,
             author=Author.SCHEDULER,
-            name=msg.name,
-            week=monday,
+            time_grid=time_grid
+        )
+    elif msg.type == ClientMessageType.TOGGLE_GENERAL_SLOTS:
+        time_grid = get_event(msg.event_id).time_grid
+        time_grid.toggle_general_availability(
+            msg.name,
+            msg.day,
+            msg.from_time,
+            msg.to_time
+        )
+        response = ClientMessage(
+            type=ClientMessageType.TIME_GRID,
+            author=Author.SCHEDULER,
             time_grid=time_grid
         )
     if response:
