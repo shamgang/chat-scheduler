@@ -8,7 +8,7 @@ import {
   nextSunday,
   slotNum
 } from '../helpers/Dates';
-import { toIsoNoHyphens } from '../helpers/FormatHelpers'
+import { toIsoNoHyphens, firstCap } from '../helpers/FormatHelpers'
 import { CalendarToolbar } from './CalendarToolbar';
 import BaseWeeklyCalendar from './BaseWeeklyCalendar';
 
@@ -151,7 +151,7 @@ function SpecificWeeklyCalendar({
         !editingName && focusedSlotNames && focusedSlotNames.length > 0 &&
         <Tooltip anchorSelect='.slot-anchor' place="top">
           {
-            focusedSlotNames && focusedSlotNames.map(name => <div key={'tooltip-name-' + name}>{name}</div>)
+            focusedSlotNames && focusedSlotNames.map(name => <div key={'tooltip-name-' + name}>{firstCap(name)}</div>)
           }
         </Tooltip>}
     </div>

@@ -29,3 +29,9 @@ export function parseTimeString(timeStr) {
 export function formatTimeString(time) {
   return pad2(time.getHours()) + pad2(time.getMinutes())
 }
+
+export function firstCap(string) {
+  let result = string[0].toUpperCase();
+  result += string.slice(1);
+  return result;
+}

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAnglesRight } from '@fortawesome/free-solid-svg-icons';
 import './Chat.css';
 
-function Chat({onSendMessage, messages}) {
+function Chat({onSendMessage, messages, allowKey}) {
   const [input, setInput] = useState('');
   const [hoverSend, setHoverSend] = useState(false);
   const [clickingSend, setClickingSend] = useState(false);
@@ -23,6 +23,12 @@ function Chat({onSendMessage, messages}) {
       }
     }
   }, [messages]);
+
+  const onKeyDown = useCallback((event) => {
+    if (allowKey && !allowKey(event.key)) {
+      event.preventDefault();
+    }
+  }, [allowKey]);
 
   const onInputChange = useCallback((event) => {
     setInput(event.target.value);
@@ -49,7 +55,15 @@ function Chat({onSendMessage, messages}) {
         }
       </div>
       <form onSubmit={onFormSubmit} className='input-container' id="messageForm">
-        <input type="text" value={input} className="message-input" id="messageInput" autoFocus onChange={onInputChange}/>
+        <input
+          type="text"
+          value={input}
+          className="message-input"
+          id="messageInput"
+          autoFocus
+          onKeyDown={onKeyDown}
+          onChange={onInputChange}
+        />
         <button type="submit" className="send">
           <FontAwesomeIcon
             icon={faAnglesRight}

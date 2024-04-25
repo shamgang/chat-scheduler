@@ -116,24 +116,25 @@ function App() {
         prompt: input
       });
     } else if (flowState === StateMachine.NAME) {
+      const newName = input.trim().toLowerCase();
       sendMessage({
         type: MessageTypes.NAME,
         author: Authors.USER,
         eventId: eventId,
-        name: input
+        name: newName
       });
       setName(input);
       let nextNames = [...(names || [])]
-      if(!nextNames.includes(input)) {
-        nextNames.push(input);
+      if(!nextNames.includes(newName)) {
+        nextNames.push(newName);
       }
       setNames(nextNames);
-      setEditingName(input);
+      setEditingName(newName);
       if (
         (
           eventState &&
-          input in eventState.generalAvailConfirmed &&
-          eventState.generalAvailConfirmed[input] // user has already entered general avail
+          newName in eventState.generalAvailConfirmed &&
+          eventState.generalAvailConfirmed[newName] // user has already entered general avail
         ) || shortRange
       ) {
         // Pre-loaded backend state shows we already did general availability.
@@ -255,6 +256,17 @@ function App() {
     shortRange
   );
 
+  // Allow specific keypresses in chat input
+  const allowKey = useCallback((key) => {
+    if (flowState === StateMachine.NAME) {
+      const allowedCharacters = /[A-Za-z]/;
+      if (!allowedCharacters.test(key)) {
+        return false;
+      }
+    }
+    return true;
+  }, [flowState]);
+
   // Date calendar or hourly calendar depending where we are in flow
   const renderWidget = () => {
     if (flowState === StateMachine.SELECT_DATES) {
@@ -299,6 +311,7 @@ function App() {
         <Chat
           onSendMessage={onSend}
           messages={displayMessages}
+          allowKey={allowKey}
         />
       </div>
       <div className='calendar-section'>

@@ -16,6 +16,7 @@ import {
   SPECIFIC_TIME_RANGES_MESSAGE_SHORT
 } from './SchedulerMessages';
 import { StateMachine } from './StateMachine';
+import { firstCap } from './FormatHelpers';
 
 /* Yet another message format - display messages conform to
     Chat library interface, from internal frontend format */
@@ -65,7 +66,7 @@ function generateDisplayMessages(messages, isNew, eventState, name, shortRange) 
         state = StateMachine.GENERAL_AVAIL;
       }
     } else if (msg.type === MessageTypes.NAME) {
-      text = msg.name;
+      text = firstCap(msg.name);
     } else if (msg.type === MessageTypes.TIME_GRID) {
       if (state === StateMachine.GENERAL_AVAIL) {
         if (!explainedGeneralAvail) {
