@@ -1,4 +1,4 @@
-from fastapi import Request
+from fastapi import Request, HTTPException
 import chainlit as cl
 from chainlit.server import app
 from langchain_openai import ChatOpenAI
@@ -119,5 +119,8 @@ async def get_state(
     event_id: str
 ):
     logger.debug(f'Retrieving event state: {event_id}')
-    return format_event_state(get_event(event_id))
-    
+    try:
+        return format_event_state(get_event(event_id))
+    except KeyError:
+        logger.error("Event not found")
+        raise HTTPException(status_code=404, detail="Event not found")

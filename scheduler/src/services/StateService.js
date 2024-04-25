@@ -23,7 +23,7 @@ export async function getEventState(eventId) {
   const url = `/state/${eventId}`;
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error('Failed to fetch data');
+    throw response;
   }
   const eventState = parseEventState(await response.json());
   return eventState;

@@ -7,13 +7,15 @@ import {
 } from "react-router-dom";
 import './index.css';
 import App, { loader as appLoader } from './App';
+import ErrorPage from './Error';
 import reportWebVitals from './reportWebVitals';
 
 const router = createBrowserRouter([
   {
     path: '/:eventId?',
     element: <App/>,
-    loader: appLoader
+    loader: appLoader,
+    errorElement: <ErrorPage/>
   }
 ]);
 

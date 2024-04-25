@@ -1,0 +1,48 @@
+.error-page {
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    display: grid;
+    grid-template-columns: 100%;
+    grid-template-rows: 100%;
+    place-items: center;
+}
+
+.oops {
+    min-height: fit-content;
+    max-height: 50%;
+    width: 40em;
+    max-width: 50%;
+    display: grid;
+    grid-auto-rows: minmax(0, 1fr);
+    place-items: center;
+    color: white;
+    text-shadow: 0 0 5px grey;
+}
+
+.oops h1 {
+    font-family: 'Courier New', Courier, monospace;
+    font-style: italic;
+    font-size: 10em;
+}
+
+.oops p {
+    font-family: 'Courier New', Courier, monospace;
+    font-style: italic;
+    font-size: 2em;
+}
+
+@media (max-aspect-ratio: 1/1) {
+    .oops {
+        min-height: fit-content;
+        max-height: 80%;
+        width: 40em;
+        max-width: 90%;
+    }
+    .oops h1 {
+        font-size: 5em;
+    }
+    .oops p {
+        font-size: 1em;
+    }
+}
