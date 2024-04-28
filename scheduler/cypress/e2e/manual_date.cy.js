@@ -3,7 +3,7 @@ import { waitForNumIncoming, waitForNumUpdates } from "./utils";
 describe('manual date', () => {
   it('Should handle manual date input during date stage', () => {
     cy.visit('http://localhost:3000');
-    waitForNumIncoming(1);
+    waitForNumIncoming(2);
     cy.get('.rbc-day-bg:nth-child(2)').first().click(); 
     cy.get('.rbc-day-bg:nth-child(4)').first().click(); 
     const msgInput = cy.get('[id="messageInput"]');

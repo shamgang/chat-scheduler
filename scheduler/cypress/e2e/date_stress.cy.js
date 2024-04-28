@@ -27,7 +27,7 @@ const badInputs = [
 
 async function test() {
   cy.visit('http://localhost:3000');
-  waitForNumIncoming(1);
+  waitForNumIncoming(2);
   const msgInput = cy.get('[id="messageInput"]');
   const msgForm = cy.get('[id="messageForm"]');
   let numUpdates = 0;
