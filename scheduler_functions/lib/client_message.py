@@ -1,5 +1,4 @@
 from enum import Enum
-import chainlit as cl
 import json
 from .model_tools import from_iso_no_hyphens, to_iso_no_hyphens
 from .datetime_helpers import (
@@ -8,10 +7,10 @@ from .datetime_helpers import (
     from_time_string_24
 )
 from .json_helpers import (
-    format_time_grid,
     message_validator,
     validate_verbose
 )
+from .time_grid import format_time_grid
 
 
 class ClientMessageType(str, Enum):
@@ -117,11 +116,4 @@ class ClientMessage:
         self.error_message = error_message
         self.event_id = event_id
         self.name = name
-            
-    def format_message(self):
-        '''To chainlit format'''
-        return cl.Message(
-            author=self.author,
-            content=format_message(self)
-        )
     

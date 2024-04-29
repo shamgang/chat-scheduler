@@ -69,7 +69,7 @@ class DateTranslator:
         statements = statements_output.splitlines()
         # Look for the wrong number of statements
         if len(statements) > 3 or len(statements) < 1:
-            logger.error(f"Input '{input}' generated incorrect number of statements: {len(statements)}")
+            logger.error(f"Input '{input}' generated incorrect number of statements: {statements}")
             raise TranslationFailedError(generic_date_parse_failure_message)
         # Look for invalid statement types
         statement_types = get_statement_types(statements)

@@ -1,0 +1,23 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "$return"
+    },
+    {
+      "type": "webPubSubConnection",
+      "name": "connection",
+      "hub": "chatscheduler",
+      "userId": "",
+      "direction": "in"
+    }
+  ]
+}

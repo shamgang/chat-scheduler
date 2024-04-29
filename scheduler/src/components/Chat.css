@@ -58,7 +58,7 @@
 }
 
 .message.incoming {
-    background-color: rgba(200, 200, 230, 0.3);
+    background-color: rgba(200, 200, 230, 0.8);
     justify-self: start;
 }
 

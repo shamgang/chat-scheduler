@@ -3,6 +3,8 @@ import { fromIsoNoHyphens } from "../helpers/FormatHelpers";
 import commonSchema from '../assets/common_schema.json';
 import stateSchema from '../assets/state_schema.json';
 
+const STATE_ENDPOINT = process.env.REACT_APP_API_HOST + '/api/state';
+
 const ajv = new Ajv({verbose: true});
 
 const validate = ajv.addSchema(commonSchema).compile(stateSchema);
@@ -20,7 +22,7 @@ function parseEventState(eventState) {
 }
 
 export async function getEventState(eventId) {
-  const url = `/state/${eventId}`;
+  const url = `${STATE_ENDPOINT}/${eventId}`;
   const response = await fetch(url);
   if (!response.ok) {
     throw response;

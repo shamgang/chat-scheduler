@@ -18,8 +18,12 @@
 * React profiling
 * Accessibility - Calendar selection is probably not accessible.
 * Make the mobile view longer? scroll
-* Test using an invalid event ID in the url
-* Display messages code has a lot of state machine redundancy - combine with the main state machine - and then maybe do away with chainlit and use websockets directly?
 * Change tooltip anchor to button for accessibility
 * Add brand logo - fixed position, small text, subtle
 * Form validation
+* Stop copy-pasting the json schema - find a way to re-use without breaking the npm production build
+* Log the error in the error component if an error occurs
+* Webpubsub currently open to anonymous clients - disable this and update readme?
+* Display messages code has a lot of state machine redundancy - combine with the main state machine
+* Set up deployments on development branches
+* webpubsub_extension key regenerates on every deployment? will break app on every push

@@ -3,13 +3,12 @@ import jsonschema
 from referencing import Registry, Resource
 import json
 from .logger import logger
-from .model_tools import to_iso_no_hyphens
 
 
 def schema_path(filename):
     return os.path.join(
         os.path.dirname(__file__),
-        '../../assets/',
+        '../assets/',
         filename
     )
 
@@ -41,12 +40,3 @@ def validate_verbose(validator, candidate):
     except jsonschema.exceptions.ValidationError as ve:
         logger.error(f'Validation failed with message: {ve.message} and context: {ve.context}')
         raise ve
-
-
-def format_time_grid(time_grid):
-    '''Creates a JSON formatted version of the time grid'''
-    result = {
-        to_iso_no_hyphens(dt): slots
-        for dt, slots in time_grid.grid.items()
-    }
-    return result

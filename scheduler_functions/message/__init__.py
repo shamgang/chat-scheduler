@@ -1,36 +1,30 @@
-from fastapi import Request, HTTPException
-import chainlit as cl
-from chainlit.server import app
+import json
 from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
-from lib.date_translation import DateTranslator
-from lib.hour_translation import HourTranslator
-from lib.errors import TranslationFailedError
-from lib.event_state import create_event, get_event, format_event_state
-from lib.logger import logger
-from lib.client_message import (
+from ..lib.logger import logger
+from ..lib.date_translation import DateTranslator
+from ..lib.hour_translation import HourTranslator
+from ..lib.errors import TranslationFailedError
+from ..lib.event_state import create_event, get_event, update_event
+from ..lib.logger import logger
+from ..lib.client_message import (
     ClientMessage,
     parse_message,
+    format_message,
     ClientMessageType,
     Author
 )
-from lib.datetime_helpers import get_last_monday
 
-
-# Expect the following keys to exist in .env:
-# LANGCHAIN_TRACING_V2
-# LANGCHAIN_API_KEY
-# OPENAI_API_KEY
-load_dotenv('./chainlit-backend/.env')
 model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 date_translator = DateTranslator(model)
 hour_translator = HourTranslator(model)
 
+from azure.functions import Out
 
-@cl.on_message
-async def on_message(message: cl.Message):
-    logger.debug(f'Received message: {message.content}')
-    msg = parse_message(message.content)
+def main(request, actions: Out[str]) -> None:
+    # TODO: top level error handling?
+    msg_str = json.loads(request)['data']
+    logger.debug(f'Incoming message: {msg_str}')
+    msg = parse_message(msg_str)
     response = None
     if msg.type == ClientMessageType.DATES:
         # User is defining a date range
@@ -57,16 +51,20 @@ async def on_message(message: cl.Message):
             ) # TODO: bug reporting
     elif msg.type == ClientMessageType.RANGE:
         # User has confirmed date range
+        # TODO: return this new event so it can be loaded immediately
         create_event(msg.event_id, msg.from_date, msg.to_date)
     elif msg.type == ClientMessageType.NAME:
-        get_event(msg.event_id).add_name(msg.name)
-        pass
+        event = get_event(msg.event_id)
+        event.add_name(msg.name)
+        update_event(msg.event_id, event)
     elif msg.type == ClientMessageType.TIMES:
         # User is defining time slots
         try:
-            actions = hour_translator.translate_to_calendar_actions(msg.prompt)
-            time_grid = get_event(msg.event_id).time_grid
-            time_grid.process_calendar_actions(msg.name, msg.week, actions)
+            calendar_actions = hour_translator.translate_to_calendar_actions(msg.prompt)
+            event = get_event(msg.event_id)
+            time_grid = event.time_grid
+            time_grid.process_calendar_actions(msg.name, msg.week, calendar_actions)
+            update_event(msg.event_id, event)
             response = ClientMessage(
                 type=ClientMessageType.TIME_GRID,
                 author=Author.SCHEDULER,
@@ -80,47 +78,46 @@ async def on_message(message: cl.Message):
             )
     elif msg.type == ClientMessageType.CONFIRM:
         # User has confirmed general avail
-        get_event(msg.event_id).set_general_avail_confirmed(msg.name, True)
+        event = get_event(msg.event_id)
+        event.set_general_avail_confirmed(msg.name, True)
+        update_event(msg.event_id, event)
     elif msg.type == ClientMessageType.TOGGLE_SLOTS:
-        time_grid = get_event(msg.event_id).time_grid
+        event = get_event(msg.event_id)
+        time_grid = event.time_grid
         time_grid.toggle_availability(
             msg.name,
             msg.from_time.date(),
             msg.from_time.time(),
             msg.to_time.time()
         )
+        update_event(msg.event_id, event)
         response = ClientMessage(
             type=ClientMessageType.TIME_GRID,
             author=Author.SCHEDULER,
             time_grid=time_grid
         )
     elif msg.type == ClientMessageType.TOGGLE_GENERAL_SLOTS:
-        time_grid = get_event(msg.event_id).time_grid
+        event = get_event(msg.event_id)
+        time_grid = event.time_grid
         time_grid.toggle_general_availability(
             msg.name,
             msg.day,
             msg.from_time,
             msg.to_time
         )
+        update_event(msg.event_id, event)
         response = ClientMessage(
             type=ClientMessageType.TIME_GRID,
             author=Author.SCHEDULER,
             time_grid=time_grid
         )
     if response:
-        cl_message = response.format_message()
-        logger.debug(f'Model response: {cl_message.content[:200]}{ "..." if len(cl_message.content) > 200 else "" }')
-        await cl_message.send()
-
-
-@app.get("/state/{event_id}")
-async def get_state(
-    request: Request,
-    event_id: str
-):
-    logger.debug(f'Retrieving event state: {event_id}')
-    try:
-        return format_event_state(get_event(event_id))
-    except KeyError:
-        logger.error("Event not found")
-        raise HTTPException(status_code=404, detail="Event not found")
+        response_json = format_message(response)
+        response_str = json.dumps(response_json)
+        response_summary = response_str[:200] + ("..." if len(response_str) > 200 else "")
+        logger.debug(f'Response: {response_summary}')
+        actions.set(json.dumps({
+            "actionName": "sendToAll",
+            "data": response_str,
+            "dataType": 'json',
+        }))

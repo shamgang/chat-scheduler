@@ -1,20 +1,15 @@
-import { v4 as uuidv4 } from "uuid";
-import { useEffect, useMemo, useCallback } from 'react';
-import { ChainlitAPI, sessionState, useChatSession, useChatMessages, useChatInteract } from '@chainlit/react-client';
-import { useRecoilValue } from 'recoil';
-import moment from 'moment';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import commonSchema from '../assets/common_schema.json';
 import messageSchema from '../assets/message_schema.json';
 import Ajv from 'ajv';
 import {
   toIsoNoHyphens,
   fromIsoNoHyphens,
-  formatTimeString
+  formatTimeString,
+  dateTimeToIsoNoHyphens
 } from '../helpers/FormatHelpers';
 
-const CHAINLIT_SERVER_URL = 'http://192.168.0.134:8000';
-
-const apiClient = new ChainlitAPI(CHAINLIT_SERVER_URL);
+const PUBSUB_NEGOTIATE_ENDPOINT = process.env.REACT_APP_API_HOST + '/api/negotiate';
 
 const ajv = new Ajv({verbose: true});
 
@@ -38,21 +33,6 @@ const MessageTypes = {
 };
 
 const GENERAL_AVAIL_KEY = "GENERAL"
-
-
-function dateTimeFromIsoNoHyphens(dateTimeStr) {
-  return new Date(
-    parseInt(dateTimeStr.substring(0, 4), 10),
-    parseInt(dateTimeStr.substring(4, 6), 10) - 1,
-    parseInt(dateTimeStr.substring(6, 8), 10),
-    parseInt(dateTimeStr.substring(8, 10), 10),
-    parseInt(dateTimeStr.substring(10, 12), 10)
-  );
-}
-
-function dateTimeToIsoNoHyphens(dt) {
-  return moment(dt).format('YYYYMMDDHHmm');
-}
 
 /* Change a scheduler message from json format to internal format */
 function parseMessage(msg_str) {
@@ -91,71 +71,103 @@ function formatMessage(msg) {
     console.error('Validation errors:', validate.errors);
     throw new Error('Invalid message format');
   }
-  return {
-    id: uuidv4(),
-    name: msg.author,
-    type: msg.author === Authors.USER ? 'user_message' : 'assistant_message', // this is a TS enum in chainlit
-    output: JSON.stringify(msg),
-    createdAt: new Date().toISOString(),
-  };
+  return JSON.stringify(msg);
 }
 
 /* Return interfaces for the message service
     messages: list of messages in frontend format (see def above)
+    sendMessage: send a message
 */
 function useMessageService() {
-  const { connect, disconnect } = useChatSession();
-  const { messages: chainlitMessages } = useChatMessages();
-  const { sendMessage: chainlitSendMessage } = useChatInteract();
-  const session = useRecoilValue(sessionState);
+  const [ messages, setMessages ] = useState([]);
+  const [ webSocket, setWebSocket ] = useState(null);
+  const timeouts = useRef([]);
 
-  // Start chainlit session on mount
+  const onMessage = useCallback((event) => {
+    setMessages((prevMessages) => [...prevMessages, parseMessage(event.data)]);
+  }, [setMessages]);
+
   useEffect(() => {
-    if (session?.socket.connected) {
-      return
+    let ws;
+
+    (async () => {
+      let res = await fetch(PUBSUB_NEGOTIATE_ENDPOINT);
+      let url = (await res.json()).url;
+      if (ws === undefined) { // undefined means pending
+        console.log('Websocket opened.');
+        ws = new WebSocket(url);
+        ws.onmessage = onMessage;
+        setWebSocket(ws);
+      }
+    })().catch(console.error);
+
+    return () => {
+      if (ws) {
+        console.log('Websocket closed.');
+        ws.close();
+      }
+      ws = null; // Use null as an indicator that the websocket is closed, rather than pending.
+      for (const to of timeouts.current) {
+        clearTimeout(to);
+      }
+      timeouts.current = []
+    };
+  
+  }, [setWebSocket, onMessage]);
+
+  // Send message or return error message
+  const sendMessageNow = useCallback((msg) => {
+    if (webSocket) {
+      try {
+        webSocket.send(formatMessage(msg));
+      } catch (error) {
+        return error.toString();
+      }
+      setMessages((prevMessages) => [...prevMessages, msg]);
+      return null;
+    } else {
+      return 'No websocket';
     }
-    /*
-    fetch(apiClient.buildEndpoint("/custom-auth"))
-    .then(res => {
-    return res.json();
-    })
-    .then(data => {
-    connect({
-        client: apiClient,
-        userEnv: {
-        },
-        accessToken: `Bearer: ${data.token}`
-    })
+  }, [webSocket, setMessages]);
+
+  const sendMessageDelay = useCallback((msg, delay) => {
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        resolve(sendMessageNow(msg));
+      }, delay);
+      timeouts.current.push(timeout);
     });
-    */
-
-    connect({
-      client: apiClient,
-      userEnv: {}
-    });
-
-    // TODO: can't disconnect because I can't get it to not
-    // run early
-    // TODO: can't put dependencies here correctly because
-    // the connection keeps getting messed up
-  }, []);
-
-  const messages = useMemo(
-    () => chainlitMessages.map((msg) => parseMessage(msg.output)),
-    [chainlitMessages]
-  );
+  }, [sendMessageNow]);
 
   const sendMessage = useCallback((msg) => {
-    chainlitSendMessage(formatMessage(msg), []);
-  }, [chainlitSendMessage]);
+    // First try
+    const error = sendMessageNow(msg);
+    if (error) {
+      console.error('Send message failed 1 time:', error);
+      (async () => {
+        // Second try, 500ms
+        console.log('Retrying..');
+        let error = await sendMessageDelay(msg, 500);
+        if (error) {
+          console.error('Send message failed 2 times:', error);
+          // Third try, 2s
+          console.log('Retrying..');
+          error = await sendMessageDelay(msg, 2000);
+          if (error) {
+            console.error('Send message failed 3 times:', error);
+            throw new Error(error);
+          }
+        }
+      })();
+    }
+  }, [sendMessageNow, sendMessageDelay]);
 
-  return { messages, sendMessage };
+  return { messages, sendMessage, setMessages };
 }
 
 export {
   useMessageService,
   MessageTypes,
   Authors,
-  GENERAL_AVAIL_KEY,
-  toIsoNoHyphens
+  GENERAL_AVAIL_KEY
 };

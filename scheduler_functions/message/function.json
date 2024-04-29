@@ -1,0 +1,19 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "type": "webPubSubTrigger",
+      "direction": "in",
+      "name": "request",
+      "hub": "chatscheduler",
+      "eventName": "message",
+      "eventType": "user"
+    },
+    {
+      "type": "webPubSub",
+      "name": "actions",
+      "hub": "chatscheduler",
+      "direction": "out"
+    }
+  ]
+}

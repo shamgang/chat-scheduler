@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useLoaderData, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import './App.css';
 import Chat from './components/Chat';
 import MonthlyCalendar from './components/MonthlyCalendar';
@@ -19,15 +19,10 @@ import { getRandomBackgroundImageUrl } from "./helpers/BackgroundImage";
 import { lastMonday, getDayOfWeek, getDateRangeLengthDays } from "./helpers/Dates";
 
 export async function loader({ params }) {
-  // TODO: keep a state variable so we don't
-  // hit the server if it's not a fresh load
+  // TODO: want to use loader to load data before rendering,
+  // but need context to know if it's a fresh load - don't want to
+  // hit the server if it's not a fresh load.
   // https://github.com/remix-run/react-router/issues/9324
-  if (params.eventId) {
-    return {
-      eventId: params.eventId,
-      eventState: await getEventState(params.eventId)
-    }
-  }
   return {}
 }
 
@@ -42,7 +37,8 @@ function App() {
   const [timeGrid, setTimeGrid] = useState(null);
   const [flowState, setFlowState] = useState(StateMachine.SELECT_DATES);
   const [currentWeek, setCurrentWeek] = useState(lastMonday(new Date()));
-  const { eventId, eventState } = useLoaderData();
+  const { eventId } = useParams();
+  const [eventState, setEventState] = useState(null); // TODO: this contains some redundant data
   const [name, setName] = useState(null);
   const [names, setNames] = useState(null);
   const [editingName, setEditingName] = useState(null);
@@ -59,15 +55,19 @@ function App() {
     if (eventId) {
       // Rendering an existing event
       if (!isNew.current) {
-        // This is a fresh load of an existing event, set state from server
-        setRange([eventState.fromDate, eventState.toDate]);
-        setCurrentWeek(lastMonday(eventState.fromDate));
-        setFlowState(StateMachine.NAME);
-        setTimeGrid(eventState.timeGrid);
-        setNames(eventState.names);
+        // This is a fresh load of an existing event, get state from server
+        (async () => {
+          const loadedEvent = await getEventState(eventId);
+          setRange([loadedEvent.fromDate, loadedEvent.toDate]);
+          setCurrentWeek(lastMonday(loadedEvent.fromDate));
+          setFlowState(StateMachine.NAME);
+          setTimeGrid(loadedEvent.timeGrid);
+          setNames(loadedEvent.names);
+          setEventState(loadedEvent);
+        })();
       }
     }
-  }, [eventId, eventState, setRange, setCurrentWeek, setFlowState, setTimeGrid, setNames]);
+  }, [eventId, setEventState, setRange, setCurrentWeek, setFlowState, setTimeGrid, setNames]);
 
 
   // Take action based on latest messages

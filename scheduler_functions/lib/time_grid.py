@@ -1,5 +1,12 @@
+from datetime import date
 from .config import SLOTS_PER_DAY
-from .datetime_helpers import get_dates_between_dates, GENERAL_WEEK_KEY, get_last_monday, get_slot_from_time
+from .datetime_helpers import (
+    get_dates_between_dates,
+    GENERAL_WEEK_KEY,
+    get_last_monday,
+    get_slot_from_time
+)
+from .model_tools import to_iso_no_hyphens, from_iso_no_hyphens
 from .hour_translation import HourStatementType
 
 
@@ -12,7 +19,9 @@ def slot_range(from_time, to_time):
 
 
 class TimeGrid:
-    '''A representation of a calendar with a certain slot size, given a range of dates'''
+    '''A representation of a calendar with a certain slot size, given a range of dates
+    Must provide either from_date and to_date or grid.
+    '''
     def __init__(self, from_date, to_date):
         self.grid = {
             dt: [
@@ -65,3 +74,26 @@ class TimeGrid:
                 self.add_availability(name, week, action.day, action.from_time, action.to_time)
             elif (action.type == HourStatementType.CLOSE):
                 self.remove_availability(name, week, action.day, action.from_time, action.to_time)
+    
+    @classmethod
+    def from_grid(cls, grid):
+        '''Create a TimeGrid directly from the grid'''
+        new_grid = cls(date.today(), date.today())
+        new_grid.grid = grid
+        return new_grid
+
+
+def format_time_grid(time_grid):
+    '''Creates a JSON formatted version of the time grid'''
+    return {
+        to_iso_no_hyphens(dt): slots
+        for dt, slots in time_grid.grid.items()
+    }
+
+
+def parse_time_grid(time_grid_json):
+    '''Parse a JSON formatted version of the time grid'''
+    return TimeGrid.from_grid({
+        from_iso_no_hyphens(dt): slots
+        for dt, slots in time_grid_json.items()
+    })

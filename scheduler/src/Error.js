@@ -27,7 +27,7 @@ function ErrorPage() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="error-page" style={BACKGROUND_STYLE}>

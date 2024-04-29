@@ -20,6 +20,20 @@ export function toIsoNoHyphens(date) {
   return moment(date).format('YYYYMMDD');
 }
 
+export function dateTimeFromIsoNoHyphens(dateTimeStr) {
+  return new Date(
+    parseInt(dateTimeStr.substring(0, 4), 10),
+    parseInt(dateTimeStr.substring(4, 6), 10) - 1,
+    parseInt(dateTimeStr.substring(6, 8), 10),
+    parseInt(dateTimeStr.substring(8, 10), 10),
+    parseInt(dateTimeStr.substring(10, 12), 10)
+  );
+}
+
+export function dateTimeToIsoNoHyphens(dt) {
+  return moment(dt).format('YYYYMMDDHHmm');
+}
+
 export function parseTimeString(timeStr) {
   const hour = parseInt(timeStr.substring(0, 2), 10);
   const minute = parseInt(timeStr.substring(2, 4), 10);
