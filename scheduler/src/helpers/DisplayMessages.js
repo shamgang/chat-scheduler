@@ -1,18 +1,6 @@
-import { Authors, MessageTypes } from '../services/MessageService'
+import { Authors, MessageTypes, ErrorTypes } from '../services/MessageService'
 import {
-  WELCOME_MESSAGES,
-  LOADING_MESSAGE,
-  DATE_ENTERED_MESSAGE,
-  DATE_ENTERED_MESSAGE_SHORT,
-  TIMES_MESSAGE,
-  NAME_MESSAGE,
-  NAME_MESSAGE_FRESH,
-  GENERAL_TIME_RANGES_MESSAGE,
-  GENERAL_TIME_RANGES_MESSAGE_SHORT,
-  SPECIFIC_AVAIL_MESSAGE,
-  SPECIFIC_AVAIL_MESSAGE_FRESH,
-  SPECIFIC_TIME_RANGES_MESSAGE,
-  SPECIFIC_TIME_RANGES_MESSAGE_SHORT
+  SchedulerMessages as M
 } from './SchedulerMessages';
 import { StateMachine } from './StateMachine';
 import { firstCap } from './FormatHelpers';
@@ -40,12 +28,12 @@ function generateDisplayMessages(messages, isNew, eventState, name, shortRange) 
   // Welcome message, display only
   if (isNew) {
     // New event
-    for (const msg of WELCOME_MESSAGES) {
+    for (const msg of M.WELCOME_MESSAGES) {
       displayMessages.push([msg, Authors.SCHEDULER]);
     }
   } else {
     // Existing event
-    displayMessages.push([NAME_MESSAGE_FRESH, Authors.SCHEDULER]);
+    displayMessages.push([M.NAME_MESSAGE_FRESH, Authors.SCHEDULER]);
   }
 
   for (const msg of messages) {
@@ -55,10 +43,10 @@ function generateDisplayMessages(messages, isNew, eventState, name, shortRange) 
     } else if (msg.type === MessageTypes.RANGE) {
       if (msg.author === Authors.SCHEDULER) {
         if (!explainedDates) {
-          text = DATE_ENTERED_MESSAGE;
+          text = M.DATE_ENTERED_MESSAGE;
           explainedDates = true;
         } else {
-          text = DATE_ENTERED_MESSAGE_SHORT;
+          text = M.DATE_ENTERED_MESSAGE_SHORT;
         }
       } else if (msg.author === Authors.USER) {
         state = StateMachine.GENERAL_AVAIL;
@@ -68,21 +56,34 @@ function generateDisplayMessages(messages, isNew, eventState, name, shortRange) 
     } else if (msg.type === MessageTypes.TIME_GRID) {
       if (state === StateMachine.GENERAL_AVAIL) {
         if (!explainedGeneralAvail) {
-          text = GENERAL_TIME_RANGES_MESSAGE;
+          text = M.GENERAL_TIME_RANGES_MESSAGE;
           explainedGeneralAvail = true;
         } else {
-          text = GENERAL_TIME_RANGES_MESSAGE_SHORT;
+          text = M.GENERAL_TIME_RANGES_MESSAGE_SHORT;
         }
       } else if (state === StateMachine.SPECIFIC_AVAIL) {
         if (!explainedSpecificAvail) {
-          text = SPECIFIC_TIME_RANGES_MESSAGE;
+          text = M.SPECIFIC_TIME_RANGES_MESSAGE;
           explainedSpecificAvail = true;
         } else {
-          text = SPECIFIC_TIME_RANGES_MESSAGE_SHORT;
+          text = M.SPECIFIC_TIME_RANGES_MESSAGE_SHORT;
         }
       }
     } else if (msg.type === MessageTypes.ERROR) {
-      text = msg.errorMessage;
+      console.error('Error message from server:', msg);
+      if (msg.errorType) {
+        if (msg.errorType === ErrorTypes.INVALID_DATE_RANGE) {
+          text = M.INVALID_DATE_RANGE_ERROR;
+        } else if (msg.errorType === ErrorTypes.DATE_RANGE_TRANSLATION_FAILED) {
+          text = M.DATE_RANGE_TRANSLATION_FAILED_ERROR;
+        } else if (msg.errorType === ErrorTypes.MULTIPLE_DATE_RANGES) {
+          text = M.MULTIPLE_DATE_RANGES_ERROR;
+        } else if (msg.errorType === ErrorTypes.INVALID_AVAILABILITY) {
+          text = M.INVALID_AVAILABILITY_ERROR;
+        }
+      } else {
+        text = M.getUnknownError();
+      }
     }
     // Push the current message, except in certain cases where we hide it.
     if (text) {
@@ -94,7 +95,7 @@ function generateDisplayMessages(messages, isNew, eventState, name, shortRange) 
       msg.author === Authors.USER &&
       msg.type === MessageTypes.RANGE
     ) {
-      displayMessages.push([NAME_MESSAGE, Authors.SCHEDULER]);
+      displayMessages.push([M.NAME_MESSAGE, Authors.SCHEDULER]);
     }
     // If a user NAME message has already been sent,
     // the chat will prompt for general avail now.
@@ -112,11 +113,11 @@ function generateDisplayMessages(messages, isNew, eventState, name, shortRange) 
       ) {
         // Prompt for specific avail
         state = StateMachine.SPECIFIC_AVAIL;
-        displayMessages.push([SPECIFIC_AVAIL_MESSAGE_FRESH, Authors.SCHEDULER]);
+        displayMessages.push([M.SPECIFIC_AVAIL_MESSAGE_FRESH, Authors.SCHEDULER]);
       } else {
         // Prompt for general avail
         state = StateMachine.GENERAL_AVAIL;
-        displayMessages.push([TIMES_MESSAGE, Authors.SCHEDULER]);
+        displayMessages.push([M.TIMES_MESSAGE, Authors.SCHEDULER]);
       } 
     }
     // If a user CONFIRM message has already been sent,
@@ -125,7 +126,7 @@ function generateDisplayMessages(messages, isNew, eventState, name, shortRange) 
       msg.author === Authors.USER &&
       msg.type === MessageTypes.CONFIRM
     ) {
-      displayMessages.push([SPECIFIC_AVAIL_MESSAGE, Authors.SCHEDULER]);
+      displayMessages.push([M.SPECIFIC_AVAIL_MESSAGE, Authors.SCHEDULER]);
       state = StateMachine.SPECIFIC_AVAIL;
     }
   }
@@ -135,7 +136,7 @@ function generateDisplayMessages(messages, isNew, eventState, name, shortRange) 
     displayMessages.length > 0 &&
     displayMessages.slice(-1)[0][1] === Authors.USER
   ) {
-    displayMessages.push([LOADING_MESSAGE, Authors.SCHEDULER]);
+    displayMessages.push([M.LOADING_MESSAGE, Authors.SCHEDULER]);
   }
 
   // Convert all messages to display format

@@ -1,17 +1,24 @@
 import json
+import traceback
 import azure.functions as func
 from ..lib.logger import logger
 from ..lib.event_state import get_event_json
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
-    event_id = req.route_params.get('id')
-    logger.debug(f'Retrieving event state: {event_id}')
+    event_id = None
     try:
+        event_id = req.route_params.get('id')
+        logger.info(f'Retrieving event state: {event_id}')
         return func.HttpResponse(
             json.dumps(get_event_json(event_id)),
             mimetype="application/json",
             status_code=200
         )
     except KeyError:
-        logger.error("Event not found")
-        return func.HttpResponse("Event not found", status_code=404)
+        err = f"Event not found: {event_id}"
+        logger.error(f'Get state error: {err}')
+        return func.HttpResponse(err, status_code=404)
+    except Exception as e:
+        trace = traceback.format_exc()
+        logger.error(f'Unknown get state error: {trace}')
+        return func.HttpResponse(trace, status_code=500)

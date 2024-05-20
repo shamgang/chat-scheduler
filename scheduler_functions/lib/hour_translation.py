@@ -4,14 +4,9 @@ import calendar
 from .system_prompts import hours_system_prompt
 from .model_tools import _day_of_week_from_str
 from .chain_helpers import create_chain, invoke_chain
-from .errors import TranslationFailedError
+from .errors import ErrorType, TranslationFailedError
 from .logger import logger
 from .datetime_helpers import from_time_string_12
-
-
-generic_time_parse_failure_message = """
-Sorry, I didn't get that. I only understand availability right now.
-"""
 
 
 class HourStatementType(str, Enum):
@@ -29,8 +24,9 @@ class CalendarAction:
             self.from_time = from_time_string_12(tr_str.split('-')[0])
             self.to_time = from_time_string_12(tr_str.split('-')[1])
         except KeyError:
-            logger.info(f'String {statement_str} could not be parsed as an availability statement.')
-            raise TranslationFailedError(generic_time_parse_failure_message)
+            err = f'String {statement_str} could not be parsed as an availability statement.'
+            logger.info(err)
+            raise TranslationFailedError(err, ErrorType.INVALID_AVAILABILITY)
 
     def __str__(self):
         return f"{self.type}:{calendar.day_name[self.day]}:{self.from_time.strftime('%I%p')}-{self.to_time.strftime('%I%p')}"

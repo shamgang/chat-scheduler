@@ -236,6 +236,9 @@
         "errorMessage": {
           "type": "string"
         },
+        "errorType": {
+          "type": "string"
+        },
         "author": {
           "const": "SCHEDULER"
         }

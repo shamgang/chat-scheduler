@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RecoilRoot } from 'recoil';
 import {
   createBrowserRouter,
   RouterProvider,
@@ -9,6 +8,10 @@ import './index.css';
 import App, { loader as appLoader } from './App';
 import ErrorPage from './Error';
 import reportWebVitals from './reportWebVitals';
+import { makeErrorsSerializable, startCapturingLogs } from './helpers/LogDownload';
+
+makeErrorsSerializable();
+startCapturingLogs();
 
 const router = createBrowserRouter([
   {
@@ -22,9 +25,7 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <RecoilRoot>
-      <RouterProvider router={router} />
-    </RecoilRoot>
+    <RouterProvider router={router} />
   </React.StrictMode>
 );
 

@@ -29,7 +29,14 @@ export async function loader({ params }) {
 const BACKGROUND_IMAGE = getRandomBackgroundImageUrl();
 
 function App() {
-  const { messages, sendMessage } = useMessageService();
+  const { messages, sendMessage, messageServiceError } = useMessageService();
+  if (messageServiceError) {
+    throw messageServiceError;
+  }
+  const [eventStateError, setEventStateError] = useState(null);
+  if (eventStateError) {
+    throw eventStateError;
+  }
   const [numMessagesProcessed, setNumMessagesProcessed] = useState(0);
   const [range, setRange] = useState([new Date(), new Date()]);
   // Time ranges here will be a map of key to 3D time ranges array.
@@ -57,17 +64,30 @@ function App() {
       if (!isNew.current) {
         // This is a fresh load of an existing event, get state from server
         (async () => {
-          const loadedEvent = await getEventState(eventId);
-          setRange([loadedEvent.fromDate, loadedEvent.toDate]);
-          setCurrentWeek(lastMonday(loadedEvent.fromDate));
-          setFlowState(StateMachine.NAME);
-          setTimeGrid(loadedEvent.timeGrid);
-          setNames(loadedEvent.names);
-          setEventState(loadedEvent);
+          try {
+            const loadedEvent = await getEventState(eventId);
+            setRange([loadedEvent.fromDate, loadedEvent.toDate]);
+            setCurrentWeek(lastMonday(loadedEvent.fromDate));
+            setFlowState(StateMachine.NAME);
+            setTimeGrid(loadedEvent.timeGrid);
+            setNames(loadedEvent.names);
+            setEventState(loadedEvent);
+          } catch (error) {
+            setEventStateError(error);
+          }
         })();
       }
     }
-  }, [eventId, setEventState, setRange, setCurrentWeek, setFlowState, setTimeGrid, setNames]);
+  }, [
+    eventId,
+    setEventState,
+    setRange,
+    setCurrentWeek,
+    setFlowState,
+    setTimeGrid,
+    setNames,
+    setEventStateError
+  ]);
 
 
   // Take action based on latest messages
@@ -168,7 +188,6 @@ function App() {
     setNames,
     setEditingName
   ]);
-
   // When date calendar selection changes
   const onRangeChanged = useCallback((value) => {
     console.log(`Manual range change from: ${value[0]} to: ${value[1]}`);

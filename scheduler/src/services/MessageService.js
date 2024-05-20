@@ -32,6 +32,20 @@ const MessageTypes = {
   ERROR: "ERROR"
 };
 
+const ErrorTypes = {
+  INVALID_DATE_RANGE: 'INVALID_DATE_RANGE',
+  DATE_RANGE_TRANSLATION_FAILED: 'DATE_RANGE_TRANSLATION_FAILED',
+  MULTIPLE_DATE_RANGES: 'MULTIPLE_DATE_RANGES',
+  INVALID_AVAILABILITY: 'INVALID_AVAILABILITY'
+};
+
+const WebSocketState = {
+  0: 'CONNECTING',
+  1: 'OPEN',
+  2: 'CLOSING',
+  3: 'CLOSED'
+};
+
 const GENERAL_AVAIL_KEY = "GENERAL"
 
 /* Change a scheduler message from json format to internal format */
@@ -81,93 +95,205 @@ function formatMessage(msg) {
 function useMessageService() {
   const [ messages, setMessages ] = useState([]);
   const [ webSocket, setWebSocket ] = useState(null);
+  const webSocketRef = useRef(null);
+  const [ messageServiceError, setMessageServiceError ] = useState(null);
   const timeouts = useRef([]);
 
+  const onOpen = useCallback((event) => {
+    console.log(`Websocket open with state: ${WebSocketState[event.target.readyState]}`, event);
+  }, []);
+
+  const onClose = useCallback((event) => {
+    console.log(`Websocket closed with state: ${WebSocketState[event.target.readyState]}`, event);
+    if (event.target.closedByClient) {
+      console.debug('Websocket closed by client.');
+    } else {
+      console.warn('Websocket closed unexpectedly. Attempting to re-open.');
+      setWebSocket(null);
+    }
+  }, [setWebSocket]);
+
+  const onError = useCallback((event) => {
+    console.error(`Websocket error with state: ${WebSocketState[event.target.readyState]}`, event);
+  }, []);
+
   const onMessage = useCallback((event) => {
+    console.log(`Message received from websocket with state: ${WebSocketState[event.target.readyState]}`, event);
     setMessages((prevMessages) => [...prevMessages, parseMessage(event.data)]);
   }, [setMessages]);
 
-  useEffect(() => {
-    let ws;
-
-    (async () => {
+  // Throws
+  const getWebSocketUrl = useCallback(async () => {
+    try {
       let res = await fetch(PUBSUB_NEGOTIATE_ENDPOINT);
-      let url = (await res.json()).url;
-      if (ws === undefined) { // undefined means pending
-        console.log('Websocket opened.');
-        ws = new WebSocket(url);
-        ws.onmessage = onMessage;
-        setWebSocket(ws);
+      if (!res.ok) {
+        const errMsg = `Negotiate request error: ${res.status} ${res.statusText}`
+        let error = new Error(errMsg);
+        error.status = res.status;
+        error.statusText = res.statusText;
+        error.body = await res.text();
+        error.response = res;
+        console.error(error, res, { body: error.body });
+        throw error;
       }
-    })().catch(console.error);
-
-    return () => {
-      if (ws) {
-        console.log('Websocket closed.');
-        ws.close();
-      }
-      ws = null; // Use null as an indicator that the websocket is closed, rather than pending.
-      for (const to of timeouts.current) {
-        clearTimeout(to);
-      }
-      timeouts.current = []
-    };
-  
-  }, [setWebSocket, onMessage]);
-
-  // Send message or return error message
-  const sendMessageNow = useCallback((msg) => {
-    if (webSocket) {
-      try {
-        webSocket.send(formatMessage(msg));
-      } catch (error) {
-        return error.toString();
-      }
-      setMessages((prevMessages) => [...prevMessages, msg]);
-      return null;
-    } else {
-      return 'No websocket';
+      return (await res.json()).url;
+    } catch (err) {
+      console.error('Get websocket URL failed: ', err);
+      throw err;
     }
-  }, [webSocket, setMessages]);
+  }, []);
+
+  // Create websocket async. Skip creation if context.pending is set to false before creation executes.
+  // Resolve with websocket object or nothing.
+  const createWebSocket = useCallback(async (context) => {
+    const url = await getWebSocketUrl();
+    if (context.pending) {
+      let ws = new WebSocket(url);
+      console.log(`Websocket created with state: ${WebSocketState[ws.readyState]}`);
+      ws.onopen = onOpen;
+      ws.onclose = onClose;
+      ws.onerror = onError;
+      ws.onmessage = onMessage;
+      return ws;
+    } else {
+      console.debug('Skipping websocket creation.');
+    }
+  }, [getWebSocketUrl, onOpen, onClose, onError, onMessage]);
+
+  const closeWebSocket = useCallback((ws) => {
+      console.log('Closing websocket from client.');
+      ws.closedByClient = true; // Mark as intentionally closed by front end
+      ws.close(1000, 'Closed by client.');
+  }, []);
+
+  // Websocket creation, run on mount or when websocket reference is reset.
+  useEffect(() => {
+    if (webSocket) {
+      console.debug('Websocket exists, skipping.');
+      return;
+    }
+    console.log('Creating websocket.');
+    let wsContext = { pending: true };
+    let ws;
+    (async () => {
+      try {
+        ws = await createWebSocket(wsContext);
+        if (ws) {
+          setWebSocket(ws);
+        }
+      } catch (err) {
+        console.error('Failed to create websocket: ', err);
+        setMessageServiceError(err);
+      }
+    })();
+
+    // If reference is reset before this instance has been created, cancel creation
+    return () => {
+      if (!ws) {
+        wsContext.pending = false;
+      }
+    };
+  }, [webSocket, createWebSocket, setWebSocket, setMessageServiceError]);
+
+  // Maintain a ref to the webSocket to use in the dismount cleanup.
+  // Do not depend directly on the state so cleanup does not run when the websocket changes.
+  useEffect(() => {
+    webSocketRef.current = webSocket;
+  }, [webSocket]);
+
+  // Websocket cleanup on component dismount
+  useEffect(() => {
+    return () => {
+      if (
+        webSocketRef.current &&
+        !(
+          [WebSocket.CLOSED, WebSocket.CLOSING].includes(webSocketRef.current.readyState)
+        )
+      ) {
+        closeWebSocket(webSocketRef.current);
+      }
+    };
+  }, [closeWebSocket]);
+
+  // Send message on websocket
+  // Throws
+  const sendMessageNow = useCallback((msg) => {
+    console.debug('Send attempt: ', msg);
+    if (webSocketRef.current) {
+      webSocketRef.current.send(formatMessage(msg));
+      setMessages((prevMessages) => [...prevMessages, msg]);
+    } else {
+      throw new Error('No websocket');
+    }
+  }, [setMessages]);
 
   const sendMessageDelay = useCallback((msg, delay) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        resolve(sendMessageNow(msg));
+        try {
+          resolve(sendMessageNow(msg));
+        } catch (err) {
+          reject(err);
+        }
       }, delay);
       timeouts.current.push(timeout);
     });
   }, [sendMessageNow]);
 
-  const sendMessage = useCallback((msg) => {
-    // First try
-    const error = sendMessageNow(msg);
-    if (error) {
-      console.error('Send message failed 1 time:', error);
-      (async () => {
-        // Second try, 500ms
-        console.log('Retrying..');
-        let error = await sendMessageDelay(msg, 500);
-        if (error) {
-          console.error('Send message failed 2 times:', error);
-          // Third try, 2s
-          console.log('Retrying..');
-          error = await sendMessageDelay(msg, 2000);
-          if (error) {
-            console.error('Send message failed 3 times:', error);
-            throw new Error(error);
-          }
-        }
-      })();
-    }
-  }, [sendMessageNow, sendMessageDelay]);
+  // Timeout cleanup
+  useEffect(() => {
+    return () => {
+      for (const to of timeouts.current) {
+        clearTimeout(to);
+      }
+      timeouts.current = []
+    };
+  }, []);
 
-  return { messages, sendMessage, setMessages };
+  const sendMessage = useCallback((msg) => {
+    console.debug('Attempting to send message: ', msg);
+    try {
+      sendMessageNow(msg);
+      return;
+    } catch (error) {
+      console.error('Send message failed 1 time:', error);
+    }
+    (async () => {
+      // Second try, 500ms
+      console.log('Retrying..');
+      try {
+        await sendMessageDelay(msg, 500);
+        return;
+      } catch (error) {
+        console.error('Send message failed 2 times:', error);
+      }
+      // Third try, 2s
+      console.log('Retrying..');
+      try {
+        await sendMessageDelay(msg, 2000);
+        return;
+      } catch (error) {
+        console.error('Send message failed 3 times:', error);
+      }
+      // Fourth try, 5s
+      console.log('Retrying..');
+      try {
+        await sendMessageDelay(msg, 5000);
+        return;
+      } catch (error) {
+        console.error('Send message failed 4 times:', error);
+        setMessageServiceError(error);
+      }
+    })();
+  }, [sendMessageNow, sendMessageDelay, setMessageServiceError]);
+
+  return { messages, sendMessage, messageServiceError };
 }
 
 export {
   useMessageService,
   MessageTypes,
+  ErrorTypes,
   Authors,
   GENERAL_AVAIL_KEY
 };

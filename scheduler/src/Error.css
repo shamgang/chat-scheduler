@@ -29,7 +29,9 @@
 .oops p {
     font-family: 'Courier New', Courier, monospace;
     font-style: italic;
-    font-size: 2em;
+    font-size: 1.5em;
+    text-align: center;
+    max-width: 500px;
 }
 
 @media (max-aspect-ratio: 1/1) {

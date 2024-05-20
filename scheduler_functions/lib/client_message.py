@@ -77,6 +77,8 @@ def format_message(msg):
         msg_json['timeGrid'] = format_time_grid(msg.time_grid)
     if msg.error_message:
         msg_json['errorMessage'] = msg.error_message
+    if msg.error_type:
+        msg_json['errorType'] = msg.error_type
     if msg.event_id:
         msg_json['eventId'] = msg.event_id
     if msg.name:
@@ -100,6 +102,7 @@ class ClientMessage:
         from_time=None,
         to_time=None,
         error_message=None,
+        error_type=None,
         event_id=None,
         name=None
     ):
@@ -114,6 +117,7 @@ class ClientMessage:
         self.from_time = from_time
         self.to_time = to_time
         self.error_message = error_message
+        self.error_type = error_type
         self.event_id = event_id
         self.name = name
     

@@ -14,10 +14,7 @@ from .system_prompts import (
 )
 from .model_tools import all_tools, from_iso_no_hyphens
 from .config import config
-from .errors import TranslationFailedError
-
-
-generic_date_parse_failure_message = "Sorry, I didn't get that. I can only understand date ranges right now."
+from .errors import ErrorType, TranslationFailedError
 
 
 class StatementType(str, Enum):
@@ -47,18 +44,19 @@ class DateTranslator:
         filter_result = invoke_chain(input_filter, input)
         logger.debug(f"Input '{input}' filter result: {filter_result}")
         if filter_result == FilterResult.INVALID:
-            logger.info(f"Invalid date range: '{input}'")
-            raise TranslationFailedError(generic_date_parse_failure_message)
+            err = f"Invalid date range: '{input}'"
+            logger.info(err)
+            raise TranslationFailedError(err, ErrorType.INVALID_DATE_RANGE)
         elif filter_result == FilterResult.MULTIPLE:
-            logger.info(f"Input '{input}' contained multiple date ranges.")
-            raise TranslationFailedError(
-                "It looks like you entered multiple date ranges. This tool currently only works with one date range. Sorry! Please enter one date range."
-            )
+            err = f"Input '{input}' contained multiple date ranges."
+            logger.warn(err)
+            raise TranslationFailedError(err, ErrorType.MULTIPLE_DATE_RANGES)
         elif filter_result == FilterResult.VALID:
             pass
         else:
-            logger.error(f"Input '{input}' got unexpected result from input filter: {filter_result}")
-            raise TranslationFailedError(generic_date_parse_failure_message)
+            err = f"Input '{input}' got unexpected result from input filter: {filter_result}"
+            logger.error(err)
+            raise TranslationFailedError(err, ErrorType.DATE_RANGE_TRANSLATION_FAILED)
         return input    
     
     def _convert_to_statements(self, input):
@@ -69,27 +67,32 @@ class DateTranslator:
         statements = statements_output.splitlines()
         # Look for the wrong number of statements
         if len(statements) > 3 or len(statements) < 1:
-            logger.error(f"Input '{input}' generated incorrect number of statements: {statements}")
-            raise TranslationFailedError(generic_date_parse_failure_message)
+            err = f"Input '{input}' generated incorrect number of statements: {statements}"
+            logger.error(err)
+            raise TranslationFailedError(err, ErrorType.DATE_RANGE_TRANSLATION_FAILED)
         # Look for invalid statement types
         statement_types = get_statement_types(statements)
         for st in statement_types:
             if not st in list(StatementType):
-                logger.error(f"Input '{input}' generated a statement of unknown type: {st}")
-                raise TranslationFailedError(generic_date_parse_failure_message)
+                err = f"Input '{input}' generated a statement of unknown type: {st}"
+                logger.error(err)
+                raise TranslationFailedError(err, ErrorType.DATE_RANGE_TRANSLATION_FAILED)
         # Look for duplicate statements - all should be unique
         if len(set(statement_types)) != len(statement_types):
-            logger.error(f"Input '{input}' generated duplicate statements.")
-            raise TranslationFailedError(generic_date_parse_failure_message)
+            err = f"Input '{input}' generated duplicate statements."
+            logger.error(err)
+            raise TranslationFailedError(err, ErrorType.DATE_RANGE_TRANSLATION_FAILED)
         # Look for invalid combinations of statements
         if StatementType.PROPORTION in statement_types and len(statements) != 1:
             # We have no logic for handling a PROPORTION statement combined with anything else. Fail.
-            logger.error(f"Input '{input}' has a PROPORTION statement along with other statements. This case is undefined.")
-            raise TranslationFailedError(generic_date_parse_failure_message)
+            err = f"Input '{input}' has a PROPORTION statement along with other statements. This case is undefined."
+            logger.error(err)
+            raise TranslationFailedError(err, ErrorType.DATE_RANGE_TRANSLATION_FAILED)
         if StatementType.PROPORTION not in statement_types and len(statements) < 2:
             # Must have at least two of START, END, and LENGTH
-            logger.error(f"Input '{input}' has an invalid combination of statements.")
-            raise TranslationFailedError(generic_date_parse_failure_message)
+            err = f"Input '{input}' has an invalid combination of statements."
+            logger.error(err)
+            raise TranslationFailedError(err, ErrorType.DATE_RANGE_TRANSLATION_FAILED)
         return statements  
     
     def _translate_proportion(self, statement):
@@ -101,8 +104,9 @@ class DateTranslator:
         statements = translater_output.splitlines()
         statement_types = get_statement_types(statements)
         if set(statement_types) != set([StatementType.START, StatementType.END]):
-            logger.error(f"Proportion statement '{statement}' generated incorrect set of statements:\n{translater_output}")
-            raise TranslationFailedError(generic_date_parse_failure_message)
+            err = f"Proportion statement '{statement}' generated incorrect set of statements:\n{translater_output}"
+            logger.error(err)
+            raise TranslationFailedError(err, ErrorType.DATE_RANGE_TRANSLATION_FAILED)
         start, end = (statements[0], statements[1]) if statement_types[0] == StatementType.START else (statements[1], statements[0])
         return start, end    
     
@@ -122,14 +126,17 @@ class DateTranslator:
                 statements[statement_types.index(StatementType.END)],
             ])
         else:
-            raise ValueError('Invalid statements')
+            err = f'Invalid statements: {statements}'
+            logger.error(err)
+            raise TranslationFailedError(err, ErrorType.DATE_RANGE_TRANSLATION_FAILED)
         translater_output = invoke_chain(length_translater, input)
         logger.debug(f"Length statements:\n{statements}\ngenerated statements:\n{translater_output}")
         out_statements = translater_output.splitlines()
         out_statement_types = get_statement_types(out_statements)
         if set(out_statement_types) != set([StatementType.START, StatementType.END]):
-            logger.error(f"Length statements:\n{statements}\ngenerated incorrect set of statements:\n{translater_output}")
-            raise TranslationFailedError(generic_date_parse_failure_message)
+            err = f"Length statements:\n{statements}\ngenerated incorrect set of statements:\n{translater_output}"
+            logger.error(err)
+            raise TranslationFailedError(err, ErrorType.DATE_RANGE_TRANSLATION_FAILED)
         start, end = (out_statements[0], out_statements[1]) if out_statement_types[0] == StatementType.START else (out_statements[1], out_statements[0])
         return start, end     
     
@@ -140,8 +147,9 @@ class DateTranslator:
         try:
             return from_iso_no_hyphens(translater_output)
         except ValueError:
-            logger.error(f"Statement '{statement}' generated output: '{translater_output}' which could not be translated to a date.")
-            raise TranslationFailedError(generic_date_parse_failure_message)     
+            err = f"Statement '{statement}' generated output: '{translater_output}' which could not be translated to a date."
+            logger.error(err)
+            raise TranslationFailedError(err, ErrorType.DATE_RANGE_TRANSLATION_FAILED)     
 
     def _translate_start_and_end_to_dates(self, start, end):
         """Converts a pair of START and END statements to a pair of dates"""

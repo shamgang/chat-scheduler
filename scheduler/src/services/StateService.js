@@ -25,6 +25,7 @@ export async function getEventState(eventId) {
   const url = `${STATE_ENDPOINT}/${eventId}`;
   const response = await fetch(url);
   if (!response.ok) {
+    console.error('State request error: ', response, { body: await response.text() });
     throw response;
   }
   const eventState = parseEventState(await response.json());
