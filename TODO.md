@@ -2,13 +2,14 @@
 
 * DNS
 * Accessibility - Calendar selection is probably not accessible.
+* Replace favicon and title
 
 ## Medium-priority
 
 * Name events so people can tell if they're coming to the correct place - use this in page title?
-* general avail prompt "i'm free 9-5 every weekday" is breaking with error "Exception: ValueError: time data '1700PM' does not match format '%I%M%p'"
 * Redesign
 * Make the mobile view longer? scroll
+* Pick a domain and brand name
 * Add brand logo - fixed position, small text, subtle
 * periodically flush old events and communicate this to user
 
@@ -36,3 +37,4 @@
 * create a shared connection ID / session ID to help connect frontend logs to backend logs.
 * create a subtype of Error instead of extending it in LogDownload? eslint warning
 * setTimeout handler in MessageService taking too long - blocking on sending to websocket - client-side JS warning. Also "Forced reflow while executing JavaScript"
+* Add assertions in tests for manual input

@@ -25,5 +25,6 @@ describe('skip general and manual input', () => {
     cy.get('.rbc-day-slot:nth-child(6) > .rbc-timeslot-group:nth-child(8)').trigger('mousemove', {force: true});
     cy.wait(1000);
     cy.get('.rbc-day-slot:nth-child(6) > .rbc-timeslot-group:nth-child(8)').trigger('mouseup', {force: true});
+    // TODO: assert
   });
 });

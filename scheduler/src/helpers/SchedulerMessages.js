@@ -7,12 +7,12 @@ export const SchedulerMessages = {
     `,
     `
     First, tell me the time frame - for example: "the next two weeks" - or update the calendar yourself.
-    When it looks good, click OK.
+    When it looks good, tap the button.
     `
   ],
   LOADING_MESSAGE: 'Let me think...',
-  DATE_ENTERED_MESSAGE: `Updated! Hit OK to confirm.`,
-  DATE_ENTERED_MESSAGE_SHORT: 'Updated! OK to confirm.',
+  DATE_ENTERED_MESSAGE: `Updated! Tap to confirm.`,
+  DATE_ENTERED_MESSAGE_SHORT: 'Updated! Tap to confirm.',
   NAME_MESSAGE: `
   This meeting's been saved! Copy the link in the URL bar to share with others so they can enter their availability.
   Now, tell me your first name if you're ready to fill out your availability!
@@ -23,12 +23,12 @@ export const SchedulerMessages = {
   TIMES_MESSAGE: `
   Got it! If you want, start by telling me your availability generally, for example: "I'm free 9am-5pm every weekday",
   and I'll pre-fill all the weeks. You can also edit manually.
-  Hit OK to move on to scheduling specific weeks.
+  Tap the button to move on to scheduling specific weeks.
   `,
   GENERAL_TIME_RANGES_MESSAGE: `
-  Updated! If you're done with general availability, hit OK.
+  Updated! If you're done with general availability, tap the button.
   `,
-  GENERAL_TIME_RANGES_MESSAGE_SHORT: 'Updated! OK to confirm.',
+  GENERAL_TIME_RANGES_MESSAGE_SHORT: 'Updated! Tap to confirm.',
   SPECIFIC_AVAIL_MESSAGE: `
   OK! Now let's get the details.
   Tell me more about the week we're looking at.

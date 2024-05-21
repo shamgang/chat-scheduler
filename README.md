@@ -81,7 +81,8 @@ when setting up deployments in the Azure Portal. (I rebased the automatic commit
 1. The back end is deployed through another github workflow which publishes to an Azure Function App.
 1. (See detailed deployment instructions [here](https://learn.microsoft.com/en-us/azure/azure-web-pubsub/quickstart-serverless?tabs=python))
 1. In Azure Portal, in the function app, ensure the API -> CORS Allowed Origins List includes the
-domain of the static web app.
+domain of the static web app, as well as any custom domains.
+1. Add any custom domains to the static web app as well and validate as needed.
 1. Ensure Authentication is setup and allows unauthenticated access.
 1. In Environment variables, set `AzureWebJobsStorage` to a key from the storage account under Security + networking -> Access keys
 1. Set `COSMOS_DB_URL` and `COSMOS_DB_KEY` to the URI and read-write key from the Cosmos DB NoSQL account under Settings -> Keys.
