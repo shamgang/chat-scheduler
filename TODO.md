@@ -1,8 +1,6 @@
 ## High-priority
 
 * DNS
-* creating specific avail with mouse after skipping general avail is broken - regression test for this
-* message handler does sendToAll - test how this works across clients - probably will break
 * Accessibility - Calendar selection is probably not accessible.
 
 ## Medium-priority

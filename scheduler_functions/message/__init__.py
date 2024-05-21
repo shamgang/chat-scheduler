@@ -92,6 +92,7 @@ def message_handler(msg):
 
 
 def main(request, actions: Out[str]) -> None:
+    connection_id = None
     try:
         request_json = json.loads(request)
         origin = request_json['connectionContext']['origin']
@@ -122,14 +123,15 @@ def main(request, actions: Out[str]) -> None:
             author=Author.SCHEDULER,
             error_message=trace
         )
-    if response:
+    if response and connection_id:
         try:
             response_json = format_message(response)
             response_str = json.dumps(response_json)
             response_summary = response_str[:200] + ("..." if len(response_str) > 200 else "")
             logger.debug(f'Response: {response_summary}')
             actions.set(json.dumps({
-                "actionName": "sendToAll",
+                "actionName": "sendToConnection",
+                "connectionId": connection_id,
                 "data": response_str,
                 "dataType": 'json',
             }))
