@@ -1,6 +1,6 @@
 import json
 import traceback
-import azure.functions as func
+import azure.functions as func # type: ignore
 from ..lib.logger import logger
 from ..lib.event_state import get_event_json
 

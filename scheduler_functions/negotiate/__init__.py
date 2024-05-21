@@ -1,5 +1,5 @@
 import traceback
-import azure.functions as func
+import azure.functions as func # type: ignore
 from ..lib.logger import logger
 
 def main(req: func.HttpRequest, connection) -> func.HttpResponse:

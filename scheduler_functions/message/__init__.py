@@ -19,7 +19,7 @@ model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
 date_translator = DateTranslator(model)
 hour_translator = HourTranslator(model)
 
-from azure.functions import Out
+from azure.functions import Out # type: ignore
 
 def message_handler(msg):
     '''Takes a ClientMessage and returns a ClientMessage or None

@@ -14,8 +14,8 @@ export const SchedulerMessages = {
   DATE_ENTERED_MESSAGE: `Updated! Hit OK to confirm.`,
   DATE_ENTERED_MESSAGE_SHORT: 'Updated! OK to confirm.',
   NAME_MESSAGE: `
-  This meeting's been saved! Copy the link in the URL bar to share.
-  Now, tell me your first name if you're ready to enter your availability!
+  This meeting's been saved! Copy the link in the URL bar to share with others so they can enter their availability.
+  Now, tell me your first name if you're ready to fill out your availability!
   `,
   NAME_MESSAGE_FRESH: `
   Hey! We're in the middle of scheduling the meeting - tell me your first name if you want to update your availability. 
@@ -33,6 +33,7 @@ export const SchedulerMessages = {
   OK! Now let's get the details.
   Tell me more about the week we're looking at.
   You can click to change the week, and you can also create and remove time blocks by hand.
+  Tap the button in the bottom right to see where everyone's schedule overlaps.
   `,
   SPECIFIC_AVAIL_MESSAGE_FRESH: `
   Let's get your availability.

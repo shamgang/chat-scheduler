@@ -1,6 +1,6 @@
 from os import getenv
-from azure.cosmos import CosmosClient, PartitionKey
-from azure.cosmos.exceptions import CosmosResourceExistsError, CosmosResourceNotFoundError
+from azure.cosmos import CosmosClient, PartitionKey # type: ignore
+from azure.cosmos.exceptions import CosmosResourceExistsError, CosmosResourceNotFoundError # type: ignore
 from .logger import logger
 from .time_grid import TimeGrid, format_time_grid, parse_time_grid
 from .json_helpers import state_validator, validate_verbose
