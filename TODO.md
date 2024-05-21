@@ -1,8 +1,6 @@
 ## High-priority
 
-* DNS
 * Accessibility - Calendar selection is probably not accessible.
-* Replace favicon and title
 
 ## Medium-priority
 
