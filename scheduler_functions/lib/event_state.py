@@ -3,18 +3,26 @@ from azure.cosmos import CosmosClient, PartitionKey # type: ignore
 from azure.cosmos.exceptions import CosmosResourceExistsError, CosmosResourceNotFoundError # type: ignore
 from .logger import logger
 from .time_grid import TimeGrid, format_time_grid, parse_time_grid
-from .json_helpers import state_validator, validate_verbose
+from .json_helpers import get_state_validator, validate_verbose
 from .model_tools import to_iso_no_hyphens, from_iso_no_hyphens
 
-events_container = CosmosClient(
-    url=getenv('COSMOS_DB_URL'),
-    credential=getenv('COSMOS_DB_KEY')
-).create_database_if_not_exists(
-    id=getenv("COSMOS_DATABASE")
-).create_container_if_not_exists(
-    id=getenv("COSMOS_EVENT_TABLE"),
-    partition_key=PartitionKey(path="/id")
-)
+events_container = None
+
+def get_events_container():
+    global events_container
+    if events_container is None:
+        events_container = CosmosClient(
+            url=getenv('COSMOS_DB_URL'),
+            credential=getenv('COSMOS_DB_KEY'),
+            connection_verify=False if getenv('COSMOS_ALLOW_UNVERIFIED') else True,
+        ).create_database_if_not_exists(
+            id=getenv("COSMOS_DATABASE")
+        ).create_container_if_not_exists(
+            id=getenv("COSMOS_EVENT_TABLE"),
+            partition_key=PartitionKey(path="/id")
+        )
+    return events_container
+
 
 class EventState:
     def __init__(
@@ -70,9 +78,9 @@ def create_event(event_id, from_date, to_date):
     Raises KeyError if already exists.'''
     new_event = EventState(from_date, to_date)
     new_event_json = format_event_state(new_event)
-    validate_verbose(state_validator, new_event_json)
+    validate_verbose(get_state_validator(), new_event_json)
     try:
-        events_container.create_item({
+        get_events_container().create_item({
             "id": event_id,
             **new_event_json
         })
@@ -87,9 +95,9 @@ def create_event(event_id, from_date, to_date):
 def update_event(event_id, event):
     '''Update an existing event. Raises KeyError if does not exist.'''
     event_json = format_event_state(event)
-    validate_verbose(state_validator, event_json)
+    validate_verbose(get_state_validator(), event_json)
     try:
-        events_container.replace_item(event_id, {
+        get_events_container().replace_item(event_id, {
             "id": event_id,
             **event_json
         })
@@ -103,9 +111,9 @@ def update_event(event_id, event):
 def get_event_json(event_id):
     logger.debug(f'Retrieving event: {event_id}')
     try:
-        item = events_container.read_item(item=event_id, partition_key=event_id)
+        item = get_events_container().read_item(item=event_id, partition_key=event_id)
         del item['id']
-        validate_verbose(state_validator, item)
+        validate_verbose(get_state_validator(), item)
         return item
     except CosmosResourceNotFoundError:
         err = f'Tried to get event that does not exist: {event_id}'

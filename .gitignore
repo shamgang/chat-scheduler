@@ -2,3 +2,5 @@
 __blobstorage__
 __queuestorage__
 __azurite_db*__.json
+
+cosmos_db_auth_key

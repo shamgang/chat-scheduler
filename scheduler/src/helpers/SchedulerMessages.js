@@ -14,7 +14,7 @@ export const SchedulerMessages = {
   DATE_ENTERED_MESSAGE: `Updated! Tap to confirm.`,
   DATE_ENTERED_MESSAGE_SHORT: 'Updated! Tap to confirm.',
   NAME_MESSAGE: `
-  This meeting's been saved! Copy the link in the URL bar to share with others so they can enter their availability.
+  This meeting's been saved! Share the link in the URL bar with others so they can enter their availability.
   Now, tell me your first name if you're ready to fill out your availability!
   `,
   NAME_MESSAGE_FRESH: `

@@ -5,7 +5,7 @@ import json
 from .logger import logger
 
 
-def schema_path(filename):
+def get_schema_path(filename):
     return os.path.join(
         os.path.dirname(__file__),
         '../assets/',
@@ -18,20 +18,32 @@ def load_json_file(path):
         return json.load(f)
 
 
-registry = Registry().with_resource(
-    uri="common_schema.json",
-    resource=Resource.from_contents(load_json_file(schema_path('common_schema.json')))
-)
-
-
 def create_validator(schema_path):
     with open(schema_path, 'r') as schema_file:
         schema = json.load(schema_file)
+    registry = Registry().with_resource(
+        uri="common_schema.json",
+        resource=Resource.from_contents(load_json_file(get_schema_path('common_schema.json')))
+    )
     return jsonschema.Draft7Validator(schema, registry=registry)
 
 
-message_validator = create_validator(schema_path('message_schema.json'))
-state_validator = create_validator(schema_path('state_schema.json'))
+message_validator = None
+state_validator = None
+
+
+def get_message_validator():
+    global message_validator
+    if message_validator is None:
+        message_validator = create_validator(get_schema_path('message_schema.json'))
+    return message_validator
+
+
+def get_state_validator():
+    global state_validator
+    if state_validator is None:
+        state_validator = create_validator(get_schema_path('state_schema.json'))
+    return state_validator
 
 
 def validate_verbose(validator, candidate):

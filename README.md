@@ -59,6 +59,7 @@
     ```
     npm install
     ```
+1. To enable local network access for testing on another device, a few changes need to be made. Create a `.env.development.local` file with `REACT_APP_API_HOST="http://<your_local_IP>:7071"` using the local network IP address instead of `localhost`. This will override the value in `.env.development` and make sure API calls originating from another device go to the right place. Similarly, change the `COSMOS_DB_URL` in `local.settings.json` to replace `localhost` with the local IP. Now find the Cosmos program folder (in `Program Files`) and execute  `Microsoft.Azure.Cosmos.Emulator.exe /GenKeyFile=cosmos_db_auth_key` [[1](https://stackoverflow.com/questions/55018321/azure-cosmos-db-emulator-on-a-local-area-network)]. The key path can also be replaced with a path in the repo (it is gitignored). Shut down the Cosmos DB emulator if it's running, delete the data dir (`Users/<username>/AppData/Local/CosmosDBEmulator`), and run `CosmosDB.Emulator.exe /AllowNetworkAccess /KeyFile=cosmos_db_auth_key` (or replacing the key path). By default the client will fail to verify this cert, so add the setting `"COSMOS_ALLOW_UNVERIFIED": true` to `local.settings.json -> Values`. DO NOT copy this setting to the production deployment. Now local network debugging should be possible.
 ## Run app in development
 1. Start Azurite to emulate Table, Queue, and Blob storage. Open the Command Palette (F1) -> Azurite: Start.
 1. Run the Azure Function App locally with Run and Debug (F5, or from the side bar). Note: There may be a port conflict when restarting the app (running after just having closed it). Try running one more time and it should work.
@@ -87,7 +88,7 @@ domain of the static web app, as well as any custom domains.
 1. In Environment variables, set `AzureWebJobsStorage` to a key from the storage account under Security + networking -> Access keys
 1. Set `COSMOS_DB_URL` and `COSMOS_DB_KEY` to the URI and read-write key from the Cosmos DB NoSQL account under Settings -> Keys.
 1. Set `WebPubSubConnectionString` to a Settings -> Keys -> Primary/Secondary -> Connection string from the production Web PubSub account rather than the dev account.
-1. Copy over any other relevant environment variables from `local.settings.json` that are not set, including `COSMOS_DATABASE`, `COSMOS_EVENT_TABLE`, and the API-related keys and settings. The log level setting can be skipped.
+1. Copy over any other relevant environment variables from `local.settings.json` that are not set, including `COSMOS_DATABASE`, `COSMOS_EVENT_TABLE`, and the API-related keys and settings. The log level setting can be skipped. Again, DO NOT copy `COSMOS_ALLOW_UNVERIFIED` if it is set.
 1. Set `AzureWebJobsSecretStorageType` to `blob`. This will prevent the key that connects PubSub and the function app from re-generating on deployment. Save the environment variable changes.
 1. Note the `webpubsub_extension` key from Function -> App keys in the function app and make sure the event handler in the production Web PubSub instance is the same as the dev instance, except with the following endpoint, replacing the the function app name and using the `webpubsub_extension` key:
     ```

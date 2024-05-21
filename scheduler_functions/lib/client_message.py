@@ -7,7 +7,7 @@ from .datetime_helpers import (
     from_time_string_24
 )
 from .json_helpers import (
-    message_validator,
+    get_message_validator,
     validate_verbose
 )
 from .time_grid import format_time_grid
@@ -33,7 +33,7 @@ class Author(str, Enum):
 def parse_message(msg_str):
     '''Convert client messages from json message to internal format'''
     msg = json.loads(msg_str)
-    validate_verbose(message_validator, msg)
+    validate_verbose(get_message_validator(), msg)
     msg_type = msg['type']
     from_date, to_date, week, from_time, to_time = (None, None, None, None, None)
     if msg_type == ClientMessageType.RANGE:
@@ -83,7 +83,7 @@ def format_message(msg):
         msg_json['eventId'] = msg.event_id
     if msg.name:
         msg_json['name'] = msg.name
-    validate_verbose(message_validator, msg_json)
+    validate_verbose(get_message_validator(), msg_json)
     return msg_json
 
 
