@@ -217,28 +217,27 @@ function useMessageService() {
 
   // Send message on websocket
   // Throws
-  const sendMessageNow = useCallback((msg) => {
+  const sendMessageSync = useCallback((msg) => {
     console.debug('Send attempt: ', msg);
     if (webSocketRef.current) {
       webSocketRef.current.send(formatMessage(msg));
-      setMessages((prevMessages) => [...prevMessages, msg]);
     } else {
       throw new Error('No websocket');
     }
-  }, [setMessages]);
+  }, []);
 
   const sendMessageDelay = useCallback((msg, delay) => {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         try {
-          resolve(sendMessageNow(msg));
+          resolve(sendMessageSync(msg));
         } catch (err) {
           reject(err);
         }
       }, delay);
       timeouts.current.push(timeout);
     });
-  }, [sendMessageNow]);
+  }, [sendMessageSync]);
 
   // Timeout cleanup
   useEffect(() => {
@@ -251,14 +250,16 @@ function useMessageService() {
   }, []);
 
   const sendMessage = useCallback((msg) => {
-    console.debug('Attempting to send message: ', msg);
-    try {
-      sendMessageNow(msg);
-      return;
-    } catch (error) {
-      console.error('Send message failed 1 time:', error);
-    }
+    setMessages((prevMessages) => [...prevMessages, msg]);
     (async () => {
+      console.debug('Attempting to send message: ', msg);
+      // First try
+      try {
+        sendMessageSync(msg);
+        return;
+      } catch (error) {
+        console.error('Send message failed 1 time:', error);
+      }
       // Second try, 500ms
       console.log('Retrying..');
       try {
@@ -285,7 +286,7 @@ function useMessageService() {
         setMessageServiceError(error);
       }
     })();
-  }, [sendMessageNow, sendMessageDelay, setMessageServiceError]);
+  }, [setMessages, sendMessageSync, sendMessageDelay, setMessageServiceError]);
 
   return { messages, sendMessage, messageServiceError };
 }

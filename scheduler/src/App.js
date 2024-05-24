@@ -121,7 +121,6 @@ function App() {
     setNumMessagesProcessed,
     setRange,
     setCurrentWeek,
-    timeGrid,
     setTimeGrid
   ]);
 

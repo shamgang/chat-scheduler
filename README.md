@@ -59,16 +59,12 @@
     ```
     npm install
     ```
-1. To enable local network access for testing on another device, a few changes need to be made. Create a `.env.development.local` file with `REACT_APP_API_HOST="http://<your_local_IP>:7071"` using the local network IP address instead of `localhost`. This will override the value in `.env.development` and make sure API calls originating from another device go to the right place. Similarly, change the `COSMOS_DB_URL` in `local.settings.json` to replace `localhost` with the local IP. Now find the Cosmos program folder (in `Program Files`) and execute  `Microsoft.Azure.Cosmos.Emulator.exe /GenKeyFile=cosmos_db_auth_key` [[1](https://stackoverflow.com/questions/55018321/azure-cosmos-db-emulator-on-a-local-area-network)]. The key path can also be replaced with a path in the repo (it is gitignored). Shut down the Cosmos DB emulator if it's running, delete the data dir (`Users/<username>/AppData/Local/CosmosDBEmulator`), and run `CosmosDB.Emulator.exe /AllowNetworkAccess /KeyFile=cosmos_db_auth_key` (or replacing the key path). By default the client will fail to verify this cert, so add the setting `"COSMOS_ALLOW_UNVERIFIED": true` to `local.settings.json -> Values`. DO NOT copy this setting to the production deployment. Now local network debugging should be possible.
+1. To enable local network access for testing on another device, a few changes need to be made. Create a `.env.development.local` file with `REACT_APP_API_HOST="http://<your_local_IP>:7071"` using the local network IP address instead of `localhost`. This will override the value in `.env.development` and make sure API calls originating from another device go to the right place. Similarly, change the `COSMOS_DB_URL` in `local.settings.json` to replace `localhost` with the local IP. Now find the Cosmos program folder (in `Program Files`) and execute  `Microsoft.Azure.Cosmos.Emulator.exe /GenKeyFile=cosmos_db_auth_key` [[1](https://stackoverflow.com/questions/55018321/azure-cosmos-db-emulator-on-a-local-area-network)]. The key path can also be replaced with a path in the repo (it is gitignored). Shut down the Cosmos DB emulator if it's running, delete the data dir (`Users/<username>/AppData/Local/CosmosDBEmulator`), and run `CosmosDB.Emulator.exe /AllowNetworkAccess /KeyFile=cosmos_db_auth_key` (or replacing the key path). E.g. `& 'C:\Program Files\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe' /AllowNetworkAccess /KeyFile=C:\Users\shamg\Documents\web\scheduler_031224\cosmos_db_auth_key`. By default the client will fail to verify this cert, so add the setting `"COSMOS_ALLOW_UNVERIFIED": true` to `local.settings.json -> Values`. DO NOT copy this setting to the production deployment. Now local network debugging should be possible.
 ## Run app in development
 1. Start Azurite to emulate Table, Queue, and Blob storage. Open the Command Palette (F1) -> Azurite: Start.
 1. Run the Azure Function App locally with Run and Debug (F5, or from the side bar). Note: There may be a port conflict when restarting the app (running after just having closed it). Try running one more time and it should work.
 1. Test that HTTP functions are working by visiting their [URLs](http://localhost:7071/api/negotiate) and verifying responses and logs in the VSCode terminal.
 1. Start the PubSub tunnel, as described above.
-1. To test that the backend handles abuse protection correctly, run the following in a terminal with `curl` (e.g. Git Bash on Windows), replacing the endpoint with the value from the prod Web PubSub account:
-    ```
-    curl <endpoint> -X OPTIONS -H "WebHook-Request-Origin: *" -H "ce-awpsversion: 1.0" --ssl-no-revoke -i -v
-    ```
 1. Run the CosmosDB emulator.
 1. Start the React app development server
     ```
@@ -93,4 +89,8 @@ domain of the static web app, as well as any custom domains.
 1. Note the `webpubsub_extension` key from Function -> App keys in the function app and make sure the event handler in the production Web PubSub instance is the same as the dev instance, except with the following endpoint, replacing the the function app name and using the `webpubsub_extension` key:
     ```
     https://<FUNCTIONAPP_NAME>.azurewebsites.net/runtime/webhooks/webpubsub?code=<APP_KEY>
+    ```
+1. To test that the backend handles abuse protection correctly, run the following in a terminal with `curl` (e.g. Git Bash on Windows), replacing the endpoint with the value from the prod Web PubSub account:
+    ```
+    curl <endpoint> -X OPTIONS -H "WebHook-Request-Origin: *" -H "ce-awpsversion: 1.0" --ssl-no-revoke -i -v
     ```

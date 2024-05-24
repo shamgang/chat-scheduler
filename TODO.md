@@ -1,6 +1,10 @@
 ## High-priority
 
 * Accessibility - Calendar selection is probably not accessible.
+* Skip general avail and add specific manually is broken on mobile - it seems that after chatbot sets time grid it is not triggering a change to the time grid state variable - may be because of Violation 'message' handler took 160ms. Maybe on mobile these violations are stricter.
+* "next week thursday or friday" is broken
+* "next week thursday to friday" is broken
+* "
 
 ## Medium-priority
 
@@ -10,6 +14,7 @@
 * Pick a domain and brand name
 * Add brand logo - fixed position, small text, subtle
 * periodically flush old events and communicate this to user
+* Home page link to go to new event
 
 ## Low-priority
 

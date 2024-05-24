@@ -25,7 +25,7 @@ function getSlotFullness(slot, timeGrid, names, editingName) {
   if (!timeGrid || !(slotKey in timeGrid)){
     return 0;
   }
-  const available = getSlotNames(slot, timeGrid);
+  const available = getSlotNames(slot, timeGrid).map(nm => nm.trim().toLowerCase());
   if (editingName) {
     // Show only this user avail
     if (available.includes(editingName)) {
