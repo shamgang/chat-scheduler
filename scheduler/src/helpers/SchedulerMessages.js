@@ -23,7 +23,7 @@ export const SchedulerMessages = {
   `,
   TIMES_MESSAGE: `
   Got it! If you want, start by telling me your availability generally, for example: "I'm free 9am-5pm every weekday",
-  and I'll pre-fill all the weeks. You can also edit manually.
+  and I'll pre-fill all the weeks. You can also edit manually. Click-and-drag or tap twice to toggle a time range.
   Tap ☑️ to move on to scheduling specific weeks.
   `,
   GENERAL_TIME_RANGES_MESSAGE: `
@@ -33,13 +33,11 @@ export const SchedulerMessages = {
   SPECIFIC_AVAIL_MESSAGE: `
   OK! Now let's get the details.
   Tell me more about the week we're looking at.
-  You can click to change the week, and you can also create and remove time blocks by hand.
-  Tap the button in the bottom right to see where everyone's schedule overlaps.
-  `,
-  SPECIFIC_AVAIL_MESSAGE_FRESH: `
-  Let's get your availability.
-  Tell me about the week we're looking at.
-  You can click to change the week, and you can also create and remove time blocks by hand.
+  You can click to change the week, and you can also toggle time slots by hand.
+  Glowing slots have everyone available, otherwise availability is on a scale from light to dark.
+  Your own availability is striped.
+  Hover or tap to see names for each slot.
+  Tap ☑️ and I'll tell you the next available slot with all attendees available.
   `,
   SPECIFIC_TIME_RANGES_MESSAGE: `
   Updated the calendar for just the selected week.

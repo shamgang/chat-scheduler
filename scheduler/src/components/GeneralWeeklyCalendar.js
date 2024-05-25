@@ -9,9 +9,9 @@ import { fromIsoNoHyphens } from '../helpers/FormatHelpers';
 import { CalendarToolbar } from './CalendarToolbar';
 import BaseWeeklyCalendar from './BaseWeeklyCalendar';
 
-function getSlotFullness(slot, timeGrid, name) {
+function userIsAvail(slot, timeGrid, name) {
   if (!timeGrid) {
-    return 0;
+    return false;
   }
   let slots;
   for (const dt of Object.keys(timeGrid)) {
@@ -20,13 +20,17 @@ function getSlotFullness(slot, timeGrid, name) {
     }
   }
   if (!slots) {
-    return 0;
+    return false;
   }
   if (slots[slotNum(slot)].includes(name)) {
-    return 1;
+    return true;
   } else {
-    return 0;
+    return false;
   }
+}
+
+function getSlotFullness(slot, timeGrid, name) {
+  return userIsAvail(slot, timeGrid, name) ? 1 : 0;
 }
 
 function GeneralWeeklyCalendar({
@@ -37,6 +41,10 @@ function GeneralWeeklyCalendar({
   onSelectSlot
 }) {
   const isOut = useCallback(() => false, []);
+
+  const userIsAvailHelper = useCallback((slot) => {
+    return userIsAvail(slot, timeGrid, name);
+  }, [timeGrid, name]);
 
   const getSlotFullnessHelper = useCallback((slot) => {
     return getSlotFullness(slot, timeGrid, name);
@@ -70,6 +78,7 @@ function GeneralWeeklyCalendar({
         isOut={isOut}
         onSelectSlot={onSelectSlot}
         getSlotFullness={getSlotFullnessHelper}
+        userIsAvail={userIsAvailHelper}
         calendarProps={calendarProps}
         calendarComponents={components}
       />

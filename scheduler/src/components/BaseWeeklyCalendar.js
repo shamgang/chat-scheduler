@@ -22,6 +22,7 @@ function BaseWeeklyCalendar({
   onSlotHover,
   getSlotFullness,
   slotGlows,
+  userIsAvail,
   calendarProps,
   calendarComponents
 }) {
@@ -82,23 +83,26 @@ function BaseWeeklyCalendar({
   }, [onSelectSlotHelper]);
 
   const slotPropGetterHelper = useCallback((slot) => {
+    if (isOut(slot)) {
+      return { className: 'time-slot-out-of-range' };
+    }
+    let result = {
+      className: userIsAvail(slot) ? 'time-slot-user' : ''
+    };
     if (
       (rangeStart && equalSlots(slot, rangeStart)) ||
       (lastSubmittedRange && slot >= lastSubmittedRange[0] && slot < lastSubmittedRange[1])
     ) {
-      return { className: 'time-slot-selecting' };
-    } else if (isOut(slot)) {
-      return { className: 'time-slot-out-of-range' };
+      result.className += ' time-slot-selecting';
     } else if (slotGlows && slotGlows(slot)) {
-      return { className: 'time-slot-glowing' };
+      result.className += ' time-slot-glowing';
     } else {
-      return {
-        style: { 
-          backgroundColor: availabilityColor(getSlotFullness(slot))
-        }
+      result.style = { 
+        backgroundColor: availabilityColor(getSlotFullness(slot))
       };
     }
-  }, [rangeStart, lastSubmittedRange, isOut, getSlotFullness, slotGlows]);
+    return result;
+  }, [rangeStart, lastSubmittedRange, isOut, getSlotFullness, slotGlows, userIsAvail]);
 
   // Memoize modular components
   const combinedComponents = useMemo(() => {

@@ -9,3 +9,7 @@ export async function waitForNumUpdates(n) {
 export async function waitForNumSorry(n) {
   cy.get('.incoming:contains("Sorry")', { timeout: 12000 }).should('have.length', n);
 }
+
+export async function waitForCalendar() {
+  cy.get('div.calendar', { timeout: 2000 }).should('exist');
+}

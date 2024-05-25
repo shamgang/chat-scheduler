@@ -1,7 +1,7 @@
 import { useMemo, useCallback, useState } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { faCheck } from '@fortawesome/free-solid-svg-icons';
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import {
   lastMonday,
@@ -18,30 +18,21 @@ function getSlotNames(slot, timeGrid) {
   if (!timeGrid || !(slotKey in timeGrid)){
     return [];
   }
-  return timeGrid[toIsoNoHyphens(slot)][slotNum(slot)];
+  return timeGrid[toIsoNoHyphens(slot)][slotNum(slot)].map(nm => nm.trim().toLowerCase());
 }
 
-function getSlotFullness(slot, timeGrid, names, editingName) {
-  const slotKey = toIsoNoHyphens(slot);
-  if (!timeGrid || !(slotKey in timeGrid)){
+function getSlotFullness(slot, timeGrid, names) {
+  const available = getSlotNames(slot, timeGrid);
+  if(available.length > 0) {
+    return available.length / names.length;
+  } else {
     return 0;
   }
-  const available = getSlotNames(slot, timeGrid).map(nm => nm.trim().toLowerCase());
-  if (editingName) {
-    // Show only this user avail
-    if (available.includes(editingName)) {
-      return 1;
-    } else {
-      return 0;
-    }
-  } else {
-    // Show all users, color coded
-    if(available.length > 0) {
-      return available.length / names.length;
-    } else {
-      return 0;
-    }
-  }
+}
+
+function userIsAvail(slot, timeGrid, editingName) {
+  const available = getSlotNames(slot, timeGrid);
+  return available.includes(editingName);
 }
 
 // Check if a time is in a dateRange [start, end]
@@ -61,8 +52,7 @@ function SpecificWeeklyCalendar({
   names,
   editingName,
   showButtons,
-  onEdit,
-  onView
+  onSubmit
 }) {
   const [focusedDate, setFocusedDate] = useState(lastMonday(dateRange[0]));
   const [focusedSlotNames, setFocusedSlotNames] = useState(null);
@@ -82,12 +72,16 @@ function SpecificWeeklyCalendar({
   }, [dateRange]);
 
   const getSlotFullnessHelper = useCallback((slot) => {
-    return getSlotFullness(slot, timeGrid, names, editingName);
-  }, [timeGrid, names, editingName]);
+    return getSlotFullness(slot, timeGrid, names);
+  }, [timeGrid, names]);
 
   const slotGlowsHelper = useCallback((slot) => {
-    return names && names.length > 1 && !editingName && getSlotFullness(slot, timeGrid, names, editingName) === 1;
-  }, [names, timeGrid, editingName]);
+    return names && names.length > 1 && getSlotFullness(slot, timeGrid, names) === 1;
+  }, [names, timeGrid]);
+
+  const userIsAvailHelper = useCallback((slot) => {
+    return userIsAvail(slot, timeGrid, editingName);
+  }, [timeGrid, editingName]);
 
   const onSlotHover = useCallback((slot) => {
     setFocusedSlotNames(getSlotNames(slot, timeGrid));
@@ -118,6 +112,7 @@ function SpecificWeeklyCalendar({
         onSlotHover={onSlotHover}
         getSlotFullness={getSlotFullnessHelper}
         slotGlows={slotGlowsHelper}
+        userIsAvail={userIsAvailHelper}
         calendarProps={calendarProps}
         calendarComponents={components}
       >
@@ -125,31 +120,15 @@ function SpecificWeeklyCalendar({
       <div className="calendar-footer">
         { 
           showButtons &&
-          <button
-            className={"calendar-submit" + (editingName ? ' calendar-button-selected' : '')}
-            id='calendar-edit'
-            onClick={onEdit}
-          >
+          <button className="calendar-submit" id='calendar-submit' onClick={onSubmit}>
             <FontAwesomeIcon
-              icon={faEdit}
-            />
-          </button>
-        }
-        { 
-          showButtons &&
-          <button
-            className={"calendar-submit" + (editingName ? '' : ' calendar-button-selected')}
-            id='calendar-view'
-            onClick={onView}
-          >
-            <FontAwesomeIcon
-              icon={faUsers}
+              icon={faCheck}
             />
           </button>
         }
       </div>
       {
-        !editingName && focusedSlotNames && focusedSlotNames.length > 0 &&
+        focusedSlotNames && focusedSlotNames.length > 0 &&
         <Tooltip anchorSelect='.slot-anchor' place="top">
           {
             focusedSlotNames && focusedSlotNames.map(name => <div key={'tooltip-name-' + name}>{firstCap(name)}</div>)

@@ -82,7 +82,7 @@ domain of the static web app, as well as any custom domains.
 1. Add any custom domains to the static web app as well and validate as needed.
 1. Ensure Authentication is setup and allows unauthenticated access.
 1. In Environment variables, set `AzureWebJobsStorage` to a key from the storage account under Security + networking -> Access keys
-1. Set `COSMOS_DB_URL` and `COSMOS_DB_KEY` to the URI and read-write key from the Cosmos DB NoSQL account under Settings -> Keys.
+1. Set `COSMOS_DB_URL` and `COSMOS_DB_KEY` to the URI and read-write key from the Cosmos DB NoSQL account under Settings -> Keys. Ensure the Cosmos DB account is set to Bounded Staleness consistency (Settings -> Default consistency).
 1. Set `WebPubSubConnectionString` to a Settings -> Keys -> Primary/Secondary -> Connection string from the production Web PubSub account rather than the dev account.
 1. Copy over any other relevant environment variables from `local.settings.json` that are not set, including `COSMOS_DATABASE`, `COSMOS_EVENT_TABLE`, and the API-related keys and settings. The log level setting can be skipped. Again, DO NOT copy `COSMOS_ALLOW_UNVERIFIED` if it is set.
 1. Set `AzureWebJobsSecretStorageType` to `blob`. This will prevent the key that connects PubSub and the function app from re-generating on deployment. Save the environment variable changes.

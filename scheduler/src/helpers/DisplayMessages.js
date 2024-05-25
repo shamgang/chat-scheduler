@@ -113,7 +113,7 @@ function generateDisplayMessages(messages, isNew, eventState, name, shortRange) 
       ) {
         // Prompt for specific avail
         state = StateMachine.SPECIFIC_AVAIL;
-        displayMessages.push([M.SPECIFIC_AVAIL_MESSAGE_FRESH, Authors.SCHEDULER]);
+        displayMessages.push([M.SPECIFIC_AVAIL_MESSAGE, Authors.SCHEDULER]);
       } else {
         // Prompt for general avail
         state = StateMachine.GENERAL_AVAIL;

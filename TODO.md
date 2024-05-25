@@ -1,11 +1,12 @@
 ## High-priority
 
 * Accessibility - Calendar selection is probably not accessible.
+* Add a list of current users
 
 ## Medium-priority
 
-* Display messages code has a lot of state machine redundancy - combine with the main state machine
 * Name events so people can tell if they're coming to the correct place - use this in page title?
+* Display messages code has a lot of state machine redundancy - combine with the main state machine
 * Redesign
 * Make the mobile view longer? scroll
 * Pick a domain and brand name
@@ -13,6 +14,7 @@
 * periodically flush old events and communicate this to user
 * Home page link to go to new event
 * Loading UI
+* Use document patch / partial update in Cosmos DB to reduce reads and read-after-writes?
 
 ## Low-priority
 

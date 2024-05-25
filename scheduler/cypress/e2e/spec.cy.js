@@ -1,9 +1,11 @@
-import { waitForNumIncoming, waitForNumUpdates } from "./utils";
+import { waitForNumIncoming, waitForNumUpdates, waitForCalendar } from "./utils";
 
 
 describe('default spec', () => {
   it('Should go through basic flow without crashing', () => {
     cy.visit('http://localhost:3000');
+    //cy.visit('https://scheduler.shamgang.com');
+    waitForCalendar();
     waitForNumIncoming(2);
     const msgInput = cy.get('#messageInput');
     msgInput.type('the next two weeks');
@@ -37,6 +39,7 @@ describe('default spec', () => {
     cy.wait(1000);
     cy.get('.rbc-day-slot:nth-child(6) > .rbc-timeslot-group:nth-child(8)').trigger('mouseup', {force: true});
     cy.reload();
+    waitForCalendar();
     waitForNumIncoming(1);
     const msgInput2 = cy.get('[id="messageInput"]');
     const msgForm2 = cy.get('[id="messageForm"]');
@@ -46,6 +49,7 @@ describe('default spec', () => {
     msgInput2.type('free all day and night friday');
     msgForm2.submit();
     cy.reload();
+    waitForCalendar();
     waitForNumIncoming(1);
     const msgInput3 = cy.get('[id="messageInput"]');
     const msgForm3 = cy.get('[id="messageForm"]');

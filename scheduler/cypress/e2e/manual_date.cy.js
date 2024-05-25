@@ -1,8 +1,9 @@
-import { waitForNumIncoming, waitForNumUpdates } from "./utils";
+import { waitForNumIncoming, waitForNumUpdates, waitForCalendar } from "./utils";
 
 describe('manual date', () => {
   it('Should handle manual date input during date stage', () => {
     cy.visit('http://localhost:3000');
+    waitForCalendar();
     waitForNumIncoming(2);
     cy.get('.rbc-day-bg:nth-child(2)').first().click(); 
     cy.get('.rbc-day-bg:nth-child(4)').first().click(); 

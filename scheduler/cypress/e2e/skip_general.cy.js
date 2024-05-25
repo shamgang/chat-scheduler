@@ -1,8 +1,9 @@
-import { waitForNumIncoming, waitForNumUpdates } from "./utils";
+import { waitForNumIncoming, waitForNumUpdates, waitForCalendar } from "./utils";
 
 describe('skip general and manual input', () => {
   it('Should be able to skip straight to specific manual input', () => {
     cy.visit('http://localhost:3000');
+    waitForCalendar();
     waitForNumIncoming(2);
     const msgInput = cy.get('#messageInput');
     msgInput.type('the next two weeks');

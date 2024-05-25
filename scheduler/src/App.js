@@ -17,6 +17,7 @@ import { StateMachine } from './helpers/StateMachine';
 import { getEventState } from "./services/StateService";
 import { getRandomBackgroundImageUrl } from "./helpers/BackgroundImage";
 import { lastMonday, getDayOfWeek, getDateRangeLengthDays } from "./helpers/Dates";
+import { findBestTime } from "./helpers/CalendarHelpers";
 
 export async function loader({ params }) {
   // TODO: want to use loader to load data before rendering,
@@ -49,7 +50,6 @@ function App() {
   const [eventState, setEventState] = useState(null); // TODO: this contains some redundant data
   const [name, setName] = useState(null);
   const [names, setNames] = useState(null);
-  const [editingName, setEditingName] = useState(null);
   const navigate = useNavigate();
   // If the first render has no eventId, this is a new event.
   const isNew = useRef(!eventId);
@@ -157,7 +157,6 @@ function App() {
         nextNames.push(newName);
       }
       setNames(nextNames);
-      setEditingName(newName);
       if (
         (
           eventState &&
@@ -170,7 +169,7 @@ function App() {
       } else {
         setFlowState(StateMachine.GENERAL_AVAIL);
       }
-    } else if ([StateMachine.GENERAL_AVAIL, StateMachine.SPECIFIC_AVAIL, StateMachine.VIEW_AVAIL].includes(flowState)) {
+    } else if ([StateMachine.GENERAL_AVAIL, StateMachine.SPECIFIC_AVAIL].includes(flowState)) {
       sendMessage({
         type: MessageTypes.TIMES,
         author: Authors.USER,
@@ -193,8 +192,7 @@ function App() {
     sendMessage,
     setFlowState,
     setName,
-    setNames,
-    setEditingName
+    setNames
   ]);
   // When date calendar selection changes
   const onRangeChanged = useCallback((value) => {
@@ -231,15 +229,9 @@ function App() {
     setFlowState(StateMachine.SPECIFIC_AVAIL);
   }, [eventId, name, setFlowState, sendMessage]);
 
-  const onEdit = useCallback(() => {
-    setFlowState(StateMachine.SPECIFIC_AVAIL);
-    setEditingName(name);
-  }, [name, setFlowState, setEditingName]);
-
-  const onView = useCallback(() => {
-    setFlowState(StateMachine.VIEW_AVAIL);
-    setEditingName(null);
-  }, [setFlowState, setEditingName]);
+  const onFindTimes = useCallback(() => {
+    alert(findBestTime(timeGrid, names));
+  }, [timeGrid, names]);
 
   // Hourly calendar selectable
   const scheduleSelectable = [StateMachine.GENERAL_AVAIL, StateMachine.SPECIFIC_AVAIL].includes(flowState);
@@ -325,10 +317,9 @@ function App() {
           selectable={scheduleSelectable}
           onSelectSlot={onSelectSlot}
           names={names}
-          editingName={editingName}
-          showButtons={[StateMachine.SPECIFIC_AVAIL, StateMachine.VIEW_AVAIL].includes(flowState)}
-          onEdit={onEdit}
-          onView={onView}
+          editingName={name}
+          showButtons={flowState === StateMachine.SPECIFIC_AVAIL}
+          onSubmit={onFindTimes}
         />
       );
     }

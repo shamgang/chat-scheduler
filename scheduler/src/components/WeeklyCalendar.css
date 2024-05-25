@@ -1,9 +1,9 @@
 @keyframes slot-glow {
     from {
-        background-color: hsl(199 100% 50%);
+        background-color: hsl(240 30% 70%);
     }
     to {
-        background-color: hsl(199 100% 70%);
+        background-color: hsl(240 30% 50%);
     }
 }
 
@@ -32,6 +32,10 @@
     border-left: none !important;
 }
 
+.rbc-time-slot {
+    border-top: none !important;
+}
+
 .rbc-day-slot .time-slot-out-of-range {
     background-color: rgba(215, 215, 215, 0.95);
 }
@@ -48,8 +52,21 @@
     animation-timing-function: linear;
 }
 
-.rbc-time-slot {
-    border-top: none !important;
+.rbc-day-slot .time-slot-user::after {
+    content: '';
+    display: block;
+    position: relative;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(0, 0, 0, 0),
+        rgba(0, 0, 0, 0) 10px,
+        rgba(100, 100, 100, 0.3) 10px,
+        rgba(100, 100, 100, 0.3) 20px
+    );
 }
 
 .rbc-day-slot .rbc-timeslot-group {

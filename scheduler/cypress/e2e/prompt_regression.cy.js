@@ -1,8 +1,9 @@
-import { waitForNumIncoming, waitForNumUpdates } from "./utils";
+import { waitForNumIncoming, waitForNumUpdates, waitForCalendar } from "./utils";
 
 describe('regression for breaking prompt', () => {
   it('Should be able to handle prompts that have broken', () => {
     cy.visit('http://localhost:3000');
+    waitForCalendar();
     waitForNumIncoming(2);
     const msgInput = cy.get('#messageInput');
     msgInput.type('the next two weeks');

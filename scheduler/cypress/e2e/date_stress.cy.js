@@ -1,4 +1,4 @@
-import { waitForNumIncoming, waitForNumUpdates, waitForNumSorry } from "./utils";
+import { waitForNumIncoming, waitForNumUpdates, waitForNumSorry, waitForCalendar } from "./utils";
 
 const goodInputs = [
   'All of February',
@@ -27,6 +27,7 @@ const badInputs = [
 
 async function test() {
   cy.visit('http://localhost:3000');
+  waitForCalendar();
   waitForNumIncoming(2);
   const msgInput = cy.get('[id="messageInput"]');
   const msgForm = cy.get('[id="messageForm"]');

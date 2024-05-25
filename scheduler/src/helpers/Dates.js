@@ -64,6 +64,15 @@ export function slotNum(tm) {
     Math.round(tm.getMinutes() / MINUTES_PER_SLOT);
 }
 
+export function dateTimeFromDateAndSlot(dt, slot) {
+  console.log(dt);
+  let newDt = cloneDate(dt);
+  console.log(newDt);
+  newDt.setHours(0);
+  newDt.setMinutes(slot * MINUTES_PER_SLOT);
+  return newDt;
+}
+
 export function equalSlots(time1, time2) {
   return moment(roundToSlot(time1)).isSame(moment(roundToSlot(time2)));
 }
