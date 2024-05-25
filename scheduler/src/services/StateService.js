@@ -22,12 +22,14 @@ function parseEventState(eventState) {
 }
 
 export async function getEventState(eventId) {
+  console.log(`Getting event state: ${eventId}`);
   const url = `${STATE_ENDPOINT}/${eventId}`;
   const response = await fetch(url);
   if (!response.ok) {
     console.error('State request error: ', response, { body: await response.text() });
     throw response;
   }
+  console.log(`Got event state: ${eventId}`);
   const eventState = parseEventState(await response.json());
   return eventState;
 }

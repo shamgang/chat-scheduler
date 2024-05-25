@@ -43,7 +43,7 @@ function App() {
   // Time ranges here will be a map of key to 3D time ranges array.
   // Each key will represent a different week or general availability.
   const [timeGrid, setTimeGrid] = useState(null);
-  const [flowState, setFlowState] = useState(StateMachine.SELECT_DATES);
+  const [flowState, setFlowState] = useState(null);
   const [currentWeek, setCurrentWeek] = useState(lastMonday(new Date()));
   const { eventId } = useParams();
   const [eventState, setEventState] = useState(null); // TODO: this contains some redundant data
@@ -58,28 +58,34 @@ function App() {
     backgroundImage: `url(${BACKGROUND_IMAGE})`
   };
 
-  // Populate loaded state if this is an existing event
+  // Initialize
   useEffect(() => {
+    if (flowState) {
+      // Already initialized
+      return;
+    }
     if (eventId) {
       // Rendering an existing event
-      if (!isNew.current) {
-        // This is a fresh load of an existing event, get state from server
-        (async () => {
-          try {
-            const loadedEvent = await getEventState(eventId);
-            setRange([loadedEvent.fromDate, loadedEvent.toDate]);
-            setCurrentWeek(lastMonday(loadedEvent.fromDate));
-            setFlowState(StateMachine.NAME);
-            setTimeGrid(loadedEvent.timeGrid);
-            setNames(loadedEvent.names);
-            setEventState(loadedEvent);
-          } catch (error) {
-            setEventStateError(error);
-          }
-        })();
-      }
+      setFlowState(StateMachine.LOADING);
+      (async () => {
+        try {
+          const loadedEvent = await getEventState(eventId);
+          setRange([loadedEvent.fromDate, loadedEvent.toDate]);
+          setCurrentWeek(lastMonday(loadedEvent.fromDate));
+          setTimeGrid(loadedEvent.timeGrid);
+          setNames(loadedEvent.names);
+          setEventState(loadedEvent);
+          setFlowState(StateMachine.NAME);
+        } catch (error) {
+          setEventStateError(error);
+        }
+      })();
+    } else {
+      // Rendering a new event
+      setFlowState(StateMachine.SELECT_DATES);
     }
   }, [
+    flowState,
     eventId,
     setEventState,
     setRange,
@@ -145,7 +151,7 @@ function App() {
         eventId: eventId,
         name: newName
       });
-      setName(input);
+      setName(newName);
       let nextNames = [...(names || [])]
       if(!nextNames.includes(newName)) {
         nextNames.push(newName);
@@ -310,7 +316,7 @@ function App() {
           onSelectSlot={onSelectGeneralSlot}
         />
       );
-    } else {
+    } else if (flowState !== StateMachine.LOADING) {
       return (
         <SpecificWeeklyCalendar
           dateRange={range}

@@ -154,7 +154,8 @@ function SpecificWeeklyCalendar({
           {
             focusedSlotNames && focusedSlotNames.map(name => <div key={'tooltip-name-' + name}>{firstCap(name)}</div>)
           }
-        </Tooltip>}
+        </Tooltip>
+      }
     </div>
   );
 }

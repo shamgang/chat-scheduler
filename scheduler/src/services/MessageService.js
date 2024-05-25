@@ -98,6 +98,7 @@ function useMessageService() {
   const webSocketRef = useRef(null);
   const [ messageServiceError, setMessageServiceError ] = useState(null);
   const timeouts = useRef([]);
+  const numReopens = useRef(0);
 
   const onOpen = useCallback((event) => {
     console.log(`Websocket open with state: ${WebSocketState[event.target.readyState]}`, event);
@@ -108,10 +109,17 @@ function useMessageService() {
     if (event.target.closedByClient) {
       console.debug('Websocket closed by client.');
     } else {
-      console.warn('Websocket closed unexpectedly. Attempting to re-open.');
-      setWebSocket(null);
+      if (numReopens.current < 3) {
+        console.warn('Websocket closed unexpectedly. Attempting to re-open.');
+        setWebSocket(null);
+        numReopens.current += 1;
+      } else {
+        const err = 'Websocket closed unexpectedly.'
+        console.error(err);
+        setMessageServiceError(err);
+      }
     }
-  }, [setWebSocket]);
+  }, [setWebSocket, setMessageServiceError]);
 
   const onError = useCallback((event) => {
     console.error(`Websocket error with state: ${WebSocketState[event.target.readyState]}`, event);

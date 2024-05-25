@@ -4,6 +4,7 @@
 
 ## Medium-priority
 
+* Display messages code has a lot of state machine redundancy - combine with the main state machine
 * Name events so people can tell if they're coming to the correct place - use this in page title?
 * Redesign
 * Make the mobile view longer? scroll
@@ -11,6 +12,7 @@
 * Add brand logo - fixed position, small text, subtle
 * periodically flush old events and communicate this to user
 * Home page link to go to new event
+* Loading UI
 
 ## Low-priority
 
@@ -31,7 +33,6 @@
 * Form validation
 * Stop copy-pasting the json schema - find a way to re-use without breaking the npm production build
 * Webpubsub currently open to anonymous clients - disable this and update readme?
-* Display messages code has a lot of state machine redundancy - combine with the main state machine
 * Set up deployments on development branches
 * create a shared connection ID / session ID to help connect frontend logs to backend logs.
 * create a subtype of Error instead of extending it in LogDownload? eslint warning
