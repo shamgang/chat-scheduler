@@ -1,10 +1,7 @@
 ## High-priority
 
 * Accessibility - Calendar selection is probably not accessible.
-* Skip general avail and add specific manually is broken on mobile - it seems that after chatbot sets time grid it is not triggering a change to the time grid state variable - may be because of Violation 'message' handler took 160ms. Maybe on mobile these violations are stricter.
-* "next week thursday or friday" is broken
-* "next week thursday to friday" is broken
-* "
+* Tapping ok without date range is possible?
 
 ## Medium-priority
 
