@@ -19,7 +19,7 @@ function DateCellWrapper({children, value, onRangeSelected}) {
   });
 }
 
-function MonthlyCalendar({range, onRangeChanged, onSubmit}) {
+function MonthlyCalendar({range, onRangeChanged, onSubmit, submittable}) {
     const calendarRef = useRef(null);
     const [rangeStart, setRangeStart] = useState(null);
     const [focusedDate, setFocusedDate] = useState(range[0]);
@@ -96,7 +96,7 @@ function MonthlyCalendar({range, onRangeChanged, onSubmit}) {
               date={focusedDate}
               onNavigate={onNavigate}
             />
-            <button className='calendar-submit' id='range-submit' onClick={onSubmit}>
+            <button className={'calendar-submit' + (submittable ? ' enabled' : ' disabled')} id='range-submit' onClick={submittable ? onSubmit : () => {}}>
               <FontAwesomeIcon
                 icon={faCheck}
               />

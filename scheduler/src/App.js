@@ -39,6 +39,7 @@ function App() {
   }
   const [numMessagesProcessed, setNumMessagesProcessed] = useState(0);
   const [range, setRange] = useState([new Date(), new Date()]);
+  const [rangeEmpty, setRangeEmpty] = useState(true);
   // Time ranges here will be a map of key to 3D time ranges array.
   // Each key will represent a different week or general availability.
   const [timeGrid, setTimeGrid] = useState(null);
@@ -103,6 +104,7 @@ function App() {
       ) {
         console.log(`Chatbot range change from: ${msg.fromDate} to: ${msg.toDate}`);
         setRange([msg.fromDate, msg.toDate]);
+        setRangeEmpty(false);
         setCurrentWeek(lastMonday(msg.fromDate));
       }
       // Set time ranges if messages change and last message is a time range
@@ -120,6 +122,7 @@ function App() {
     numMessagesProcessed,
     setNumMessagesProcessed,
     setRange,
+    setRangeEmpty,
     setCurrentWeek,
     setTimeGrid
   ]);
@@ -191,8 +194,9 @@ function App() {
   const onRangeChanged = useCallback((value) => {
     console.log(`Manual range change from: ${value[0]} to: ${value[1]}`);
     setRange(value);
+    setRangeEmpty(false);
     setCurrentWeek(lastMonday(value[0]));
-  }, [setRange, setCurrentWeek]);
+  }, [setRange, setRangeEmpty, setCurrentWeek]);
 
   // When date range is confirmed
   const onConfirmRange = useCallback(() => {
@@ -293,6 +297,7 @@ function App() {
           range={range}
           onRangeChanged={onRangeChanged}
           onSubmit={onConfirmRange}
+          submittable={!rangeEmpty}
         />
       );
     } else if (flowState === StateMachine.GENERAL_AVAIL) {

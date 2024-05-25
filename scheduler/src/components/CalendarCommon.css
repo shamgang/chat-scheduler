@@ -33,14 +33,18 @@
     box-shadow: 0 0 5px white;
 }
 
-.calendar-submit:hover {
+.calendar-submit:hover.enabled {
     text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
     font-size: 1.6em;
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.calendar-submit:active {
+.calendar-submit:active.enabled {
     font-size: 1.5em;
+}
+
+.calendar-submit.disabled {
+    background-color: rgba(100, 100, 100, 0.5);
 }
 
 @media (max-aspect-ratio: 1/1) {

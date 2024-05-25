@@ -1,7 +1,6 @@
 ## High-priority
 
 * Accessibility - Calendar selection is probably not accessible.
-* Tapping ok without date range is possible?
 
 ## Medium-priority
 

@@ -6,7 +6,8 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 import {
   lastMonday,
   nextSunday,
-  slotNum
+  slotNum,
+  equalDates
 } from '../helpers/Dates';
 import { toIsoNoHyphens, firstCap } from '../helpers/FormatHelpers'
 import { CalendarToolbar } from './CalendarToolbar';
@@ -47,7 +48,7 @@ function getSlotFullness(slot, timeGrid, names, editingName) {
 function isOut(slot, dateRange) {
   return (
     slot < dateRange[0] ||
-    (slot > dateRange[1] && slot.getDate() > dateRange[1].getDate())
+    (slot > dateRange[1] && !equalDates(slot, dateRange[1]))
   );
 }
 
