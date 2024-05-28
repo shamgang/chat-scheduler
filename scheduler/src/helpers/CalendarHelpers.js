@@ -23,10 +23,12 @@ export function availabilityColor(proportion) {
 }
 
 // Takes time grid or null, and array of names (not null)
+// Returns { from, to, numAttendees } if a slot is found, containing the earliest datetime range
+// for a meeting with the most possible attendees and the number of attendees.
+// Returns { numAttendees: 0 } if no options is available.
 export function findBestTime(timeGrid, names) {
-  const fail = 'No times are available';
   if (!timeGrid) {
-    return fail;
+    return { numAttendees: 0 };
   }
   for (let numAttendees = names.length; numAttendees > 0; numAttendees--) {
     for (const [day, slots] of Object.entries(timeGrid)) {
@@ -39,25 +41,12 @@ export function findBestTime(timeGrid, names) {
             j++;
             lead = new Set(slots[j]);
           }
-          const dateFormatter = new Intl.DateTimeFormat('en-us', {
-            weekday: 'short', month: 'short', day: 'numeric'
-          });
-          const timeFormatter = new Intl.DateTimeFormat('en-us', {
-            hour: 'numeric', minute: 'numeric', hour12: true
-          });
-          console.log(dateTimeFromIsoNoHyphens(day));
-          console.log(i); // TODO: test this
           const from = dateTimeFromDateAndSlot(dateTimeFromIsoNoHyphens(day), i);
-          console.log(from);
           const to = dateTimeFromDateAndSlot(dateTimeFromIsoNoHyphens(day), j);
-          console.log(to);
-          const datePart = dateFormatter.format(from);
-          const fromTime = timeFormatter.format(from);
-          const toTime = timeFormatter.format(to);
-          return `The nearest slot with ${numAttendees}/${names.length} attendees is ${datePart} ${fromTime} - ${toTime}`;
+          return { from, to, numAttendees };
         }
       }
     }
   }
-  return fail;
+  return { numAttendees: 0 };
 }

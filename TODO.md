@@ -2,19 +2,19 @@
 
 * Accessibility - Calendar selection is probably not accessible.
 * Add a list of current users
+* Loading UI: Block user message send until websocket is available (with timeout) and until after event state is loaded. Include some visual indicator of loading to signal the user and also the test script.
 
 ## Medium-priority
 
 * Name events so people can tell if they're coming to the correct place - use this in page title?
-* Display messages code has a lot of state machine redundancy - combine with the main state machine
 * Redesign
 * Make the mobile view longer? scroll
 * Pick a domain and brand name
 * Add brand logo - fixed position, small text, subtle
 * periodically flush old events and communicate this to user
 * Home page link to go to new event
-* Loading UI
 * Use document patch / partial update in Cosmos DB to reduce reads and read-after-writes?
+* Retries for creating websocket and getting event state, not just sending message
 
 ## Low-priority
 
