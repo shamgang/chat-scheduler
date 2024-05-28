@@ -29,12 +29,14 @@ class EventState:
             self,
             from_date,
             to_date,
+            title='UNTITLED EVENT',
             general_avail_confirmed={},
             time_grid=None,
             names=[]
         ):
         self.from_date = from_date
         self.to_date = to_date
+        self.title = title
         self.general_avail_confirmed = general_avail_confirmed
         self.time_grid = time_grid or TimeGrid(from_date, to_date)
         self.names = names
@@ -47,6 +49,9 @@ class EventState:
     def set_general_avail_confirmed(self, name, val):
         self.general_avail_confirmed[name] = val
 
+    def set_title(self, title):
+        self.title = title
+
     def add_name(self, name):
         if name not in self.names:
             self.names.append(name)
@@ -56,6 +61,7 @@ def format_event_state(event_state):
     result = {
         'fromDate': to_iso_no_hyphens(event_state.from_date),
         'toDate': to_iso_no_hyphens(event_state.to_date),
+        'title': event_state.title,
         'generalAvailConfirmed': event_state.general_avail_confirmed,
         'timeGrid': format_time_grid(event_state.time_grid),
         'names': event_state.names
@@ -67,6 +73,7 @@ def parse_event_state(event_json):
     return EventState(
         from_date=from_iso_no_hyphens(event_json['fromDate']),
         to_date=from_iso_no_hyphens(event_json['toDate']),
+        title=event_json['title'],
         general_avail_confirmed=event_json['generalAvailConfirmed'],
         time_grid=parse_time_grid(event_json['timeGrid']),
         names=event_json['names']

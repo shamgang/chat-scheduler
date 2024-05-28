@@ -37,6 +37,10 @@ def message_handler(msg):
     elif msg.type == ClientMessageType.RANGE:
         # User has confirmed date range
         create_event(msg.event_id, msg.from_date, msg.to_date)
+    elif msg.type == ClientMessageType.MEETING_TITLE:
+        event = get_event(msg.event_id)
+        event.set_title(msg.title)
+        update_event(msg.event_id, event)
     elif msg.type == ClientMessageType.NAME:
         event = get_event(msg.event_id)
         event.add_name(msg.name)

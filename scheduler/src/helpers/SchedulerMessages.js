@@ -1,4 +1,5 @@
 import { getLogURL } from "./LogDownload";
+import { readableDatetimeRange } from "./FormatHelpers";
 
 export const SchedulerMessages = {
   WELCOME_MESSAGES: [
@@ -13,6 +14,9 @@ export const SchedulerMessages = {
   LOADING_MESSAGE: 'Let me think...',
   DATE_ENTERED_MESSAGE: `Updated! Tap ☑️ to confirm.`,
   DATE_ENTERED_MESSAGE_SHORT: 'Updated! Tap ☑️ to confirm.',
+  getMeetingTitleMessage: range => `
+    Got it! ${readableDatetimeRange(range[0], range[1])}. Give me a name for the meeting.
+  `,
   NAME_MESSAGE: `
   This meeting's been saved! Share the link in the URL bar with your attendees.
   Each attendee can fill out their availability, and time slots will glow where all attendees are available.

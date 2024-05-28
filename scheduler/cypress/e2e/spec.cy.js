@@ -14,9 +14,12 @@ describe('default spec', () => {
     waitForNumUpdates(1);
     cy.get('#range-submit').click();
     waitForNumIncoming(4);
-    msgInput.type('shamik');
+    msgInput.type('My meeting');
     msgForm.submit();
     waitForNumIncoming(5);
+    msgInput.type('shamik');
+    msgForm.submit();
+    waitForNumIncoming(6);
     msgInput.type('free all day tuesday');
     msgForm.submit();
     waitForNumUpdates(2);
@@ -24,7 +27,7 @@ describe('default spec', () => {
     msgForm.submit();
     waitForNumUpdates(3);
     cy.get('#calendar-submit').click();
-    waitForNumIncoming(8);
+    waitForNumIncoming(9);
     msgInput.type('free all day friday');
     msgForm.submit();
     cy.wait(3000);

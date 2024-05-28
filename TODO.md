@@ -3,6 +3,7 @@
 * Accessibility - Calendar selection is probably not accessible.
 * Add a list of current users
 * Loading UI: Block user message send until websocket is available (with timeout) and until after event state is loaded. Include some visual indicator of loading to signal the user and also the test script.
+* Sanitize inputs (event title, etc.) on the server side for injection
 
 ## Medium-priority
 
@@ -15,6 +16,7 @@
 * Home page link to go to new event
 * Use document patch / partial update in Cosmos DB to reduce reads and read-after-writes?
 * Retries for creating websocket and getting event state, not just sending message
+* Refactor tests
 
 ## Low-priority
 
@@ -40,3 +42,5 @@
 * create a subtype of Error instead of extending it in LogDownload? eslint warning
 * setTimeout handler in MessageService taking too long - blocking on sending to websocket - client-side JS warning. Also "Forced reflow while executing JavaScript"
 * Add assertions in tests for manual input
+* Remove date selection entirely?
+* Ability to re-title untitled event

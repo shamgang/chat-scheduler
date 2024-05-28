@@ -72,6 +72,27 @@
         "toDate"
       ]
     },
+    "meetingTitleMessage": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "MEETING_TITLE"
+        },
+        "title": {
+          "type": "string"
+        },
+        "eventId": {
+          "type": "string"
+        },
+        "author": {
+          "const": "USER"
+        }
+      },
+      "required": [
+        "title",
+        "eventId"
+      ]
+    },
     "nameMessage": {
       "type": "object",
       "properties": {
@@ -256,6 +277,7 @@
       "oneOf": [
         { "$ref": "#/definitions/datesMessage" },
         { "$ref": "#/definitions/rangeMessage" },
+        { "$ref": "#/definitions/meetingTitleMessage" },
         { "$ref": "#/definitions/nameMessage" },
         { "$ref": "#/definitions/timesMessage" },
         { "$ref": "#/definitions/timeGridMessage" },

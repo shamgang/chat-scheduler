@@ -11,6 +11,9 @@
       "type": "string",
       "$comment": "YYYYMMDD format"
     },
+    "title": {
+      "type": "string"
+    },
     "generalAvailConfirmed": {
       "type": "object",
       "$comment": "keys are user names",
@@ -28,5 +31,13 @@
         "type": "string"
       }
     }
-  }
+  },
+  "required": [
+    "fromDate",
+    "toDate",
+    "title",
+    "generalAvailConfirmed",
+    "timeGrid",
+    "names"
+  ]
 }

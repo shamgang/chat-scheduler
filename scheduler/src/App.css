@@ -1,35 +1,59 @@
 .grid-container {
-    height: 100vh;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
     background-size: cover;
     background-position: center;
     display: grid;
-    grid-template: 'chatSection calendarSection';
-    grid-template-columns: 50% 50%;
-    grid-template-rows: 100%;
+    grid-template-areas: 
+        ". .           .      .               ."
+        ". header      header header          ."
+        ". .           .      .               ."
+        ". chatSection .      calendarSection ."
+        ". .           .      .               .";
+    grid-template-columns: 5vw minmax(min-content, max-content) 5vw minmax(min-content, max-content) 5vw;
+    grid-template-rows: minmax(4vh, 40px) 2rem minmax(5vh, 50px) minmax(min-content, max-content) minmax(6vh, 60px);
+}
+.header {
+    grid-area: header;
+    display: grid;
+    align-items: center;
+}
+.header .event-title {
+    font-size: 2rem;
+    color: white;
+    margin: 0;
 }
 .chat-section {
     grid-area: chatSection;
+    min-height: 100%;
+    min-width: 100%;
     display: grid;
-    height: 100%;
-    width: 100%;
     grid-template-rows: 100%;
     grid-template-columns: 100%;
 }
 .calendar-section {
     grid-area: calendarSection;
+    min-height: 100%;
+    min-width: 100%;
     display: grid;
-    height: 100%;
-    width: 100%;
     grid-template-rows: 100%;
     grid-template-columns: 100%;
 }
 @media (max-aspect-ratio: 1/1) {
     .grid-container {
-        grid-template:
-            'chatSection'
-            'calendarSection';
-        grid-template-columns: 100%;
-        grid-template-rows: 50% 50%;
-        height: 100vh;
+        grid-template-areas:
+            ". .               ."
+            ". header          ."
+            ". .               ."
+            ". chatSection     ."
+            ". .               ."
+            ". calendarSection ."
+            ". .               .";
+        grid-template-columns: 20px minmax(min-content, max-content) 20px;
+        grid-template-rows: 10px 1rem 12px minmax(min-content, max-content) 20px minmax(min-content, max-content) 20px;
+    }
+    .header .event-title {
+        font-size: 1em;
     }
 }

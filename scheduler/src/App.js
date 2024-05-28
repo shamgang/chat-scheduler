@@ -45,6 +45,7 @@ function App() {
   const [currentWeek, setCurrentWeek] = useState(lastMonday(new Date()));
   const { eventId } = useParams();
   const [eventState, setEventState] = useState(null); // TODO: this contains some redundant data
+  const [title, setTitle] = useState('NEW MEETING');
   const [name, setName] = useState(null);
   const [names, setNames] = useState(null);
   const [displayMessages, setDisplayMessages] = useState([]);
@@ -150,6 +151,7 @@ function App() {
           const loadedEvent = await getEventState(eventId);
           setRange([loadedEvent.fromDate, loadedEvent.toDate]);
           setCurrentWeek(lastMonday(loadedEvent.fromDate));
+          setTitle(loadedEvent.title);
           setTimeGrid(loadedEvent.timeGrid);
           setNames(loadedEvent.names);
           setEventState(loadedEvent);
@@ -190,6 +192,16 @@ function App() {
         type: MessageTypes.DATES,
         prompt: input
       });
+    } else if (flowState === StateMachine.MEETING_TITLE) {
+      const newTitle = input.trim();
+      sendMessage({
+        type: MessageTypes.MEETING_TITLE,
+        eventId: eventId,
+        title: newTitle
+      });
+      setTitle(newTitle);
+      setFlowState(StateMachine.NAME);
+      pushSchedulerDisplayMessage(M.NAME_MESSAGE);
     } else if (flowState === StateMachine.NAME) {
       const newName = input.trim().toLowerCase();
       sendMessage({
@@ -238,6 +250,7 @@ function App() {
     shortRange,
     sendMessage,
     setFlowState,
+    setTitle,
     setName,
     setNames,
     pushUserDisplayMessage,
@@ -262,9 +275,9 @@ function App() {
       toDate: range[1],
       eventId: eventId
     });
-    setFlowState(StateMachine.NAME);
+    setFlowState(StateMachine.MEETING_TITLE);
     navigate(`/${eventId}`);
-    pushSchedulerDisplayMessage(M.NAME_MESSAGE);
+    pushSchedulerDisplayMessage(M.getMeetingTitleMessage(range));
   }, [sendMessage, setFlowState, range, navigate, pushSchedulerDisplayMessage]);
 
   // Button click from weekly calendar - confirming general avail or finding times
@@ -381,6 +394,9 @@ function App() {
 
   return (
     <div className='grid-container' style={backgroundStyle}>
+      <div className='header'>
+        <h1 className='event-title'>{title.toLocaleUpperCase()}</h1>
+      </div>
       <div className='chat-section'>
         <Chat
           onSendMessage={onSend}

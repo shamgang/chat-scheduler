@@ -23,6 +23,7 @@ const Authors = {
 const MessageTypes = {
   RANGE: "RANGE",
   DATES: "DATES",
+  MEETING_TITLE: "MEETING_TITLE",
   NAME: "NAME",
   TIMES: "TIMES",
   TIME_GRID: "TIME_GRID",

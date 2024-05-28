@@ -16,6 +16,7 @@ from .time_grid import format_time_grid
 class ClientMessageType(str, Enum):
     DATES = 'DATES'
     RANGE = 'RANGE'
+    MEETING_TITLE = 'MEETING_TITLE'
     NAME = 'NAME'
     TIMES = 'TIMES'
     TIME_GRID = 'TIME_GRID'
@@ -60,6 +61,7 @@ def parse_message(msg_str):
         to_time=to_time,
         error_message=None,
         event_id=msg.get('eventId'),
+        title=msg.get('title'),
         name=msg.get('name')
     )
 
@@ -104,6 +106,7 @@ class ClientMessage:
         error_message=None,
         error_type=None,
         event_id=None,
+        title=None,
         name=None
     ):
         self.type = type
@@ -119,5 +122,6 @@ class ClientMessage:
         self.error_message = error_message
         self.error_type = error_type
         self.event_id = event_id
+        self.title = title
         self.name = name
     

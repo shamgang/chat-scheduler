@@ -12,11 +12,14 @@ describe('skip general and manual input', () => {
     waitForNumUpdates(1);
     cy.get('#range-submit').click();
     waitForNumIncoming(4);
-    msgInput.type('shamik');
+    msgInput.type('My meeting');
     msgForm.submit();
     waitForNumIncoming(5);
-    cy.get('#calendar-submit').click();
+    msgInput.type('shamik');
+    msgForm.submit();
     waitForNumIncoming(6);
+    cy.get('#calendar-submit').click();
+    waitForNumIncoming(7);
     cy.get('.rbc-day-slot:nth-child(6) > .rbc-timeslot-group:nth-child(6)').trigger('mousedown', {force: true});
     cy.wait(1000);
     cy.get('.rbc-day-slot:nth-child(6) > .rbc-timeslot-group:nth-child(6)').trigger('mousemove', {force: true});

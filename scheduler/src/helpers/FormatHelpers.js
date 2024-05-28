@@ -43,3 +43,18 @@ export function firstCap(string) {
   result += string.slice(1);
   return result;
 }
+
+export function readableDatetimeRange(from, to) {
+  const fromMonth = from.toLocaleString('default', { month: 'short' });
+  const toMonth = to.toLocaleString('default', { month: 'short' });
+
+  if (from.getFullYear() === to.getFullYear()) {
+    if (fromMonth === toMonth) {
+      return `${fromMonth} ${from.getDate()}-${to.getDate()} ${from.getFullYear()}`;
+    } else {
+      return `${fromMonth} ${from.getDate()} - ${toMonth} ${to.getDate()} ${from.getFullYear()}`;
+    }
+  } else {
+    return `${fromMonth} ${from.getDate()} ${from.getFullYear()} - ${toMonth} ${to.getDate()} ${to.getFullYear()}`;
+  }
+}

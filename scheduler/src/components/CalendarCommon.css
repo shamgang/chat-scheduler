@@ -1,7 +1,8 @@
 .calendar-container {
-    place-self: center;
-    height: 80%;
-    width: 80%;
+    min-height: 25rem;
+    height: calc(80vh - 4rem);
+    min-width: 20rem;
+    width: 42.5vw;
     display: grid;
     grid-template-rows: 90% 10%;
     grid-template-columns: 100%;
@@ -49,8 +50,10 @@
 
 @media (max-aspect-ratio: 1/1) {
     .calendar-container {
-        height: 90%;
-        width: 90%;
+        min-height: 20rem;
+        height: 45vh;
+        min-width: 15rem;
+        width: 88vw;
     }
     .calendar-submit {
         font-size: 1em;
