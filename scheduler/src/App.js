@@ -10,6 +10,7 @@ import {
   useMessageService,
   MessageTypes,
   ErrorTypes,
+  UpdateTypes,
   GENERAL_AVAIL_KEY
 } from './services/MessageService';
 import {
@@ -90,22 +91,27 @@ function App() {
         pushSchedulerDisplayMessage(M.DATE_ENTERED_MESSAGE_SHORT);
       }
     } else if (msg.type === MessageTypes.TIME_GRID) {
-      console.log('Chatbot setting time grid:', msg.timeGrid);
-      setTimeGrid(msg.timeGrid);
-      if (flowState === StateMachine.GENERAL_AVAIL) {
-        if (!explainedGeneralAvail.current) {
-          pushSchedulerDisplayMessage(M.GENERAL_TIME_RANGES_MESSAGE);
-          explainedGeneralAvail.current = true;
-        } else {
-          pushSchedulerDisplayMessage(M.GENERAL_TIME_RANGES_MESSAGE_SHORT);
+      if (msg.updateType === UpdateTypes.PROMPT) {
+        console.log('Chatbot setting time grid:', msg.timeGrid);  
+        setTimeGrid(msg.timeGrid);
+        if (flowState === StateMachine.GENERAL_AVAIL) {
+          if (!explainedGeneralAvail.current) {
+            pushSchedulerDisplayMessage(M.GENERAL_TIME_RANGES_MESSAGE);
+            explainedGeneralAvail.current = true;
+          } else if (msg) {
+            pushSchedulerDisplayMessage(M.GENERAL_TIME_RANGES_MESSAGE_SHORT);
+          }
+        } else if (flowState === StateMachine.SPECIFIC_AVAIL) {
+          if (!explainedSpecificAvail.current) {
+            pushSchedulerDisplayMessage(M.SPECIFIC_TIME_RANGES_MESSAGE);
+            explainedSpecificAvail.current = true;
+          } else {
+            pushSchedulerDisplayMessage(M.SPECIFIC_TIME_RANGES_MESSAGE_SHORT);
+          }
         }
-      } else if (flowState === StateMachine.SPECIFIC_AVAIL) {
-        if (!explainedSpecificAvail.current) {
-          pushSchedulerDisplayMessage(M.SPECIFIC_TIME_RANGES_MESSAGE);
-          explainedSpecificAvail.current = true;
-        } else {
-          pushSchedulerDisplayMessage(M.SPECIFIC_TIME_RANGES_MESSAGE_SHORT);
-        }
+      } else if (msg.updateType === UpdateTypes.MANUAL) {
+        console.log('User setting time grid:', msg.timeGrid);  
+        setTimeGrid(msg.timeGrid);
       }
     } else if (msg.type === MessageTypes.ERROR) {
       console.error('Error message from server:', msg);

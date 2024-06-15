@@ -11,7 +11,7 @@ from .system_prompts import (
 )
 from .model_tools import all_tools, from_iso_no_hyphens
 from .config import config
-from .errors import ErrorType, TranslationFailedError
+from .errors import ErrorType, TranslationFailedError, InvalidPromptError
 
 
 class StatementType(str, Enum):
@@ -51,11 +51,11 @@ class DateTranslator:
         if filter_result == FilterResult.INVALID:
             err = f"Invalid date range: '{input}'"
             logger.info(err)
-            raise TranslationFailedError(err, ErrorType.INVALID_DATE_RANGE)
+            raise InvalidPromptError(err, ErrorType.INVALID_DATE_RANGE)
         elif filter_result == FilterResult.MULTIPLE:
             err = f"Input '{input}' contained multiple date ranges."
             logger.warn(err)
-            raise TranslationFailedError(err, ErrorType.MULTIPLE_DATE_RANGES)
+            raise InvalidPromptError(err, ErrorType.MULTIPLE_DATE_RANGES)
         elif filter_result == FilterResult.VALID:
             pass
         else:

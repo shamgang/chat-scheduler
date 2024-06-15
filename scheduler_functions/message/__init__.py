@@ -4,7 +4,7 @@ from langchain_openai import ChatOpenAI
 from ..lib.logger import logger
 from ..lib.date_translation import DateTranslator
 from ..lib.hour_translation import HourTranslator
-from ..lib.errors import TranslationFailedError
+from ..lib.errors import TranslationFailedError, InvalidPromptError
 from ..lib.event_state import create_event, get_event, update_event
 from ..lib.logger import logger
 from ..lib.client_message import (
@@ -12,12 +12,18 @@ from ..lib.client_message import (
     parse_message,
     format_message,
     ClientMessageType,
-    Author
+    Author,
+    UpdateType
 )
 
+# Cheaper, workhorse model
 model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+# More expensive model for escalating difficult tasks
+backup_model = ChatOpenAI(model="gpt-4o", temperature=0)
 date_translator = DateTranslator(model)
+backup_date_translator = DateTranslator(backup_model)
 hour_translator = HourTranslator(model)
+backup_hour_translator = HourTranslator(backup_model)
 
 from azure.functions import Out # type: ignore
 
@@ -27,7 +33,13 @@ def message_handler(msg):
     response = None
     if msg.type == ClientMessageType.DATES:
         # User is defining a date range
-        start_date, end_date = date_translator.translate_to_date_range(msg.prompt)
+        try:
+            start_date, end_date = date_translator.translate_to_date_range(msg.prompt)
+        except TranslationFailedError as tfe:
+            trace = traceback.format_exc()
+            logger.error(f'Translation error: {trace}')
+            logger.info('Retrying translation with better model.')
+            start_date, end_date = backup_date_translator.translate_to_date_range(msg.prompt)
         response = ClientMessage(
             type=ClientMessageType.RANGE,
             author=Author.SCHEDULER,
@@ -47,7 +59,13 @@ def message_handler(msg):
         update_event(msg.event_id, event)
     elif msg.type == ClientMessageType.TIMES:
         # User is defining time slots
-        calendar_actions = hour_translator.translate_to_calendar_actions(msg.prompt)
+        try:
+            calendar_actions = hour_translator.translate_to_calendar_actions(msg.prompt)
+        except TranslationFailedError as tfe:
+            trace = traceback.format_exc()
+            logger.error(f'Translation error: {trace}')
+            logger.info('Retrying translation with better model.')
+            calendar_actions = backup_hour_translator.translate_to_calendar_actions(msg.prompt)
         event = get_event(msg.event_id)
         time_grid = event.time_grid
         time_grid.process_calendar_actions(msg.name, msg.week, calendar_actions)
@@ -55,7 +73,8 @@ def message_handler(msg):
         response = ClientMessage(
             type=ClientMessageType.TIME_GRID,
             author=Author.SCHEDULER,
-            time_grid=time_grid
+            time_grid=time_grid,
+            update_type=UpdateType.PROMPT
         )
     elif msg.type == ClientMessageType.CONFIRM:
         # User has confirmed general avail
@@ -75,7 +94,8 @@ def message_handler(msg):
         response = ClientMessage(
             type=ClientMessageType.TIME_GRID,
             author=Author.SCHEDULER,
-            time_grid=time_grid
+            time_grid=time_grid,
+            update_type=UpdateType.MANUAL
         )
     elif msg.type == ClientMessageType.TOGGLE_GENERAL_SLOTS:
         event = get_event(msg.event_id)
@@ -90,7 +110,8 @@ def message_handler(msg):
         response = ClientMessage(
             type=ClientMessageType.TIME_GRID,
             author=Author.SCHEDULER,
-            time_grid=time_grid
+            time_grid=time_grid,
+            update_type=UpdateType.MANUAL
         )
     return response
 
@@ -106,7 +127,7 @@ def main(request, actions: Out[str]) -> None:
         logger.debug(f'Incoming message: {msg_str}')
         msg = parse_message(msg_str)
         response = message_handler(msg)
-    except TranslationFailedError as tfe:
+    except (TranslationFailedError, InvalidPromptError) as tfe:
         # Known error
         logger.error(f'Translation failed: {str(tfe)}')
         response = ClientMessage(

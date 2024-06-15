@@ -4,19 +4,33 @@
 * Add a list of current users
 * Loading UI: Block user message send until websocket is available (with timeout) and until after event state is loaded. Include some visual indicator of loading to signal the user and also the test script.
 * Sanitize inputs (event title, etc.) on the server side for injection
+* Too many "Updated" messages when toggling stuff - maybe don't message when it's manual
+* 'Free 2-3am every day' fails because it tries to call _day_of_week_from_str with the string "Every day".
+* Error message unclear - does it send logs or download logs?
+* Check button to show next avail time is weird UI - it implies that we're done with availability
+* It's confusing not to have a "done" step for availability - either add a UI step or make it clear that is saves automatically
+* "You can click to change the week and you can also toggle slots by hand" - confusing. Also how do i toggle? Need to explain two-click or click and drag.
+* Stripes are not visible easily on dark colors
+* Feels like a messaging app - should have features like updating as soon as data changes on the backend, telling available times as soon as data changes
+* Date selection is unclear - expect to be able to click single dates / times, not click two slots
+* Maybe shareable URL is not available until first user has inputted at least a name and title
+* Scheduler messages are too long - paragraph 
+* Page left open after creating event and entering up to name entry - wait 38 minutes - websocket closed - then the reopen fails on "Get websocket URL failed: TypeError: Failed to fetch..." - retries may fix it?
 
 ## Medium-priority
 
-* Name events so people can tell if they're coming to the correct place - use this in page title?
+* Home page link to go to new event
+* Retries for creating websocket and getting event state, not just sending message
+* API integration for events
+* Page will crash after sitting open for a long time because websocket connection will timeout and re-open over and over again until the retry limit is reached
 * Redesign
-* Make the mobile view longer? scroll
 * Pick a domain and brand name
 * Add brand logo - fixed position, small text, subtle
 * periodically flush old events and communicate this to user
-* Home page link to go to new event
 * Use document patch / partial update in Cosmos DB to reduce reads and read-after-writes?
-* Retries for creating websocket and getting event state, not just sending message
 * Refactor tests
+* Add assertions in tests for manual input
+* setTimeout handler in MessageService taking too long - blocking on sending to websocket - client-side JS warning. Also "Forced reflow while executing JavaScript"
 
 ## Low-priority
 
@@ -30,7 +44,6 @@
 * Stress test general availability mode, etc.
 * Stress test date and time manual selection - mixing drag and click in weird ways, going across day boundaries, etc. - including mouseup on a disabled day
 * Official method for scheduling the meeting
-* API integration for events
 * Have link easily copiable without going to URL bar - share button?
 * React profiling
 * Change tooltip anchor to button for accessibility
@@ -40,7 +53,5 @@
 * Set up deployments on development branches
 * create a shared connection ID / session ID to help connect frontend logs to backend logs.
 * create a subtype of Error instead of extending it in LogDownload? eslint warning
-* setTimeout handler in MessageService taking too long - blocking on sending to websocket - client-side JS warning. Also "Forced reflow while executing JavaScript"
-* Add assertions in tests for manual input
 * Remove date selection entirely?
 * Ability to re-title untitled event

@@ -31,7 +31,7 @@ export const SchedulerMessages = {
   Tap ☑️ to move on to scheduling specific weeks.
   `,
   GENERAL_TIME_RANGES_MESSAGE: `
-  Updated! If you're done with general availability, tap ☑️.
+  Updated! When you're done with general availability, tap ☑️.
   `,
   GENERAL_TIME_RANGES_MESSAGE_SHORT: 'Updated! Tap ☑️ confirm.',
   SPECIFIC_AVAIL_MESSAGE: `

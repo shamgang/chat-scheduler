@@ -31,6 +31,11 @@ class Author(str, Enum):
     SCHEDULER = 'SCHEDULER'
 
 
+class UpdateType(str, Enum):
+    PROMPT = 'PROMPT'
+    MANUAL = 'MANUAL'
+
+
 def parse_message(msg_str):
     '''Convert client messages from json message to internal format'''
     msg = json.loads(msg_str)
@@ -77,6 +82,7 @@ def format_message(msg):
         msg_json['toDate'] = to_iso_no_hyphens(msg.to_date)
     if msg.type == ClientMessageType.TIME_GRID:
         msg_json['timeGrid'] = format_time_grid(msg.time_grid)
+        msg_json['updateType'] = msg.update_type
     if msg.error_message:
         msg_json['errorMessage'] = msg.error_message
     if msg.error_type:
@@ -100,6 +106,7 @@ class ClientMessage:
         to_date=None,
         week=None,
         time_grid=None,
+        update_type=None,
         day=None,
         from_time=None,
         to_time=None,
@@ -116,6 +123,7 @@ class ClientMessage:
         self.to_date = to_date
         self.week = week
         self.time_grid = time_grid
+        self.update_type = update_type
         self.day = day
         self.from_time = from_time
         self.to_time = to_time

@@ -151,11 +151,13 @@
         "author": {
           "const": "SCHEDULER"
         },
-        "timeGrid": { "$ref": "common_schema.json#/definitions/timeGrid" }
+        "timeGrid": { "$ref": "common_schema.json#/definitions/timeGrid" },
+        "updateType": { "$ref": "common_schema.json#/definitions/updateType" }
       },
       "required": [
         "type",
-        "timeGrid"
+        "timeGrid",
+        "updateType"
       ]
     },
     "confirmMessage": {

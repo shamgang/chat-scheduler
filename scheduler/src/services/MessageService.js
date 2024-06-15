@@ -47,6 +47,11 @@ const WebSocketState = {
   3: 'CLOSED'
 };
 
+const UpdateTypes = {
+  PROMPT: 'PROMPT',
+  MANUAL: 'MANUAL'
+}
+
 const GENERAL_AVAIL_KEY = "GENERAL"
 
 /* Change a scheduler message from json format to internal format */
@@ -304,6 +309,7 @@ export {
   useMessageService,
   MessageTypes,
   ErrorTypes,
+  UpdateTypes,
   Authors,
   GENERAL_AVAIL_KEY
 };
