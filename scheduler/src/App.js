@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 import './App.css';
 import Chat from './components/Chat';
@@ -21,6 +21,9 @@ import { getEventState } from "./services/StateService";
 import { getRandomBackgroundImageUrl } from "./helpers/BackgroundImage";
 import { lastMonday, getDayOfWeek, getDateRangeLengthDays } from "./helpers/Dates";
 import { findBestTime } from "./helpers/CalendarHelpers";
+import { firstCap } from "./helpers/FormatHelpers";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
 export async function loader({ params }) {
   // TODO: want to use loader to load data before rendering,
@@ -295,25 +298,22 @@ function App() {
     pushSchedulerDisplayMessage(M.SPECIFIC_AVAIL_MESSAGE);
   }, [eventId, name, setFlowState, sendMessage, pushSchedulerDisplayMessage]);
 
-  const onFindTimes = useCallback(() => {
+  const availabilitySummary = useMemo(() => {
     const { from, to, numAttendees } = findBestTime(timeGrid, names);
     if (numAttendees === 0) {
-      pushSchedulerDisplayMessage('No meeting times are currently available.');
-    } else {
-      const dateFormatter = new Intl.DateTimeFormat('en-us', {
-        weekday: 'short', month: 'short', day: 'numeric'
-      });
-      const timeFormatter = new Intl.DateTimeFormat('en-us', {
-        hour: 'numeric', minute: 'numeric', hour12: true
-      });
-      const datePart = dateFormatter.format(from);
-      const fromTime = timeFormatter.format(from);
-      const toTime = timeFormatter.format(to); 
-      pushSchedulerDisplayMessage(
-        `The nearest slot with ${numAttendees}/${names.length} attendees is ${datePart} ${fromTime} - ${toTime}`
-      );
+      return;
     }
-  }, [timeGrid, names, pushSchedulerDisplayMessage]);
+    const dateFormatter = new Intl.DateTimeFormat('en-us', {
+      weekday: 'short', month: 'short', day: 'numeric'
+    });
+    const timeFormatter = new Intl.DateTimeFormat('en-us', {
+      hour: 'numeric', minute: 'numeric', hour12: true
+    });
+    const datePart = dateFormatter.format(from);
+    const fromTime = timeFormatter.format(from);
+    const toTime = timeFormatter.format(to); 
+    return `The nearest slot with ${numAttendees}/${names.length} attendees is ${datePart} ${fromTime} - ${toTime}`;
+  }, [timeGrid, names]);
 
   // Hourly calendar selectable
   const scheduleSelectable = [StateMachine.GENERAL_AVAIL, StateMachine.SPECIFIC_AVAIL].includes(flowState);
@@ -389,8 +389,6 @@ function App() {
           onSelectSlot={onSelectSlot}
           names={names}
           editingName={name}
-          showButtons={flowState === StateMachine.SPECIFIC_AVAIL}
-          onSubmit={onFindTimes}
         />
       );
     }
@@ -399,6 +397,17 @@ function App() {
   return (
     <div className='grid-container' style={backgroundStyle}>
       <div className='header'>
+        {
+          eventId && <FontAwesomeIcon
+            icon={faArrowLeft}
+            className='back-button'
+            onClick={
+              () => {
+                window.location.replace('/');
+              }
+            }
+          />
+        }
         <h1 className='event-title'>{title.toLocaleUpperCase()}</h1>
       </div>
       <div className='chat-section'>
@@ -410,6 +419,19 @@ function App() {
       </div>
       <div className='calendar-section'>
           { renderWidget() }
+      </div>
+      <div className='data-summary-section'>
+        {
+          (names || availabilitySummary) && <div className='data-summary'>
+            {
+              names && <span>
+                Attendees: { names.map(firstCap).join(', ') }
+              </span>
+            }
+            { (names && availabilitySummary) && <span><br/><br/></span> }
+            { availabilitySummary }
+          </div>
+        }
       </div>
     </div>
   );

@@ -6,39 +6,62 @@
     background-position: center;
     display: grid;
     grid-template-areas: 
-        ". .           .      .               ."
-        ". header      header header          ."
-        ". .           .      .               ."
-        ". chatSection .      calendarSection ."
-        ". .           .      .               .";
+        ". .           .           .               ."
+        ". header      header      header          ."
+        ". .           .           .               ."
+        ". chatSection .           calendarSection ."
+        ". .           .           .               ."
+        ". dataSummary dataSummary dataSummary     ."
+        ". .           .           .               .";
     grid-template-columns: 5vw minmax(min-content, max-content) 5vw minmax(min-content, max-content) 5vw;
-    grid-template-rows: minmax(4vh, 40px) 2rem minmax(5vh, 50px) minmax(min-content, max-content) minmax(6vh, 60px);
+    grid-template-rows: minmax(3vh, 30px) 1.5rem minmax(4vh, 40px) minmax(min-content, max-content) minmax(3vh, 30px) minmax(min-content, max-content) minmax(3vh, 30px);
 }
 .header {
     grid-area: header;
     display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: max-content;
     align-items: center;
+    grid-auto-flow: column;
+}
+.header .back-button {
+    font-size: 1.5rem;
+    color: white;
+    margin-right: 0.5em;
 }
 .header .event-title {
-    font-size: 2rem;
+    display: inline;
+    font-size: 1.5rem;
     color: white;
     margin: 0;
+    padding-bottom: 0.1em;
 }
 .chat-section {
     grid-area: chatSection;
-    min-height: 100%;
-    min-width: 100%;
     display: grid;
     grid-template-rows: 100%;
     grid-template-columns: 100%;
 }
 .calendar-section {
     grid-area: calendarSection;
-    min-height: 100%;
-    min-width: 100%;
     display: grid;
     grid-template-rows: 100%;
     grid-template-columns: 100%;
+}
+.data-summary-section {
+    grid-area: dataSummary;
+    display: grid;
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+}
+.data-summary {
+    place-self: center;
+    background-color: rgba(100, 100, 100, 0.3);
+    color: white;
+    padding: 0.5em;
+    text-align: center;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 1.1em;
 }
 @media (max-aspect-ratio: 1/1) {
     .grid-container {
@@ -49,11 +72,19 @@
             ". chatSection     ."
             ". .               ."
             ". calendarSection ."
+            ". .               ."
+            ". dataSummary     ."
             ". .               .";
         grid-template-columns: 20px minmax(min-content, max-content) 20px;
-        grid-template-rows: 10px 1rem 12px minmax(min-content, max-content) 20px minmax(min-content, max-content) 20px;
+        grid-template-rows: 10px 1rem 12px minmax(min-content, max-content) 15px minmax(min-content, max-content) 10px minmax(min-content, max-content) 10px;
+    }
+    .header .back-button {
+        font-size: 1em;
     }
     .header .event-title {
+        font-size: 1em;
+    }
+    .data-summary {
         font-size: 1em;
     }
 }

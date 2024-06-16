@@ -1,18 +1,14 @@
 ## High-priority
 
 * Accessibility - Calendar selection is probably not accessible.
-* Add a list of current users
 * Loading UI: Block user message send until websocket is available (with timeout) and until after event state is loaded. Include some visual indicator of loading to signal the user and also the test script.
 * Sanitize inputs (event title, etc.) on the server side for injection
-* Error message unclear - does it send logs or download logs?
-* Check button to show next avail time is weird UI - it implies that we're done with availability
 * Stripes are not visible easily on dark colors
 * Feels like a messaging app - should have features like updating as soon as data changes on the backend, telling available times as soon as data changes
 * Page left open after creating event and entering up to name entry - wait 38 minutes - websocket closed - then the reopen fails on "Get websocket URL failed: TypeError: Failed to fetch..." - retries may fix it?
 
 ## Medium-priority
 
-* Home page link to go to new event
 * Add a way for the user to complain if the model got it wrong, and fallback to the better model in that case.
 * Retries for creating websocket and getting event state, not just sending message
 * API integration for events

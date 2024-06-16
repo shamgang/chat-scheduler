@@ -25,7 +25,7 @@ function ErrorPage() {
         <p>
           {
             <span>
-              Click this link to download logs to send to the developer:<br/>
+              Please click this link to download logs:<br/>
               <a
                 href={getLogURL()}
                 download="console_logs.txt"
