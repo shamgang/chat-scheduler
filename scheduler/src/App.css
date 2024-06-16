@@ -63,6 +63,17 @@
     font-family: Helvetica, Arial, sans-serif;
     font-size: 1.1em;
 }
+.loading {
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    top: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: 100%;
+    grid-template-rows: 100%;
+    place-items: center;
+}
 @media (max-aspect-ratio: 1/1) {
     .grid-container {
         grid-template-areas:

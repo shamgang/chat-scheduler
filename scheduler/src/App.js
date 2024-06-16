@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
+import { Blocks } from 'react-loader-spinner';
 import './App.css';
 import Chat from './components/Chat';
 import MonthlyCalendar from './components/MonthlyCalendar';
@@ -394,47 +395,66 @@ function App() {
     }
   };
 
-  return (
-    <div className='grid-container' style={backgroundStyle}>
-      <div className='header'>
-        {
-          eventId && <FontAwesomeIcon
-            icon={faArrowLeft}
-            className='back-button'
-            onClick={
-              () => {
-                window.location.replace('/');
-              }
-            }
+  if (flowState === StateMachine.LOADING) {
+    return (
+      <div className='grid-container' style={backgroundStyle}>
+        <div className='loading'>
+          <Blocks
+            height="80"
+            width="80"
+            color="#4fa94d"
+            ariaLabel="blocks-loading"
+            wrapperStyle={{}}
+            wrapperClass="blocks-wrapper"
+            visible={true}
           />
-        }
-        <h1 className='event-title'>{title.toLocaleUpperCase()}</h1>
+        </div>
+      </div>  
+    );
+  } else {
+    return (
+      <div className='grid-container' style={backgroundStyle}>
+        <div className='header'>
+          {
+            eventId && <FontAwesomeIcon
+              icon={faArrowLeft}
+              className='back-button'
+              onClick={
+                () => {
+                  window.location.replace('/');
+                }
+              }
+            />
+          }
+          <h1 className='event-title'>{title.toLocaleUpperCase()}</h1>
+        </div>
+        <div className='chat-section'>
+          <Chat
+            onSendMessage={onSend}
+            messages={displayMessages}
+            allowKey={allowKey}
+          />
+        </div>
+        <div className='calendar-section'>
+            { renderWidget() }
+        </div>
+        <div className='data-summary-section'>
+          {
+            (names || availabilitySummary) && <div className='data-summary'>
+              {
+                names && <span>
+                  Attendees: { names.map(firstCap).join(', ') }
+                </span>
+              }
+              { (names && availabilitySummary) && <span><br/><br/></span> }
+              { availabilitySummary }
+            </div>
+          }
+        </div>
       </div>
-      <div className='chat-section'>
-        <Chat
-          onSendMessage={onSend}
-          messages={displayMessages}
-          allowKey={allowKey}
-        />
-      </div>
-      <div className='calendar-section'>
-          { renderWidget() }
-      </div>
-      <div className='data-summary-section'>
-        {
-          (names || availabilitySummary) && <div className='data-summary'>
-            {
-              names && <span>
-                Attendees: { names.map(firstCap).join(', ') }
-              </span>
-            }
-            { (names && availabilitySummary) && <span><br/><br/></span> }
-            { availabilitySummary }
-          </div>
-        }
-      </div>
-    </div>
-  );
+    );
+  }
+  
 }
 
 export default App;
