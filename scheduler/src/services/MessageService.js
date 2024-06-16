@@ -139,6 +139,7 @@ function useMessageService(onSchedulerMessage) {
   const [ messageServiceError, setMessageServiceError ] = useState(null);
   const timeouts = useRef([]);
   const numReopens = useRef(0);
+  const lastOpen = useRef(null);
   const createWebSocket = useRef(null); // Resolve circular dependency between onClose and createWebSocket
   const initialized = useRef(false);
 
@@ -147,6 +148,11 @@ function useMessageService(onSchedulerMessage) {
     if (event.target.closedByClient) {
       console.debug('Websocket closed by client.');
     } else {
+      if ((new Date()).getTime() - lastOpen.current.getTime() > 5 * 1000 * 60) {
+        // More than 5 minutes have passed since last attempted, reset retries to allow for regular timeouts.
+        console.debug('Resetting retries.');
+        numReopens.current = 0;
+      }
       if (numReopens.current < 3) {
         console.warn('Websocket closed unexpectedly. Attempting to re-open.');
         webSocketRef.current = null;
@@ -183,6 +189,7 @@ function useMessageService(onSchedulerMessage) {
           ws.onerror = onError;
           ws.onmessage = onMessage;
           webSocketRef.current = ws;
+          lastOpen.current = new Date();
           resolve(true);
         } catch (err) {
           console.error('Failed to create websocket: ', err);

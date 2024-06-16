@@ -1,26 +1,21 @@
 ## High-priority
 
 * Accessibility - Calendar selection is probably not accessible.
-* Loading UI: Block user message send until websocket is available (with timeout) and until after event state is loaded. Include some visual indicator of loading to signal the user and also the test script.
-* Sanitize inputs (event title, etc.) on the server side for injection
 * Stripes are not visible easily on dark colors
 * Feels like a messaging app - should have features like updating as soon as data changes on the backend, telling available times as soon as data changes
-* Page left open after creating event and entering up to name entry - wait 38 minutes - websocket closed - then the reopen fails on "Get websocket URL failed: TypeError: Failed to fetch..." - retries may fix it?
 
 ## Medium-priority
 
 * Add a way for the user to complain if the model got it wrong, and fallback to the better model in that case.
 * Retries for creating websocket and getting event state, not just sending message
 * API integration for events
-* Page will crash after sitting open for a long time because websocket connection will timeout and re-open over and over again until the retry limit is reached
-* Redesign
+* Test that page does not crash when left open indefinitely
+* Loading UI: Block user message send until websocket is available (with timeout) and until after event state is loaded. Include some visual indicator of loading to signal the user and also the test script.
 * Pick a domain and brand name
 * Add brand logo - fixed position, small text, subtle
 * periodically flush old events and communicate this to user
-* Use document patch / partial update in Cosmos DB to reduce reads and read-after-writes?
-* Refactor tests
 * Add assertions in tests for manual input
-* setTimeout handler in MessageService taking too long - blocking on sending to websocket - client-side JS warning. Also "Forced reflow while executing JavaScript"
+* Sanitize inputs (event title, etc.) on the server side for injection
 
 ## Low-priority
 
@@ -46,3 +41,6 @@
 * Remove date selection entirely?
 * Ability to re-title untitled event
 * Filter out invalid time prompts
+* Use document patch / partial update in Cosmos DB to reduce reads and read-after-writes?
+* Refactor tests
+* setTimeout handler in MessageService taking too long - blocking on sending to websocket - client-side JS warning. Also "Forced reflow while executing JavaScript"
