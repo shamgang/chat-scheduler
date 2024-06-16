@@ -170,9 +170,7 @@ function App() {
     } else {
       // Rendering a new event
       setFlowState(StateMachine.SELECT_DATES);
-      for (const msg of M.WELCOME_MESSAGES) {
-        pushSchedulerDisplayMessage(msg);
-      }
+      pushSchedulerDisplayMessage(M.WELCOME_MESSAGE);
     }
     initialized.current = true;
   }, [
@@ -230,7 +228,7 @@ function App() {
       ) {
         // Pre-loaded backend state shows we already did general availability.
         setFlowState(StateMachine.SPECIFIC_AVAIL);
-        pushSchedulerDisplayMessage(M.SPECIFIC_AVAIL_MESSAGE);
+        pushSchedulerDisplayMessage(M.SPECIFIC_AVAIL_MESSAGE_FRESH);
       } else {
         setFlowState(StateMachine.GENERAL_AVAIL);
         pushSchedulerDisplayMessage(M.TIMES_MESSAGE);

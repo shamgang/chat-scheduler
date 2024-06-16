@@ -1,4 +1,4 @@
-import { waitForNumIncoming, waitForNumUpdates, waitForNumSorry, waitForCalendar } from "./utils";
+import { createIncomingMessageCounter, createExpectedErrorCounter, waitForCalendar } from "./utils";
 
 const goodInputs = [
   'All of February',
@@ -26,32 +26,30 @@ const badInputs = [
 ];
 
 async function test() {
+  let incomingMessageCounter = createIncomingMessageCounter();
+  let expectedErrorCounter = createExpectedErrorCounter();
   cy.visit('http://localhost:3000');
   waitForCalendar();
-  waitForNumIncoming(2);
+  incomingMessageCounter.waitForMore(1);
   const msgInput = cy.get('[id="messageInput"]');
   const msgForm = cy.get('[id="messageForm"]');
-  let numUpdates = 0;
   for (const input of goodInputs) {
     msgInput.type(input);
     msgForm.submit();
-    numUpdates++;
-    waitForNumUpdates(numUpdates);
+    incomingMessageCounter.waitForMore(1);
   }
-  let numSorry = 0;
   for (const input of badInputs) {
     msgInput.type(input);
     msgForm.submit();
-    numSorry++;
-    waitForNumSorry(numSorry);
+    incomingMessageCounter.waitForMore(1);
+    expectedErrorCounter.waitForMore(1);
   }
   // Test successive, interruptive input
   msgInput.type(goodInputs[0]);
   msgForm.submit();
   msgInput.type(goodInputs[1]);
   msgForm.submit();
-  numUpdates += 2;
-  waitForNumUpdates(numUpdates);
+  incomingMessageCounter.waitForMore(2);
 }
 
 describe('date stress', () => {

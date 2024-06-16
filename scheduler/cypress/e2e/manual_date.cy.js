@@ -1,17 +1,18 @@
-import { waitForNumIncoming, waitForNumUpdates, waitForCalendar } from "./utils";
+import { createIncomingMessageCounter, waitForCalendar } from "./utils";
 
 describe('manual date', () => {
   it('Should handle manual date input during date stage', () => {
+    let incomingMessageCounter = createIncomingMessageCounter();
     cy.visit('http://localhost:3000');
     waitForCalendar();
-    waitForNumIncoming(2);
+    incomingMessageCounter.waitForMore(1);
     cy.get('.rbc-day-bg:nth-child(2)').first().click(); 
     cy.get('.rbc-day-bg:nth-child(4)').first().click(); 
     const msgInput = cy.get('[id="messageInput"]');
     const msgForm = cy.get('[id="messageForm"]');
     msgInput.type('the next two weeks');
     msgForm.submit();
-    waitForNumUpdates(1);
+    incomingMessageCounter.waitForMore(1);
     cy.get('.rbc-day-bg:nth-child(3)').first().click(); 
     cy.get('.rbc-day-bg:nth-child(5)').first().click(); 
     cy.wait(1000);

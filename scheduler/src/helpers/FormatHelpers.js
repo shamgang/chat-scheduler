@@ -45,8 +45,8 @@ export function firstCap(string) {
 }
 
 export function readableDatetimeRange(from, to) {
-  const fromMonth = from.toLocaleString('default', { month: 'short' });
-  const toMonth = to.toLocaleString('default', { month: 'short' });
+  const fromMonth = from.toLocaleString('default', { month: 'long' });
+  const toMonth = to.toLocaleString('default', { month: 'long' });
 
   if (from.getFullYear() === to.getFullYear()) {
     if (fromMonth === toMonth) {

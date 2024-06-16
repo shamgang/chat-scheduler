@@ -1,25 +1,26 @@
-import { waitForNumIncoming, waitForNumUpdates, waitForCalendar } from "./utils";
+import { createIncomingMessageCounter, waitForCalendar } from "./utils";
 
 describe('regression for breaking prompt', () => {
   it('Should be able to handle prompts that have broken', () => {
+    let incomingMessageCounter = createIncomingMessageCounter();
     cy.visit('http://localhost:3000');
     waitForCalendar();
-    waitForNumIncoming(2);
+    incomingMessageCounter.waitForMore(1);
     const msgInput = cy.get('#messageInput');
     msgInput.type('the next two weeks');
     const msgForm = cy.get('#messageForm');
     msgForm.submit();
-    waitForNumUpdates(1);
+    incomingMessageCounter.waitForMore(1);
     cy.get('#range-submit').click();
-    waitForNumIncoming(4);
+    incomingMessageCounter.waitForMore(1);
     msgInput.type('My meeting');
     msgForm.submit();
-    waitForNumIncoming(5);
+    incomingMessageCounter.waitForMore(1);
     msgInput.type('shamik');
     msgForm.submit();
-    waitForNumIncoming(6);
+    incomingMessageCounter.waitForMore(1);
     msgInput.type("i'm free 9-5 every weekday");
     msgForm.submit();
-    waitForNumUpdates(2);
+    incomingMessageCounter.waitForMore(1);
   });
 });

@@ -1,35 +1,41 @@
-import { waitForNumIncoming, waitForNumUpdates, waitForCalendar } from "./utils";
+import {
+  createIncomingMessageCounter,
+  createExpectedErrorCounter,
+  waitForCalendar
+} from "./utils";
 
 
 describe('default spec', () => {
   it('Should go through basic flow without crashing', () => {
+    let incomingMessageCounter = createIncomingMessageCounter();
     cy.visit('http://localhost:3000');
     //cy.visit('https://scheduler.shamgang.com');
     waitForCalendar();
-    waitForNumIncoming(2);
-    const msgInput = cy.get('#messageInput');
+    incomingMessageCounter.waitForMore(1);
+    let msgInput = cy.get('#messageInput');
     msgInput.type('the next two weeks');
-    const msgForm = cy.get('#messageForm');
+    let msgForm = cy.get('#messageForm');
     msgForm.submit();
-    waitForNumUpdates(1);
+    incomingMessageCounter.waitForMore(1);
     cy.get('#range-submit').click();
-    waitForNumIncoming(4);
+    incomingMessageCounter.waitForMore(1);
     msgInput.type('My meeting');
     msgForm.submit();
-    waitForNumIncoming(5);
+    incomingMessageCounter.waitForMore(1);
     msgInput.type('shamik');
     msgForm.submit();
-    waitForNumIncoming(6);
+    incomingMessageCounter.waitForMore(1);
     msgInput.type('free all day tuesday');
     msgForm.submit();
-    waitForNumUpdates(2);
+    incomingMessageCounter.waitForMore(1);
     msgInput.type('also free all day weds and thurs from 9:30am to 10:30 am');
     msgForm.submit();
-    waitForNumUpdates(3);
+    incomingMessageCounter.waitForMore(1);
     cy.get('#calendar-submit').click();
-    waitForNumIncoming(9);
+    incomingMessageCounter.waitForMore(1);
     msgInput.type('free all day friday');
     msgForm.submit();
+    incomingMessageCounter.waitForMore(1);
     cy.wait(3000);
     /* ==== End Cypress Studio ==== */
     cy.get('.rbc-day-slot:nth-child(6) > .rbc-timeslot-group:nth-child(6)').trigger('mousedown', {force: true});
@@ -42,26 +48,28 @@ describe('default spec', () => {
     cy.wait(1000);
     cy.get('.rbc-day-slot:nth-child(6) > .rbc-timeslot-group:nth-child(8)').trigger('mouseup', {force: true});
     cy.reload();
+    incomingMessageCounter = createIncomingMessageCounter();
     waitForCalendar();
-    waitForNumIncoming(1);
-    const msgInput2 = cy.get('[id="messageInput"]');
-    const msgForm2 = cy.get('[id="messageForm"]');
-    msgInput2.type('shamik');
-    msgForm2.submit();
-    waitForNumIncoming(2);
-    msgInput2.type('free all day and night friday');
-    msgForm2.submit();
+    incomingMessageCounter.waitForMore(1);
+    msgInput = cy.get('[id="messageInput"]');
+    msgForm = cy.get('[id="messageForm"]');
+    msgInput.type('shamik');
+    msgForm.submit();
+    incomingMessageCounter.waitForMore(1);
+    msgInput.type('free all day and night friday');
+    msgForm.submit();
     cy.reload();
+    incomingMessageCounter = createIncomingMessageCounter();
     waitForCalendar();
-    waitForNumIncoming(1);
-    const msgInput3 = cy.get('[id="messageInput"]');
-    const msgForm3 = cy.get('[id="messageForm"]');
-    msgInput3.type('blurb');
-    msgForm3.submit();
-    waitForNumIncoming(2);
-    msgInput3.type('free fridays 1-3');
-    msgForm3.submit();
-    waitForNumUpdates(1);
+    incomingMessageCounter.waitForMore(1);
+    msgInput = cy.get('[id="messageInput"]');
+    msgForm = cy.get('[id="messageForm"]');
+    msgInput.type('blurb');
+    msgForm.submit();
+    incomingMessageCounter.waitForMore(1);
+    msgInput.type('free fridays 1-3');
+    msgForm.submit();
+    incomingMessageCounter.waitForMore(1);
     cy.get('#calendar-submit').click();
   });
 });
