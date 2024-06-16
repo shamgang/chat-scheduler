@@ -28,9 +28,17 @@ backup_hour_translator = HourTranslator(backup_model)
 from azure.functions import Out # type: ignore
 
 def message_handler(msg):
-    '''Takes a ClientMessage and returns a ClientMessage or None
+    '''
+    Arguments:
+        ClientMessage
+    Returns:
+        response: ClientMessage or None: response to send
+        send_to_event: String or None: event id to send response to
+        subscribe_to_event: String or None: event id to subscribe connection to
     Can raise exceptions'''
     response = None
+    send_to_event = None
+    subscribe_to_event = None
     if msg.type == ClientMessageType.DATES:
         # User is defining a date range
         try:
@@ -57,6 +65,7 @@ def message_handler(msg):
         event = get_event(msg.event_id)
         event.add_name(msg.name)
         update_event(msg.event_id, event)
+        subscribe_to_event = msg.event_id
     elif msg.type == ClientMessageType.TIMES:
         # User is defining time slots
         try:
@@ -74,8 +83,11 @@ def message_handler(msg):
             type=ClientMessageType.TIME_GRID,
             author=Author.SCHEDULER,
             time_grid=time_grid,
-            update_type=UpdateType.PROMPT
+            names=event.names,
+            update_type=UpdateType.PROMPT,
+            name=msg.name
         )
+        send_to_event = msg.event_id
     elif msg.type == ClientMessageType.CONFIRM:
         # User has confirmed general avail
         event = get_event(msg.event_id)
@@ -95,8 +107,11 @@ def message_handler(msg):
             type=ClientMessageType.TIME_GRID,
             author=Author.SCHEDULER,
             time_grid=time_grid,
-            update_type=UpdateType.MANUAL
+            names=event.names,
+            update_type=UpdateType.MANUAL,
+            name=msg.name
         )
+        send_to_event = msg.event_id
     elif msg.type == ClientMessageType.TOGGLE_GENERAL_SLOTS:
         event = get_event(msg.event_id)
         time_grid = event.time_grid
@@ -111,13 +126,17 @@ def message_handler(msg):
             type=ClientMessageType.TIME_GRID,
             author=Author.SCHEDULER,
             time_grid=time_grid,
-            update_type=UpdateType.MANUAL
+            names=event.names,
+            update_type=UpdateType.MANUAL,
+            name=msg.name
         )
-    return response
+        send_to_event = msg.event_id
+    return response, send_to_event, subscribe_to_event
 
 
 def main(request, actions: Out[str]) -> None:
     connection_id = None
+    group_id = None
     try:
         request_json = json.loads(request)
         origin = request_json['connectionContext']['origin']
@@ -126,7 +145,16 @@ def main(request, actions: Out[str]) -> None:
         msg_str = json.loads(request)['data']
         logger.debug(f'Incoming message: {msg_str}')
         msg = parse_message(msg_str)
-        response = message_handler(msg)
+        response, send_to_event, subscribe_to_event = message_handler(msg)
+        if send_to_event:
+            group_id = send_to_event
+        if subscribe_to_event:
+            logger.debug(f'Subscribe {connection_id} to event: {subscribe_to_event}')
+            actions.set(json.dumps({
+                "actionName": "addConnectionToGroup",
+                "connectionId": connection_id,
+                "group": subscribe_to_event
+            }))
     except (TranslationFailedError, InvalidPromptError) as tfe:
         # Known error
         logger.error(f'Translation failed: {str(tfe)}')
@@ -154,11 +182,20 @@ def main(request, actions: Out[str]) -> None:
             response_str = json.dumps(response_json)
             response_summary = response_str[:200] + ("..." if len(response_str) > 200 else "")
             logger.debug(f'Response: {response_summary}')
-            actions.set(json.dumps({
-                "actionName": "sendToConnection",
-                "connectionId": connection_id,
-                "data": response_str,
-                "dataType": 'json',
-            }))
+            logger.debug(f'Group id: {group_id}')
+            if group_id:
+                actions.set(json.dumps({
+                    "actionName": "sendToGroup",
+                    "group": group_id,
+                    "data": response_str,
+                    "dataType": 'json',
+                }))
+            else:
+                actions.set(json.dumps({
+                    "actionName": "sendToConnection",
+                    "connectionId": connection_id,
+                    "data": response_str,
+                    "dataType": 'json',
+                }))
         except Exception as e:
             logger.error(f'Failed to send response: {traceback.format_exc}')

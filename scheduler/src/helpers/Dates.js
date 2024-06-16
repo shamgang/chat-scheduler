@@ -65,9 +65,7 @@ export function slotNum(tm) {
 }
 
 export function dateTimeFromDateAndSlot(dt, slot) {
-  console.log(dt);
   let newDt = cloneDate(dt);
-  console.log(newDt);
   newDt.setHours(0);
   newDt.setMinutes(slot * MINUTES_PER_SLOT);
   return newDt;

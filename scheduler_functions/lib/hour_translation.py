@@ -23,8 +23,8 @@ class CalendarAction:
             tr_str = statement_str.split(':')[2]
             self.from_time = from_time_string_12(tr_str.split('-')[0])
             self.to_time = from_time_string_12(tr_str.split('-')[1])
-        except KeyError:
-            err = f'String {statement_str} could not be parsed as an availability statement.'
+        except (KeyError, ValueError) as e:
+            err = f'String {statement_str} could not be parsed as an availability statement: {str(e)}'
             logger.info(err)
             raise TranslationFailedError(err, ErrorType.INVALID_AVAILABILITY)
 

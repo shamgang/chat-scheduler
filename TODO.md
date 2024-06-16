@@ -2,7 +2,6 @@
 
 * Accessibility - Calendar selection is probably not accessible.
 * Stripes are not visible easily on dark colors
-* Feels like a messaging app - should have features like updating as soon as data changes on the backend, telling available times as soon as data changes
 
 ## Medium-priority
 

@@ -152,12 +152,23 @@
           "const": "SCHEDULER"
         },
         "timeGrid": { "$ref": "common_schema.json#/definitions/timeGrid" },
-        "updateType": { "$ref": "common_schema.json#/definitions/updateType" }
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "updateType": { "$ref": "common_schema.json#/definitions/updateType" },
+        "name": {
+          "type": "string"
+        }
       },
       "required": [
         "type",
         "timeGrid",
-        "updateType"
+        "names",
+        "updateType",
+        "name"
       ]
     },
     "confirmMessage": {

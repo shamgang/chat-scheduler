@@ -95,9 +95,12 @@ function App() {
         pushSchedulerDisplayMessage(M.DATE_ENTERED_MESSAGE_SHORT);
       }
     } else if (msg.type === MessageTypes.TIME_GRID) {
-      if (msg.updateType === UpdateTypes.PROMPT) {
-        console.log('Chatbot setting time grid:', msg.timeGrid);  
-        setTimeGrid(msg.timeGrid);
+      setTimeGrid(msg.timeGrid);
+      setNames(msg.names);
+      if (msg.name !== name) {
+        console.log(`Other user ${msg.name} edited time grid.`);
+      } else if (msg.updateType === UpdateTypes.PROMPT) {
+        console.log('Chatbot setting time grid');  
         if (flowState === StateMachine.GENERAL_AVAIL) {
           if (!explainedGeneralAvail.current) {
             pushSchedulerDisplayMessage(M.GENERAL_TIME_RANGES_MESSAGE);
@@ -114,8 +117,7 @@ function App() {
           }
         }
       } else if (msg.updateType === UpdateTypes.MANUAL) {
-        console.log('User setting time grid:', msg.timeGrid);  
-        setTimeGrid(msg.timeGrid);
+        console.log('User setting time grid');  
       }
     } else if (msg.type === MessageTypes.ERROR) {
       console.error('Error message from server:', msg);
@@ -135,10 +137,12 @@ function App() {
     }
   }, [
     flowState,
+    name,
     setRange,
     setRangeEmpty,
     setCurrentWeek,
     setTimeGrid,
+    setNames,
     pushSchedulerDisplayMessage
   ]);
 
@@ -440,9 +444,9 @@ function App() {
         </div>
         <div className='data-summary-section'>
           {
-            (names || availabilitySummary) && <div className='data-summary'>
+            ((names && names.length > 0) || availabilitySummary) && <div className='data-summary'>
               {
-                names && <span>
+                names && names.length > 0 && <span>
                   Attendees: { names.map(firstCap).join(', ') }
                 </span>
               }
