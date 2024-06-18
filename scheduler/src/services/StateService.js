@@ -1,5 +1,6 @@
 import Ajv from 'ajv';
 import { fromIsoNoHyphens } from "../helpers/FormatHelpers";
+import { executeLater } from '../helpers/AsyncHelpers';
 import commonSchema from '../assets/common_schema.json';
 import stateSchema from '../assets/state_schema.json';
 
@@ -21,7 +22,7 @@ function parseEventState(eventState) {
   return eventState;
 }
 
-export async function getEventState(eventId) {
+export async function getEventStateHelper(eventId) {
   console.log(`Getting event state: ${eventId}`);
   const url = `${STATE_ENDPOINT}/${eventId}`;
   const response = await fetch(url);
@@ -32,4 +33,16 @@ export async function getEventState(eventId) {
   console.log(`Got event state: ${eventId}`);
   const eventState = parseEventState(await response.json());
   return eventState;
+}
+
+export async function getEventState(eventId) {
+  try {
+    return await getEventStateHelper(eventId);
+  } catch (error) {
+    console.error('getEventState failed 1 time:', error);
+  }
+  console.log('Retrying..');
+  return await executeLater(async () => {
+    return await getEventStateHelper(eventId);
+  }, 3000);
 }

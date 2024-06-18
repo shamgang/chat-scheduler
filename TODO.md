@@ -5,7 +5,6 @@
 ## Medium-priority
 
 * Add a way for the user to complain if the model got it wrong, and fallback to the better model in that case.
-* Retries for creating websocket and getting event state, not just sending message
 * API integration for events
 * Test that page does not crash when left open indefinitely
 * Loading UI: Block user message send until websocket is available (with timeout) and until after event state is loaded. Include some visual indicator of loading to signal the user and also the test script.

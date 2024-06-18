@@ -8,6 +8,7 @@ import {
   formatTimeString,
   dateTimeToIsoNoHyphens
 } from '../helpers/FormatHelpers';
+import { executeLater } from '../helpers/AsyncHelpers';
 
 const PUBSUB_NEGOTIATE_ENDPOINT = process.env.REACT_APP_API_HOST + '/api/negotiate';
 
@@ -94,8 +95,8 @@ function formatMessage(msg) {
   return JSON.stringify(msg);
 }
 
-  // Throws
-async function getWebSocketUrl() {
+// Throws
+async function getWebSocketUrlHelper() {
   try {
     let res = await fetch(PUBSUB_NEGOTIATE_ENDPOINT);
     if (!res.ok) {
@@ -113,7 +114,18 @@ async function getWebSocketUrl() {
     console.error('Get websocket URL failed: ', err);
     throw err;
   }
-};  
+};
+
+// Throws
+async function getWebSocketUrl() {
+  try {
+    return await getWebSocketUrlHelper();
+  } catch (error) {
+    console.error('getWebSocketUrl failed 1 time:', error);
+  }
+  console.log('Retrying..');
+  return await executeLater(getWebSocketUrlHelper, 3000);
+};
 
 function onOpen(event) {
   console.log(`Websocket open with state: ${WebSocketState[event.target.readyState]}`, event);
@@ -236,7 +248,7 @@ function useMessageService(onSchedulerMessage) {
 
   // Send message on websocket
   // Throws
-  const sendMessageNow = useCallback(async (msg) => {
+  const sendMessageHelper = useCallback(async (msg) => {
     msg.author = Authors.USER;
     console.debug('Send attempt: ', msg);
     if ((await webSocketReady.current) && webSocketRef.current) {
@@ -247,21 +259,6 @@ function useMessageService(onSchedulerMessage) {
       throw new Error('No websocket');
     }
   }, []);
-
-  const sendMessageDelay = useCallback((msg, delay) => {
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        (async() => {
-          try {
-            resolve(await sendMessageNow(msg));
-          } catch (err) {
-            reject(err);
-          }
-        })();
-      }, delay);
-      timeouts.current.push(timeout);
-    });
-  }, [sendMessageNow]);
 
   // Timeout cleanup on dismount
   useEffect(() => {
@@ -278,7 +275,7 @@ function useMessageService(onSchedulerMessage) {
       console.debug('Attempting to send message: ', msg);
       // First try
       try {
-        await sendMessageNow(msg);
+        await sendMessageHelper(msg);
         return;
       } catch (error) {
         console.error('Send message failed 1 time:', error);
@@ -286,7 +283,9 @@ function useMessageService(onSchedulerMessage) {
       // Second try, 1s
       console.log('Retrying..');
       try {
-        await sendMessageDelay(msg, 1000);
+        await executeLater(async () => {
+          await sendMessageHelper(msg);
+        }, 1000, timeouts.current);
         return;
       } catch (error) {
         console.error('Send message failed 2 times:', error);
@@ -294,7 +293,9 @@ function useMessageService(onSchedulerMessage) {
       // Third try, 3s
       console.log('Retrying..');
       try {
-        await sendMessageDelay(msg, 3000);
+        await executeLater(async () => {
+          await sendMessageHelper(msg);
+        }, 3000, timeouts.current);
         return;
       } catch (error) {
         console.error('Send message failed 3 times:', error);
@@ -302,14 +303,16 @@ function useMessageService(onSchedulerMessage) {
       // Fourth try, 7s
       console.log('Retrying..');
       try {
-        await sendMessageDelay(msg, 7000);
+        await executeLater(async () => {
+          await sendMessageHelper(msg);
+        }, 7000, timeouts.current);
         return;
       } catch (error) {
         console.error('Send message failed 4 times:', error);
         setMessageServiceError(error);
       }
     })();
-  }, [sendMessageNow, sendMessageDelay, setMessageServiceError]);
+  }, [sendMessageHelper, setMessageServiceError]);
 
   return { sendMessage, messageServiceError };
 }

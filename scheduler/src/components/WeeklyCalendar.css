@@ -105,8 +105,8 @@
 
 .rbc-event {
     border-radius: 0;
-    border: 1px solid gold !important;
-    outline: 1px solid gold !important;
+    border: 2px solid gold !important;
+    outline: 2px solid gold !important;
     width: 100%;
     background-color: transparent !important;
     pointer-events: none;
