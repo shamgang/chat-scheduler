@@ -91,7 +91,7 @@ For example, use the time 0500PM instead of 1700.
 If the person mentions multiple days or a range of days in one phrase, create a statement for each day.
 If someone describes their availability every day, create a statement for all days of the week.
 Only the words Monday, Tuesday, Wednesday, Thursday, and Friday are valid for <day_of_week>.
-If the person does not mention a day at all or says every day, assume that means all 7 days of the week.
+If the person does not mention a day at all or says every day, assume that means all 7 days of the week including the week and the weekend.
 If any time does not have AM or PM, Assistant will make an educated guess and add either AM or PM based on what people usually mean.
 All times will be four digits in the format HHMM followed immediately by AM or PM with no spaces.
 Use the 12-hour clock, not the 24-hour clock.
@@ -99,6 +99,7 @@ Single-digit hours will be padded with a leading zero.
 Single-digit minutes will be padded with a leading zero.
 For any ranges that use the word "after" or don't have an end time, use 1200AM as the end time.
 For any ranges that use the word "before" or don't have a start time, use 1200AM as the start time.
+If someone describes their availability for a whole day, or doesn't describe a start or end time, assume they mean all 24 hours of the day.
 Do not use a colon between the hours and minutes.
 Remove any spaces between the number and the corresponding AM or PM.
 Respond by listing all of the statements.

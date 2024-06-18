@@ -24,7 +24,8 @@ function BaseWeeklyCalendar({
   slotGlows,
   userIsAvail,
   calendarProps,
-  calendarComponents
+  calendarComponents,
+  outlinedRanges
 }) {
   // Track current selection
   const [rangeStart, setRangeStart] = useState(null);
@@ -112,6 +113,10 @@ function BaseWeeklyCalendar({
     };
   }, [calendarComponents, onSlotTap, onSlotHover]);
 
+  const events = outlinedRanges ? outlinedRanges.map(({from, to}) => {
+    return { start: from, end: to };
+  }) : [];
+
   return (
     <Calendar
       className="calendar"
@@ -122,6 +127,7 @@ function BaseWeeklyCalendar({
       components={combinedComponents}
       selectable={selectable}
       slotPropGetter={slotPropGetterHelper}
+      events={events}
       {...calendarProps}
     />
   );

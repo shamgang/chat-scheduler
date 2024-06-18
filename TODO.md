@@ -1,7 +1,6 @@
 ## High-priority
 
 * Accessibility - Calendar selection is probably not accessible.
-* Stripes are not visible easily on dark colors
 
 ## Medium-priority
 

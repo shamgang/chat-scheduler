@@ -17,7 +17,7 @@ export function availabilityColor(proportion) {
   if (proportion === 0) {
     return BASE_COLOR;
   }
-  const lightness = 100 - Math.round(proportion * 100 / 2);
+  const lightness = 90 - Math.round(proportion * 100 / 2);
   return `hsl(240 30% ${lightness}%)`;
   
 }
@@ -49,4 +49,38 @@ export function findBestTime(timeGrid, names) {
     }
   }
   return { numAttendees: 0 };
+}
+
+export function getFullRanges(timeGrid, names) {
+  if (!timeGrid) {
+    return [];
+  }
+  let ranges = [];
+  const numAttendees = names.length;
+  for (const [day, slots] of Object.entries(timeGrid)) {
+    let i = 0;
+    while (i < slots.length) {
+      if (slots[i].length === numAttendees) {
+        let j = i + 1;
+        let lag = new Set(slots[i]);
+        let lead = new Set(slots[j]);
+        while (j < 48 && lag.isSubsetOf(lead) && lag.isSupersetOf(lead)) {
+          j++;
+          lead = new Set(slots[j]);
+        }
+        const from = dateTimeFromDateAndSlot(dateTimeFromIsoNoHyphens(day), i);
+        let to = dateTimeFromDateAndSlot(dateTimeFromIsoNoHyphens(day), j);
+        if (to.getHours() === 0 && to.getMinutes() === 0) {
+          to.setHours(23);
+          to.setMinutes(59);
+          to.setDate(to.getDate() - 1);
+        }
+        ranges.push({ from, to });
+        i = j + 1;
+      } else {
+        i++;
+      }
+    }
+  }
+  return ranges;
 }

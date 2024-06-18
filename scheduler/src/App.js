@@ -21,7 +21,7 @@ import { StateMachine } from './helpers/StateMachine';
 import { getEventState } from "./services/StateService";
 import { getRandomBackgroundImageUrl } from "./helpers/BackgroundImage";
 import { lastMonday, getDayOfWeek, getDateRangeLengthDays } from "./helpers/Dates";
-import { findBestTime } from "./helpers/CalendarHelpers";
+import { findBestTime, getFullRanges } from "./helpers/CalendarHelpers";
 import { firstCap } from "./helpers/FormatHelpers";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
@@ -303,6 +303,10 @@ function App() {
     pushSchedulerDisplayMessage(M.SPECIFIC_AVAIL_MESSAGE);
   }, [eventId, name, setFlowState, sendMessage, pushSchedulerDisplayMessage]);
 
+  const outlinedRanges = useMemo(() => {
+    return getFullRanges(timeGrid, names);
+  }, [timeGrid, names]);
+
   const availabilitySummary = useMemo(() => {
     const { from, to, numAttendees } = findBestTime(timeGrid, names);
     if (numAttendees === 0) {
@@ -394,6 +398,7 @@ function App() {
           onSelectSlot={onSelectSlot}
           names={names}
           editingName={name}
+          outlinedRanges={outlinedRanges}
         />
       );
     }

@@ -52,7 +52,8 @@ function SpecificWeeklyCalendar({
   names,
   editingName,
   showButtons,
-  onSubmit
+  onSubmit,
+  outlinedRanges
 }) {
   const [focusedDate, setFocusedDate] = useState(lastMonday(dateRange[0]));
   const [focusedSlotNames, setFocusedSlotNames] = useState(null);
@@ -115,6 +116,7 @@ function SpecificWeeklyCalendar({
         userIsAvail={userIsAvailHelper}
         calendarProps={calendarProps}
         calendarComponents={components}
+        outlinedRanges={outlinedRanges}
       >
       </BaseWeeklyCalendar>
       <div className="calendar-footer">

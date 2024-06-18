@@ -54,13 +54,13 @@ export const SchedulerMessages = {
     <span>
       OK! Now let's get the details. Tell me your availability for the selected week.
       <br/><br/>
-      Darker slots have more attendees available, and glowing slots have all attendees available.
+      Darker slots have more attendees available, and outlined slots have all attendees available.
       Your own availability is striped.
     </span>
   ),
   SPECIFIC_AVAIL_MESSAGE_FRESH: (
     <span>
-      OK! Tell your availability (e.g. 9am-5pm Tuesday) and I will update the selected week.
+      OK! Tell me your availability (e.g. 9am-5pm Tuesday) and I will update the selected week.
       <br/><br/>
       You can also click twice or click-drag to add or remove time slots.
       <br/><br/>
