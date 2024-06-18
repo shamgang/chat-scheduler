@@ -159,12 +159,12 @@ function useMessageService(onSchedulerMessage) {
         createWebSocket.current();
         numReopens.current += 1;
       } else {
-        const err = 'Websocket closed unexpectedly.'
+        const err = 'Websocket closed unexpectedly. Will not attempt to re-open until the next message attempt.'
         console.error(err);
-        setMessageServiceError(err);
+        webSocketRef.current = null;
       }
     }
-  }, [setMessageServiceError]);
+  }, []);
 
   const onMessage = useCallback((event) => {
     console.log(`Message received from websocket with state: ${WebSocketState[event.target.readyState]}`, event);
@@ -242,6 +242,8 @@ function useMessageService(onSchedulerMessage) {
     if ((await webSocketReady.current) && webSocketRef.current) {
       webSocketRef.current.send(formatMessage(msg));
     } else {
+      console.warn('No websocket, attempting to re-open.');
+      createWebSocket.current();
       throw new Error('No websocket');
     }
   }, []);
