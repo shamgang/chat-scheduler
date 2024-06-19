@@ -1,5 +1,6 @@
 import json
 import traceback
+from os import getenv
 from langchain_openai import ChatOpenAI
 from ..lib.logger import logger
 from ..lib.date_translation import DateTranslator
@@ -17,13 +18,17 @@ from ..lib.client_message import (
 )
 
 # Cheaper, workhorse model
-model = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
-# More expensive model for escalating difficult tasks
-backup_model = ChatOpenAI(model="gpt-4o", temperature=0)
+model = ChatOpenAI(model=getenv('PRIMARY_MODEL'), temperature=0)
 date_translator = DateTranslator(model)
-backup_date_translator = DateTranslator(backup_model)
 hour_translator = HourTranslator(model)
-backup_hour_translator = HourTranslator(backup_model)
+# More expensive model for escalating difficult tasks
+backup_model = None
+backup_date_translator = None
+backup_hour_translator = None
+if getenv('SECONDARY_MODEL'):
+    backup_model = ChatOpenAI(model=getenv('SECONDARY_MODEL'), temperature=0)
+    backup_date_translator = DateTranslator(backup_model)
+    backup_hour_translator = HourTranslator(backup_model)
 
 from azure.functions import Out # type: ignore
 
@@ -44,6 +49,8 @@ def message_handler(msg):
         try:
             start_date, end_date = date_translator.translate_to_date_range(msg.prompt)
         except TranslationFailedError as tfe:
+            if not backup_model:
+                raise tfe
             trace = traceback.format_exc()
             logger.error(f'Translation error: {trace}')
             logger.info('Retrying translation with better model.')
@@ -71,6 +78,8 @@ def message_handler(msg):
         try:
             calendar_actions = hour_translator.translate_to_calendar_actions(msg.prompt)
         except TranslationFailedError as tfe:
+            if not backup_model:
+                raise tfe
             trace = traceback.format_exc()
             logger.error(f'Translation error: {trace}')
             logger.info('Retrying translation with better model.')

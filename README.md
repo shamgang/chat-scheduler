@@ -15,7 +15,7 @@
     python -m venv .venv
     ```
 
-1. In the `scheduler_functions` folder, create a `local.settings.json` with the following contents, where `<connectionString>` is the value from the dev instance of the Azure Web PubSub service under Settings -> Keys -> Primary/Secondary -> Connection string, and `<cosmosEmulatorKey>` is the [well-known key value](https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Cpython&pivots=api-nosql) for the cosmos emulator. Double check that the DB information is correct. Fill in the API keys as well.
+1. In the `scheduler_functions` folder, create a `local.settings.json` with the following contents, where `<connectionString>` is the value from the dev instance of the Azure Web PubSub service under Settings -> Keys -> Primary/Secondary -> Connection string, and `<cosmosEmulatorKey>` is the [well-known key value](https://learn.microsoft.com/en-us/azure/cosmos-db/how-to-develop-emulator?tabs=windows%2Cpython&pivots=api-nosql) for the cosmos emulator. Double check that the DB information is correct. Fill in the API keys as well. Change the models as desired.
 
     ```json
     {
@@ -31,7 +31,9 @@
             "COSMOS_DB_URL": "https://localhost:8081",
             "COSMOS_DB_KEY": "<cosmosEmulatorKey>",
             "COSMOS_DATABASE": "chatschedulerdb",
-            "COSMOS_EVENT_TABLE": "events"
+            "COSMOS_EVENT_TABLE": "events",
+            "PRIMARY_MODEL": "gpt-3.5-turbo",
+            "SECONDARY_MODEL": "gpt-4o"
         },
         "Host": {
             "LocalHttpPort": 7071,
@@ -84,7 +86,7 @@ domain of the static web app, as well as any custom domains.
 1. In Environment variables, set `AzureWebJobsStorage` to a key from the storage account under Security + networking -> Access keys
 1. Set `COSMOS_DB_URL` and `COSMOS_DB_KEY` to the URI and read-write key from the Cosmos DB NoSQL account under Settings -> Keys. Ensure the Cosmos DB account is set to Bounded Staleness consistency (Settings -> Default consistency).
 1. Set `WebPubSubConnectionString` to a Settings -> Keys -> Primary/Secondary -> Connection string from the production Web PubSub account rather than the dev account.
-1. Copy over any other relevant environment variables from `local.settings.json` that are not set, including `COSMOS_DATABASE`, `COSMOS_EVENT_TABLE`, and the API-related keys and settings. The log level setting can be skipped. Again, DO NOT copy `COSMOS_ALLOW_UNVERIFIED` if it is set.
+1. Copy over any other relevant environment variables from `local.settings.json` that are not set, including `COSMOS_DATABASE`, `COSMOS_EVENT_TABLE`, and the API-related keys and settings. Copy or modify the primary and secondary model settings. The secondary model can be left out. The log level setting can be skipped. Again, DO NOT copy `COSMOS_ALLOW_UNVERIFIED` if it is set.
 1. Set `AzureWebJobsSecretStorageType` to `blob`. This will prevent the key that connects PubSub and the function app from re-generating on deployment. Save the environment variable changes.
 1. Note the `webpubsub_extension` key from Function -> App keys in the function app and make sure the event handler in the production Web PubSub instance is the same as the dev instance, except with the following endpoint, replacing the the function app name and using the `webpubsub_extension` key:
     ```

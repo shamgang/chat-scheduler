@@ -64,7 +64,7 @@ export const SchedulerMessages = {
       <br/><br/>
       You can also click twice or click-drag to add or remove time slots.
       <br/><br/>
-      Darker slots have more attendees available, and glowing slots have all attendees available.
+      Darker slots have more attendees available, and outlined slots have all attendees available.
       Your own availability is striped.
     </span>
   ),
