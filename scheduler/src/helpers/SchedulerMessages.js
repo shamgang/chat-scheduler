@@ -7,10 +7,6 @@ export const SchedulerMessages = {
     Hey! Let me help you schedule a meeting.
     <br/><br/>
     First, tell me a date range to consider for the meeting (e.g. "the next two weeks").
-    <br/><br/>
-    You can also click twice or click-drag to create a range.
-    <br/><br/>
-    When you're ready, tap ☑️.
     </span>
   ),
   LOADING_MESSAGE: 'Let me think...',
@@ -19,35 +15,24 @@ export const SchedulerMessages = {
   getMeetingTitleMessage: range => `
     Got it! ${readableDatetimeRange(range[0], range[1])}. Give me a name for the meeting.
   `,
-  NAME_MESSAGE: (
+  getNameMessage: meetingName => `
+    OK, scheduling the meeting "${meetingName}". What's your first name?
+  `,
+  getNameMessageFresh: meetingName => `
+    Hey! We're scheduling the meeting "${meetingName}". What's your first name?
+  `,
+  getTimesMessage: name => (
     <span>
-      Next, you can tell me what times you're available.
+      Hey {name}! Let's get your availability.
       <br/><br/>
-      I've also updated the URL so you can share it with other attendees.
-      <br/><br/>
-      If you're ready to add times, tell me your first name!
-    </span>
-  ),
-  NAME_MESSAGE_FRESH: (
-    <span>
-      Hey! We're in the middle of scheduling the meeting.
-      <br/><br/>
-      Tell me your first name if you want to update your availability.
-    </span>
-  ),
-  TIMES_MESSAGE: (
-    <span>
-      Got it!
-      <br/><br/>
-      To speed this up, you can tell me what times you're usually available (e.g. "I'm free 9am-5pm every weekday"),
+      There are a lot of dates to fill out. To speed this up, you can tell me your availability for the average week (e.g. "I'm free 9am-5pm every weekday"),
       and I'll pre-fill all the weeks.
       <br/><br/>
-      You can also click twice or click-drag to add or remove time slots.
       Tap ☑️ to move on to scheduling specific weeks.
     </span>
   ),
   GENERAL_TIME_RANGES_MESSAGE: `
-  Updated! When you're done with general availability, tap ☑️.
+  Updated! When you're done with your average availability, tap ☑️.
   `,
   GENERAL_TIME_RANGES_MESSAGE_SHORT: 'Updated! Tap ☑️ confirm.',
   SPECIFIC_AVAIL_MESSAGE: (
@@ -58,11 +43,9 @@ export const SchedulerMessages = {
       Your own availability is striped.
     </span>
   ),
-  SPECIFIC_AVAIL_MESSAGE_FRESH: (
+  getSpecificAvailMessageFresh: name => (
     <span>
-      OK! Tell me your availability (e.g. 9am-5pm Tuesday) and I will update the selected week.
-      <br/><br/>
-      You can also click twice or click-drag to add or remove time slots.
+      Hey {name}! Tell me your availability (e.g. 9am-5pm Tuesday) and I will update the selected week.
       <br/><br/>
       Darker slots have more attendees available, and outlined slots have all attendees available.
       Your own availability is striped.

@@ -24,7 +24,9 @@ import { lastMonday, getDayOfWeek, getDateRangeLengthDays } from "./helpers/Date
 import { findBestTime, getFullRanges } from "./helpers/CalendarHelpers";
 import { firstCap } from "./helpers/FormatHelpers";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import Modal from 'react-modal';
+import { HELP_CONTENT } from "./helpers/HelpContent";
 
 export async function loader({ params }) {
   // TODO: want to use loader to load data before rendering,
@@ -54,6 +56,7 @@ function App() {
   const [name, setName] = useState(null);
   const [names, setNames] = useState(null);
   const [displayMessages, setDisplayMessages] = useState([]);
+  const [showHelp, setShowHelp] = useState(false);
   const navigate = useNavigate();
   const initialized = useRef(false);
   const explainedDates = useRef(false);
@@ -63,6 +66,8 @@ function App() {
   const backgroundStyle = {
     backgroundImage: `url(${BACKGROUND_IMAGE})`
   };
+
+  Modal.setAppElement('#root');
 
   const pushDisplayMessage = useCallback((text, fromUser) => {
     setDisplayMessages(msgs => [...msgs, { text, fromUser }]);
@@ -170,7 +175,7 @@ function App() {
           setNames(loadedEvent.names);
           setEventState(loadedEvent);
           setFlowState(StateMachine.NAME);
-          pushSchedulerDisplayMessage(M.NAME_MESSAGE_FRESH);
+          pushSchedulerDisplayMessage(M.getNameMessageFresh(loadedEvent.title));
         } catch (error) {
           setEventStateError(error);
         }
@@ -213,7 +218,7 @@ function App() {
       });
       setTitle(newTitle);
       setFlowState(StateMachine.NAME);
-      pushSchedulerDisplayMessage(M.NAME_MESSAGE);
+      pushSchedulerDisplayMessage(M.getNameMessage(newTitle));
     } else if (flowState === StateMachine.NAME) {
       const newName = input.trim().toLowerCase();
       sendMessage({
@@ -234,12 +239,12 @@ function App() {
           eventState.generalAvailConfirmed[newName] // user has already entered general avail
         ) || shortRange
       ) {
-        // Pre-loaded backend state shows we already did general availability.
+        // Pre-loaded backend state shows we already did general availability, or it's a short range.
         setFlowState(StateMachine.SPECIFIC_AVAIL);
-        pushSchedulerDisplayMessage(M.SPECIFIC_AVAIL_MESSAGE_FRESH);
+        pushSchedulerDisplayMessage(M.getSpecificAvailMessageFresh(firstCap(newName)));
       } else {
         setFlowState(StateMachine.GENERAL_AVAIL);
-        pushSchedulerDisplayMessage(M.TIMES_MESSAGE);
+        pushSchedulerDisplayMessage(M.getTimesMessage(firstCap(newName)));
       }
     } else if ([StateMachine.GENERAL_AVAIL, StateMachine.SPECIFIC_AVAIL].includes(flowState)) {
       sendMessage({
@@ -292,7 +297,7 @@ function App() {
     pushSchedulerDisplayMessage(M.getMeetingTitleMessage(range));
   }, [sendMessage, setFlowState, range, navigate, pushSchedulerDisplayMessage]);
 
-  // Button click from weekly calendar - confirming general avail or finding times
+  // Button click from weekly calendar - confirming general avail
   const onConfirmGeneralAvail = useCallback(() => {
     sendMessage({
       type: MessageTypes.CONFIRM,
@@ -460,6 +465,26 @@ function App() {
             </div>
           }
         </div>
+        <FontAwesomeIcon
+          icon={faQuestionCircle}
+          className='help-icon'
+          onClick={() => setShowHelp(show => !show)}
+        />
+        <Modal 
+          className="help-modal"
+          overlayClassName="help-overlay"
+          isOpen={showHelp}
+          onClick={(event) => {console.log(event);}}
+          contentLabel={"Help Modal"}
+          shouldCloseOnOverlayClick={true}
+          onRequestClose={() => setShowHelp(false)}
+        >
+          <div className="help-modal-background" onClick={() => setShowHelp(false)}>
+            <div className="help-modal-content">
+              {HELP_CONTENT}
+            </div>
+          </div>
+        </Modal>
       </div>
     );
   }

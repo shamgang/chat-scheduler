@@ -1,13 +1,3 @@
-@font-face {
-    font-family: "Coolvetica";
-    src: url("../fonts/coolvetica rg.otf");
-}
-@font-face {
-    font-family: "Coolvetica";
-    src: url("../fonts/coolvetica rg it.otf");
-    font-style: italic;
-}
-
 .chat-container {
     min-height: 25rem;
     height: calc(80vh - 4rem);

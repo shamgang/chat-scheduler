@@ -47,6 +47,7 @@
     display: grid;
     grid-template-rows: 100%;
     grid-template-columns: 100%;
+    z-index: 0;
 }
 .data-summary-section {
     grid-area: dataSummary;
@@ -74,19 +75,78 @@
     grid-template-rows: 100%;
     place-items: center;
 }
+.help-icon {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    height: 20px;
+    color: rgb(24, 25, 105);
+}
+.help-icon:hover {
+    color: white;
+}
+.help-modal {
+    position: absolute;
+    top: 20vh;
+    left: 20vw;
+    right: 20vw;
+    bottom: 20vh;
+    background-color: black;
+    box-shadow: 0 0 20px grey;
+    border-radius: 5px;
+    border: 1px solid black;
+    z-index: 5;
+}
+.help-modal-background {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: grid;
+    grid-template-areas:
+        "."
+        "modalContent"
+        ".";
+    grid-template-columns: 100%;
+    grid-template-rows: 10% 70% 20%;
+    align-items: center;
+}
+.help-modal-content {
+    grid-area: modalContent;
+    font-family: Helvetica, Arial, sans-serif;
+    color: white;
+    padding: 2em;
+    font-size: 1em;
+    line-height: 1.1em;
+}
+.help-modal-content h2 {
+    font-size: 1em;
+}
+.help-modal-content ol,ul {
+    padding-left: 1em;
+}
+.help-overlay {
+    background-color: transparent;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;    
+}
 @media (max-aspect-ratio: 1/1) {
     .grid-container {
         grid-template-areas:
-            ". .               ."
-            ". header          ."
-            ". .               ."
-            ". chatSection     ."
-            ". .               ."
-            ". calendarSection ."
-            ". .               ."
-            ". dataSummary     ."
-            ". .               .";
-        grid-template-columns: 20px minmax(min-content, max-content) 20px;
+            ". .               .               ."
+            ". header          help            ."
+            ". .               .               ."
+            ". chatSection     chatSection     ."
+            ". .               .               ."
+            ". calendarSection calendarSection ."
+            ". .               .               ."
+            ". dataSummary     dataSummary     ."
+            ". .               .               .";
+        grid-template-columns: 20px minmax(min-content, max-content) 30px 20px;
         grid-template-rows: 10px 1rem 12px minmax(min-content, max-content) 15px minmax(min-content, max-content) 10px minmax(min-content, max-content) 10px;
     }
     .header .back-button {
@@ -96,6 +156,32 @@
         font-size: 1em;
     }
     .data-summary {
+        font-size: 1em;
+    }
+    .header {
+        display: grid;
+        grid-template-areas:
+            ". . . help";
+        grid-template-columns: max-content;
+        align-items: center;
+        grid-auto-flow: column;
+    }
+    .help-icon {
+        grid-area: help;
+        position: inherit;
+        height: 15px;
+    }
+    .help-modal {
+        top: 10vh;
+        left: 10vw;
+        right: 10vw;
+        bottom: 10vh;
+    }
+    .help-modal-content {
+        padding: 1em;
+        font-size: 0.9em;
+    }
+    .help-modal-content h2 {
         font-size: 1em;
     }
 }
