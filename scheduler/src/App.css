@@ -18,9 +18,10 @@
 }
 .header {
     grid-area: header;
+    position: relative;
     display: grid;
     grid-template-rows: 100%;
-    grid-template-columns: max-content;
+    grid-template-columns: max-content max-content;
     align-items: center;
     grid-auto-flow: column;
 }
@@ -35,6 +36,18 @@
     color: white;
     margin: 0;
     padding-bottom: 0.1em;
+}
+.header .save-status {
+    font-family: Helvetica, Arial, sans-serif;
+    color: white;
+    background-color: rgba(0, 0, 255, 0.2);
+    padding: 4px 10px 3px 10px;
+    border-radius: 5px;
+    font-size: 1.1em;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%);
+    place-items: center;
 }
 .chat-section {
     grid-area: chatSection;
@@ -75,12 +88,18 @@
     grid-template-rows: 100%;
     place-items: center;
 }
-.help-icon {
+.help-icon.desktop-only {
     position: absolute;
     bottom: 30px;
     right: 30px;
     height: 20px;
     color: rgb(24, 25, 105);
+}
+.desktop-only {
+    display: inline-block;
+}
+.mobile-only {
+    display: none;
 }
 .help-icon:hover {
     color: white;
@@ -138,7 +157,7 @@
     .grid-container {
         grid-template-areas:
             ". .               .               ."
-            ". header          help            ."
+            ". header          header          ."
             ". .               .               ."
             ". chatSection     chatSection     ."
             ". .               .               ."
@@ -160,16 +179,28 @@
     }
     .header {
         display: grid;
-        grid-template-areas:
-            ". . . help";
-        grid-template-columns: max-content;
+        grid-template-columns: max-content max-content max-content;
         align-items: center;
         grid-auto-flow: column;
     }
-    .help-icon {
-        grid-area: help;
-        position: inherit;
+    .header .save-status {
+        position: relative;
+        left: 0;
+        transform: translateX(30px);
+        place-self: center;
+        font-size: 0.7em;
+        padding: 2px 5px 2px 5px;
+    }
+    .help-icon.mobile-only {
+        position: absolute;
+        right: 0;
         height: 15px;
+    }
+    .desktop-only {
+        display: none;
+    }
+    .mobile-only {
+        display: block;
     }
     .help-modal {
         top: 10vh;

@@ -24,9 +24,14 @@ import { lastMonday, getDayOfWeek, getDateRangeLengthDays } from "./helpers/Date
 import { findBestTime, getFullRanges } from "./helpers/CalendarHelpers";
 import { firstCap } from "./helpers/FormatHelpers";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faCheckDouble, faQuestionCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import Modal from 'react-modal';
 import { HELP_CONTENT } from "./helpers/HelpContent";
+
+const SaveStatus = {
+  SAVING: "SAVING",
+  SAVED: "SAVED"
+}
 
 export async function loader({ params }) {
   // TODO: want to use loader to load data before rendering,
@@ -57,6 +62,7 @@ function App() {
   const [names, setNames] = useState(null);
   const [displayMessages, setDisplayMessages] = useState([]);
   const [showHelp, setShowHelp] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null);
   const navigate = useNavigate();
   const initialized = useRef(false);
   const explainedDates = useRef(false);
@@ -102,6 +108,7 @@ function App() {
     } else if (msg.type === MessageTypes.TIME_GRID) {
       setTimeGrid(msg.timeGrid);
       setNames(msg.names);
+      setSaveStatus(SaveStatus.SAVED);
       if (msg.name !== name) {
         console.log(`Other user ${msg.name} edited time grid.`);
       } else if (msg.updateType === UpdateTypes.PROMPT) {
@@ -176,6 +183,7 @@ function App() {
           setEventState(loadedEvent);
           setFlowState(StateMachine.NAME);
           pushSchedulerDisplayMessage(M.getNameMessageFresh(loadedEvent.title));
+          setSaveStatus(SaveStatus.SAVED);
         } catch (error) {
           setEventStateError(error);
         }
@@ -196,7 +204,8 @@ function App() {
     setTimeGrid,
     setNames,
     setEventStateError,
-    pushSchedulerDisplayMessage
+    pushSchedulerDisplayMessage,
+    setSaveStatus
   ]);
 
   const shortRange = range && getDateRangeLengthDays(range[0], range[1]) < 10;
@@ -247,6 +256,7 @@ function App() {
         pushSchedulerDisplayMessage(M.getTimesMessage(firstCap(newName)));
       }
     } else if ([StateMachine.GENERAL_AVAIL, StateMachine.SPECIFIC_AVAIL].includes(flowState)) {
+      setSaveStatus(SaveStatus.SAVING);
       sendMessage({
         type: MessageTypes.TIMES,
         prompt: input,
@@ -271,7 +281,8 @@ function App() {
     setName,
     setNames,
     pushUserDisplayMessage,
-    pushSchedulerDisplayMessage
+    pushSchedulerDisplayMessage,
+    setSaveStatus
   ]);
   // When date calendar selection changes
   const onRangeChanged = useCallback((value) => {
@@ -295,7 +306,8 @@ function App() {
     setFlowState(StateMachine.MEETING_TITLE);
     navigate(`/${eventId}`);
     pushSchedulerDisplayMessage(M.getMeetingTitleMessage(range));
-  }, [sendMessage, setFlowState, range, navigate, pushSchedulerDisplayMessage]);
+    setSaveStatus(SaveStatus.SAVED);
+  }, [sendMessage, setFlowState, range, navigate, pushSchedulerDisplayMessage, setSaveStatus]);
 
   // Button click from weekly calendar - confirming general avail
   const onConfirmGeneralAvail = useCallback(() => {
@@ -337,6 +349,7 @@ function App() {
     if (flowState !== StateMachine.GENERAL_AVAIL) {
       return;
     }
+    setSaveStatus(SaveStatus.SAVING);
     sendMessage({
       type: MessageTypes.TOGGLE_GENERAL_SLOTS,
       day: getDayOfWeek(start),
@@ -345,13 +358,14 @@ function App() {
       eventId: eventId,
       name: name
     });
-  }, [eventId, name, flowState, sendMessage]);
+  }, [eventId, name, flowState, sendMessage, setSaveStatus]);
 
   // When hourly calendar slot is selected
   const onSelectSlot = useCallback(({start, end}) => {
     if (flowState !== StateMachine.SPECIFIC_AVAIL) {
       return;
     }
+    setSaveStatus(SaveStatus.SAVING);
     sendMessage({
       type: MessageTypes.TOGGLE_SLOTS,
       from: start,
@@ -359,7 +373,7 @@ function App() {
       eventId: eventId,
       name: name
     });
-  }, [eventId, name, flowState, sendMessage]);
+  }, [eventId, name, flowState, sendMessage, setSaveStatus]);
 
   // Allow specific keypresses in chat input
   const allowKey = useCallback((key) => {
@@ -441,6 +455,34 @@ function App() {
             />
           }
           <h1 className='event-title'>{title.toLocaleUpperCase()}</h1>
+          {
+            saveStatus === SaveStatus.SAVING &&
+            <span className='save-status'>
+              <FontAwesomeIcon
+                icon={faSpinner}
+                className='save-spinner'
+                spin
+              />
+              &nbsp;
+              SAVING...
+            </span>
+          }
+          {
+            saveStatus === SaveStatus.SAVED &&
+            <span className="save-status">
+              <FontAwesomeIcon
+                icon={faCheckDouble}
+                className='save-spinner'
+              />
+              &nbsp;
+              SAVED
+            </span>
+          }
+          <FontAwesomeIcon
+            icon={faQuestionCircle}
+            className='help-icon mobile-only'
+            onClick={() => setShowHelp(show => !show)}
+          />
         </div>
         <div className='chat-section'>
           <Chat
@@ -467,7 +509,7 @@ function App() {
         </div>
         <FontAwesomeIcon
           icon={faQuestionCircle}
-          className='help-icon'
+          className='help-icon desktop-only'
           onClick={() => setShowHelp(show => !show)}
         />
         <Modal 

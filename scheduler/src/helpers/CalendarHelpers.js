@@ -52,7 +52,7 @@ export function findBestTime(timeGrid, names) {
 }
 
 export function getFullRanges(timeGrid, names) {
-  if (!timeGrid) {
+  if (!timeGrid || !names || names.length === 0) {
     return [];
   }
   let ranges = [];
