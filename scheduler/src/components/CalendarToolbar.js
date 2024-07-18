@@ -1,11 +1,12 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAnglesRight, faAnglesLeft } from '@fortawesome/free-solid-svg-icons';
+import { addDays } from '../helpers/Dates';
 import './CalendarToolbar.css';
 
-export function CalendarToolbar({ label, onNavigate, showNav }) {
+export function CalendarToolbar({ date, label, onNavigate, showNav, inRange }) {
 
-  if (!showNav) {
+  if (showNav === undefined) {
     showNav = true;
   }
 
@@ -17,10 +18,18 @@ export function CalendarToolbar({ label, onNavigate, showNav }) {
     onNavigate('NEXT');
   }, [onNavigate]);
 
+  const showPrev = useMemo(() => {
+    return showNav && (inRange === undefined || inRange(addDays(date, -7)));
+  }, [showNav, inRange, date]);
+
+  const showNext = useMemo(() => {
+    return showNav && (inRange === undefined || inRange(addDays(date, 7)));
+  }, [showNav, inRange, date]);
+
   return (
     <div className="calendar-toolbar">
       {
-        showNav &&
+        showPrev &&
         <span className="calendar-prev" onClick={onPrev}>
           <FontAwesomeIcon
             icon={faAnglesLeft}
@@ -30,7 +39,7 @@ export function CalendarToolbar({ label, onNavigate, showNav }) {
       }
       <span className="calendar-label">{label}</span>
       {
-        showNav &&
+        showNext &&
         <span className="calendar-next" onClick={onNext}>
           <FontAwesomeIcon
             icon={faAnglesRight}

@@ -50,6 +50,12 @@ export function cloneDate(dt) {
   return new Date(dt);
 }
 
+export function addDays(dt, days) {
+  let newDate = cloneDate(dt);
+  newDate.setDate(newDate.getDate() + days);
+  return newDate;
+}
+
 // Rounds a time to a slot time
 function roundToSlot(tm) {
   let dt = cloneDate(tm);

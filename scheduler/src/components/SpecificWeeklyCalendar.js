@@ -58,15 +58,20 @@ function SpecificWeeklyCalendar({
   const [focusedDate, setFocusedDate] = useState(lastMonday(dateRange[0]));
   const [focusedSlotNames, setFocusedSlotNames] = useState(null);
 
-  const onNavigate = useCallback((date) => {
+  const inRange = useCallback((date) => {
     const monday = lastMonday(date);
     const sunday = nextSunday(date);
-    if (monday <= dateRange[1] && sunday >= dateRange[0]) {
+    return monday <= dateRange[1] && sunday >= dateRange[0];
+  }, [dateRange]);
+
+  const onNavigate = useCallback((date) => {
+    if (inRange(date)) {
       // Desired week is in range, allow navigation
+      const monday = lastMonday(date);
       setFocusedDate(monday);
       setCurrentWeek(monday);
     }
-  }, [dateRange, setFocusedDate, setCurrentWeek]);
+  }, [inRange, setFocusedDate, setCurrentWeek]);
 
   const isOutHelper = useCallback((slot) => {
     return isOut(slot, dateRange);
@@ -99,7 +104,7 @@ function SpecificWeeklyCalendar({
   // Memoize modular components
   const components = useMemo(() => {
     return {
-      toolbar: CalendarToolbar,
+      toolbar: (props) => <CalendarToolbar {...props} inRange={inRange} />,
     };
   }, []);
 
