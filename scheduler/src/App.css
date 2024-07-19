@@ -1,3 +1,7 @@
+:root {
+    --dark-blue-values: 24, 25, 105;
+    --dark-blue: rgb(var(--dark-blue-values));
+}
 .grid-container {
     height: 100%;
     width: 100%;
@@ -37,10 +41,33 @@
     margin: 0;
     padding-bottom: 0.1em;
 }
+.share-icon {
+    color: rgba(var(--dark-blue-values), 0.5);
+}
+.share-icon:hover {
+    color: white;
+}
+.header .share-icon {
+    font-size: 1em;
+}
+.share-icon.hidden {
+    opacity: 0;
+    transform: translateX(10px) scale(0); /* or any other initial state */
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+.share-icon.visible {
+    opacity: 1;
+    transform: translateX(10px) scale(1);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+:root {
+    --toastify-color-dark: rgb(16, 9, 59);
+    --toastify-color-progress-dark: rgba(200, 200, 230, 0.8);
+}
 .header .save-status {
     font-family: Helvetica, Arial, sans-serif;
     color: white;
-    background-color: rgba(0, 0, 255, 0.2);
+    background-color: rgba(71, 71, 133, 0.3);
     padding: 4px 10px 3px 10px;
     border-radius: 5px;
     font-size: 1.1em;
@@ -88,21 +115,23 @@
     grid-template-rows: 100%;
     place-items: center;
 }
+.help-icon {
+    color: var(--dark-blue);
+}
+.help-icon:hover {
+    color: white;
+}
 .help-icon.desktop-only {
     position: absolute;
     bottom: 30px;
     right: 30px;
     height: 20px;
-    color: rgb(24, 25, 105);
 }
 .desktop-only {
     display: inline-block;
 }
 .mobile-only {
     display: none;
-}
-.help-icon:hover {
-    color: white;
 }
 .help-modal {
     position: absolute;
@@ -179,14 +208,17 @@
     }
     .header {
         display: grid;
-        grid-template-columns: max-content max-content max-content;
+        grid-template-columns: max-content max-content max-content max-content;
         align-items: center;
         grid-auto-flow: column;
+    }
+    .header .share-icon {
+        font-size: 0.8em;
     }
     .header .save-status {
         position: relative;
         left: 0;
-        transform: translateX(30px);
+        transform: none;
         place-self: center;
         font-size: 0.7em;
         padding: 2px 5px 2px 5px;

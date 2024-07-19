@@ -42,3 +42,4 @@
 * Refactor tests
 * setTimeout handler in MessageService taking too long - blocking on sending to websocket - client-side JS warning. Also "Forced reflow while executing JavaScript"
 * Don't reset calendar scroll when switching from general to specific avail
+* Refactor App.js - monolithic

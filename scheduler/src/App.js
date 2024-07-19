@@ -2,6 +2,8 @@ import { v4 as uuidv4 } from "uuid";
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 import { Blocks } from 'react-loader-spinner';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 import Chat from './components/Chat';
 import MonthlyCalendar from './components/MonthlyCalendar';
@@ -24,7 +26,13 @@ import { lastMonday, getDayOfWeek, getDateRangeLengthDays } from "./helpers/Date
 import { findBestTime, getFullRanges } from "./helpers/CalendarHelpers";
 import { firstCap } from "./helpers/FormatHelpers";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faCheckDouble, faQuestionCircle, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowLeft,
+  faCheckDouble,
+  faQuestionCircle,
+  faSpinner,
+  faShareFromSquare
+} from '@fortawesome/free-solid-svg-icons';
 import Modal from 'react-modal';
 import { HELP_CONTENT } from "./helpers/HelpContent";
 
@@ -228,6 +236,9 @@ function App() {
       setTitle(newTitle);
       setFlowState(StateMachine.NAME);
       pushSchedulerDisplayMessage(M.getNameMessage(newTitle));
+      toast('Tap the share button to invite others.', {
+        position: 'bottom-center'
+      });
     } else if (flowState === StateMachine.NAME) {
       const newName = input.trim().toLowerCase();
       sendMessage({
@@ -375,6 +386,11 @@ function App() {
     });
   }, [eventId, name, flowState, sendMessage, setSaveStatus]);
 
+  const onShare = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href);
+    toast('Link copied to clipboard.');
+  }, []);
+
   // Allow specific keypresses in chat input
   const allowKey = useCallback((key) => {
     if (flowState === StateMachine.NAME) {
@@ -455,6 +471,12 @@ function App() {
             />
           }
           <h1 className='event-title'>{title.toLocaleUpperCase()}</h1>
+          <FontAwesomeIcon
+            icon={faShareFromSquare}
+            className={`share-icon ${eventId ? 'visible' : 'hidden'}`}
+            onClick={onShare}
+          />
+          <ToastContainer position="top-center" theme="dark" autoClose={3000} />
           {
             saveStatus === SaveStatus.SAVING &&
             <span className='save-status'>
