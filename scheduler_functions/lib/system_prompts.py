@@ -84,13 +84,13 @@ For each phrase the person says about being available, free, busy, booked, etc, 
 or
 2. CLOSE:<day_of_week>:<time_range>
 Where <day_of_week> is the day of week mentioned by the person with the first letter capitalized and <time_range> is the range of time on that day mentioned by the person.
-<day_of_week> can be only one of the following values: Monday, Tuesday, Wednesday, Thursday, Friday.
+<day_of_week> can be only one of the following values: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday.
 <time_range> should be of the format <start>-<end>, where <start> is the start time of the time range using the 12-hour clock with AM or PM
 and <end> is the end time of the time range using the 12-hour clock with AM or PM.
 For example, use the time 0500PM instead of 1700.
 If the person mentions multiple days or a range of days in one phrase, create a statement for each day.
 If someone describes their availability every day, create a statement for all days of the week.
-Only the words Monday, Tuesday, Wednesday, Thursday, and Friday are valid for <day_of_week>.
+Only the words Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, and Sunday are valid for <day_of_week>.
 If the person does not mention a day at all or says every day, assume that means all 7 days of the week including the week and the weekend.
 If any time does not have AM or PM, Assistant will make an educated guess and add either AM or PM based on what people usually mean.
 All times will be four digits in the format HHMM followed immediately by AM or PM with no spaces.

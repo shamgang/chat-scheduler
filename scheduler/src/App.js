@@ -140,6 +140,7 @@ function App() {
         console.log('User setting time grid');  
       }
     } else if (msg.type === MessageTypes.ERROR) {
+      setSaveStatus(SaveStatus.SAVED);
       console.error('Error message from server:', msg);
       if (msg.errorType) {
         if (msg.errorType === ErrorTypes.INVALID_DATE_RANGE) {
@@ -163,7 +164,8 @@ function App() {
     setCurrentWeek,
     setTimeGrid,
     setNames,
-    pushSchedulerDisplayMessage
+    pushSchedulerDisplayMessage,
+    setSaveStatus
   ]);
 
   const { sendMessage, messageServiceError } = useMessageService(onSchedulerMessage);

@@ -106,7 +106,7 @@ function SpecificWeeklyCalendar({
     return {
       toolbar: (props) => <CalendarToolbar {...props} inRange={inRange} />,
     };
-  }, []);
+  }, [inRange]);
 
   return (
     <div className='calendar-container'>
