@@ -11,12 +11,16 @@ on:
   workflow_dispatch:
 
 env:
+  AZURE_FUNCTION_APP_WORKSPACE_PATH: './scheduler_functions' # the path to the function app workspace within this workspace
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
   PYTHON_VERSION: '3.11' # set this to the python version to use (supports 3.6, 3.7, 3.8)
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+        run:
+            working-directory: ${{ env.AZURE_FUNCTION_APP_WORKSPACE_PATH }}
     permissions:
       contents: read #This is required for actions/checkout
 
@@ -47,8 +51,8 @@ jobs:
         with:
           name: python-app
           path: |
-            release.zip
-            !venv/
+            ${{ env.AZURE_FUNCTION_APP_WORKSPACE_PATH }}/release.zip
+            !${{ env.AZURE_FUNCTION_APP_WORKSPACE_PATH }}/venv/
 
   deploy:
     runs-on: ubuntu-latest
